@@ -1,6 +1,6 @@
-import { QVBSC } from "../../types";
+import { QVote } from "../../types";
 
-function decisionValidate(createDS: QVBSC.Decision) {
+function decisionValidate(createDS: QVote.Decision) {
     if (!checkName()) {
         return false;
     } else if (!checkDesc()) {
@@ -36,7 +36,7 @@ function addMinutes(passToConstructor: any, m: number) {
 }
 
 
-function getInitDecision(): QVBSC.Decision {
+function getInitDecision(): QVote.Decision {
     const end = addMinutes(new Date(Date.now()), 10);
     return {
         name: "",

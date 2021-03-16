@@ -5,8 +5,8 @@ import { DecisionPreview } from './DecisionPreview';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTimeDrop } from '../DateTimeDrop';
 import { decisionValidate } from './script';
-import { ContractFactory, ethers } from 'ethers';
-import { abi, bytecode } from '../../config';
+// import { ContractFactory, ethers } from 'ethers';
+// import { abi, bytecode } from '../../config';
 import { GlobalContext } from '../GlobalContext'
 import { concatStrings, makeStringUniq, uniqStringToString } from '../../scripts';
 import { CopyOnly } from '../WithMetamask/CopyOnly';
@@ -81,7 +81,7 @@ export function DecisionCreator({ initDecision }: { initDecision: QVote.Decision
         updateDecision({ ...decision, options: newOptions })
     }
 
-    async function onDeployOLD() {
+    /*async function onDeployOLD() {
         if (!loading && decisionValid) {
             try {
                 setLoading(true);
@@ -113,7 +113,7 @@ export function DecisionCreator({ initDecision }: { initDecision: QVote.Decision
                 setErrTxt(e.message);
             }
         }
-    }
+    }*/ 
 
 	async function onDeploy() {
         if (!loading && decisionValid) {
@@ -123,32 +123,44 @@ export function DecisionCreator({ initDecision }: { initDecision: QVote.Decision
                 setDeployingToTxt("");
                 setErrTxt("");
 				const qv = new QVoteZilliqa(); 
-				// TODO get the zil object from the provider 
+				const isConnected = await window.zilPay.connect(); 
+				if (!isConnected) {
+					throw new Error('user rejected');
+				}
+				const zil = window.zilPay;
 				// set up config 
 				const txblock = await zil.blockchain.getLatestTxBlock();
 				const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
 				const gasPrice = await qv.handleMinGas(zil.blockchain.getMinimumGasPrice());
 
-                const provider = new ethers.providers.Web3Provider(g.eth.current)
-                const factory = new ContractFactory(abi, bytecode, provider.getSigner());
-                const payload: [string, string, string[], number] = [
-                    "QVote",
-                    concatStrings(decision.name, decision.description),
-                    decision.options.map(o => {
-                        const uniqOption = makeStringUniq(o.optName);
-                        return ethers.utils.formatBytes32String(uniqOption)
-                    }),
-                    Math.round(decision.endTime / (1000 * 60))
-                ]
-                const contract = await factory.deploy(...payload);
+				// zil.wallet.setDefault(deployerAddress);    // this should be taken care of by zilpay 
+				// TODO could set this by subscribing to the event (check zilpay api) 
+				const deployerAddress = zil.wallet.defaultAccount.base16;    
+				const contract = zil.contracts.new(...qv.payloadQv({
+					payload: {
+						name: "Test hi",
+						description: "Hello hi",
+						options: ["opt1", "opt2", "opt3", "opt4"],
+						creditToTokenRatio: "1000",
+						//can register for next 0 min
+						// TODO make times variable 
+						registrationEndTime: qv.futureTxBlockNumber(curBlockNumber, 60 * 0),
+						//can vote in 0 min and voting is open for 15 min
+						expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * 15),
+						tokenId: "DogeCoinZilToken"
+					}, 
+					ownerAddress: deployerAddress,
+				}));
+				
                 setIsDeploying(true);
                 setDeployingToTxt(`Deploying to: ${contract.address} ...`);
-                const receipt = await contract.deployTransaction.wait();
-                if (receipt.status == 1) {
-                    setSuccess(["Success! QVote address:", contract.address])
-                    g.setQvoteAddress(contract.address)
-                }
-                setLoading(false);
+				const [qvotingAddress, instance, deployTx] = await qv.handleDeploy(
+					contract.deploy(...qv.payloadDeploy({ gasPrice }))
+				);
+				setSuccess(["Success! QVote address:", contract.address])
+              	g.setQvoteAddress(contract.address)
+				setLoading(false); 
+				console.log(qvotingAddress); 
             } catch (e) {
                 setLoading(false);
                 setErrTxt(e.message);
