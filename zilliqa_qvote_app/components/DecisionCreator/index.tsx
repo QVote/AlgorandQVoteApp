@@ -8,7 +8,7 @@ import { decisionValidate } from './script';
 // import { ContractFactory, ethers } from 'ethers';
 // import { abi, bytecode } from '../../config';
 import { GlobalContext } from '../GlobalContext'
-import { concatStrings, makeStringUniq, uniqStringToString } from '../../scripts';
+// import { concatStrings, makeStringUniq, uniqStringToString } from '../../scripts';
 import { CopyOnly } from '../WithMetamask/CopyOnly';
 import { QVoteZilliqa } from '@qvote/zilliqa-sdk'; 
 

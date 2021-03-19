@@ -8,7 +8,7 @@ import {
 } from "grommet";
 import { Add, Subtract, } from "grommet-icons";
 import { useState } from "react";
-import { QVBSC } from "../../types";
+import { QVote } from "../../types";
 import PosWithMeters from "./PosWithMeters";
 import { intPls } from './utill'
 
@@ -17,7 +17,7 @@ type anonFunction = (...args: any[]) => unknown
 
 function SliderModal({ sliderState, setSlider, onClickOutside, globalMax }:
     {
-        sliderState: QVBSC.SliderState,
+        sliderState: QVote.SliderState,
         setSlider: anonFunction,
         onClickOutside: anonFunction,
         globalMax: number

@@ -1,4 +1,4 @@
-import { QVBSC } from "../../types";
+import { QVote } from "../../types";
 import { Box, Button, Heading, Text } from 'grommet';
 import { SliderModal } from './SliderModal';
 import { useState, useContext } from "react";
@@ -33,15 +33,15 @@ function CreditsLeft({ left, max }) {
 
 
 export function Voter({ d, setDecision }:
-    { d: QVBSC.VotingDecision, setDecision: (d: QVBSC.VotingDecision) => any }) {
+    { d: QVote.VotingDecision, setDecision: (d: QVote.VotingDecision) => any }) {
     const [showSlider, setShowSlider] = useState(false);
-    const [sliderState, setSliderState] = useState<QVBSC.SliderState>({ min: 0, max: 0, cur: 0, optName: "", uid: "" })
+    const [sliderState, setSliderState] = useState<QVote.SliderState>({ min: 0, max: 0, cur: 0, optName: "", uid: "" })
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const g = useContext(GlobalContext)
 
     //return number of credits used
-    function getUsed(ds: QVBSC.VotingDecision) {
+    function getUsed(ds: QVote.VotingDecision) {
         let outcome = 0;
         ds.options.forEach(o => {
             outcome = outcome + Math.abs(intPls(o.cur));
@@ -50,7 +50,7 @@ export function Voter({ d, setDecision }:
     }
 
     //update all except one position
-    function updateByExcept(ds: QVBSC.VotingDecision, uid: string, diff: number) {
+    function updateByExcept(ds: QVote.VotingDecision, uid: string, diff: number) {
         return {
             ...ds, options: ds.options.map(o => {
                 if (o.uid != uid) {
@@ -61,7 +61,7 @@ export function Voter({ d, setDecision }:
         }
     }
 
-    function setSlider(o: QVBSC.SliderState) {
+    function setSlider(o: QVote.SliderState) {
         const used = getUsed(d);
         const prevVal = Math.abs(intPls(d.options.filter(i => i.uid == o.uid)[0].cur));
         const diff = Math.abs(intPls(o.cur)) - prevVal;
@@ -79,7 +79,7 @@ export function Voter({ d, setDecision }:
         setShowSlider(false);
     }
 
-    function onClickOption(o: QVBSC.SliderState) {
+    function onClickOption(o: QVote.SliderState) {
         setSliderState(o);
         setShowSlider(true);
     }

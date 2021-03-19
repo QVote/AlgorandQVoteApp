@@ -8,6 +8,7 @@ function getVotesFromCredits(c: number) {
 
 
 //my codebase my rules
+// fair enough 
 function intPls(sOrN: string | number): number {
     let resVal = 0;
     if (typeof sOrN == "string") {

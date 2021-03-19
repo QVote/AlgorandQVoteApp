@@ -31,7 +31,7 @@ function decisionValidate(createDS: QVote.Decision) {
 
 function addMinutes(passToConstructor: any, m: number) {
     const res = new Date(passToConstructor);
-    res.setTime(res.getTime() + m * 60 * 1000);
+    res.setTime(res.getTime() + m * 60 * 1000);   // NOTE what's this number? 
     return res;
 }
 
