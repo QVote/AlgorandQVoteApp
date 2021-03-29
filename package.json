@@ -8,7 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@qvote/zilliqa-sdk": "^1.1.4",
+    "@qvote/zilliqa-sdk": "^1.1.6",
+    "@zilliqa-js/zilliqa": "^2.2.1",
     "grommet": "^2.16.3",
     "next": "10.0.8",
     "react": "17.0.1",
