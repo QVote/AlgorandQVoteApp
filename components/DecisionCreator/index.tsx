@@ -261,7 +261,7 @@ export function DecisionCreator({
             <Heading level={responsiveContext == "small" ? "2" : "1"}>
               Options
             </Heading>
-            <Box direction="row" height="33%">
+            <Box direction="row" margin={{bottom:"medium"}}>
               <Keyboard onEnter={onAddNewOption}>
                 <Box fill direction="row">
                   <TextInput
