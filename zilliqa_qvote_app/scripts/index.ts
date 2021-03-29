@@ -21,15 +21,4 @@ function makeStringUniq(s: string) {
     return `${mark}_${s}`
 }
 
-function uniqStringToString(concat: string) {
-    const markIndex = concat.indexOf("_");
-    const mark = concat.substr(0, markIndex + 1);
-    const splitted = concat.split(mark);
-    return [mark, splitted[1]]
-}
-
-function getNumberFromBigNum(n: ethers.BigNumber) {
-    return parseInt(ethers.BigNumber.from(n).toString())
-}
-
-export { concatStrings, unConcatStrings, makeStringUniq, uniqStringToString, getNumberFromBigNum }
+export { concatStrings, unConcatStrings, makeStringUniq }

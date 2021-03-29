@@ -1,14 +1,14 @@
-import { ethers, Contract } from 'ethers'
+// import { ethers, Contract } from 'ethers'
+import { QVoteZilliqa } from '@qvote/zilliqa-sdk';
 import { useEffect, useState } from 'react'
-import { QVBSC } from '../types';
-import { abi } from '../config';
-import { getNumberFromBigNum, uniqStringToString } from '../scripts'
+import { QVote } from '../types';
+// import { getNumberFromBigNum, uniqStringToString } from '../scripts'
 import { useDecisionFromBlockchain } from './useDecisionFromBlockchain';
 
-export const useResults = (qvAddress: string, isAddress: boolean, eth: any, voterAddress: string, setResults: (a: QVBSC.ResultDecision) => any) => {
+export const useResults = (qvAddress: string, isAddress: boolean, zil: any, voterAddress: string, setResults: (a: QVote.ResultDecision) => any) => {
     const [loading, setLoading] = useState(false);
     const [checked, setChecked] = useState(false);
-    const [d, setD] = useState<QVBSC.VotingDecision>()
+    const [d, setD] = useState<QVote.VotingDecision>()
     useDecisionFromBlockchain(qvAddress, isAddress, eth, voterAddress, setD)
 
     useEffect(() => {
@@ -16,8 +16,8 @@ export const useResults = (qvAddress: string, isAddress: boolean, eth: any, vote
             getResults();
         }
     }, [qvAddress, isAddress, d])
-
-    async function getResults() {
+	
+	async function getResults() {
         if (!loading) {
             try {
                 setLoading(true)
@@ -33,15 +33,14 @@ export const useResults = (qvAddress: string, isAddress: boolean, eth: any, vote
             setLoading(false);
         }
         setChecked(true)
-    }
+    } 
 
-    function processResults(res: [string[], any[]], d: QVBSC.VotingDecision) {
+    function processResults(res: [string[], any[]], d: QVote.VotingDecision) {
         const resVotes = res[1];
         const resOptions = res[0].map(ethers.utils.parseBytes32String).map((i, index) => {
             const [uid, optName] = uniqStringToString(i);
-            const op: QVBSC.ResultOption = {
+            const op: QVote.ResultOption = {
                 optName,
-                uid,
                 votes: getNumberFromBigNum(resVotes[index])
             }
             return op;

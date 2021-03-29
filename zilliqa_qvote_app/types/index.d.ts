@@ -17,7 +17,6 @@ export module QVote {
         creditsRemaining: number,
         description: string,
         options: SliderState[],
-        credits: number
     }
 
     export type Decision = {
@@ -29,7 +28,6 @@ export module QVote {
 
     export type ResultOption = {
         optName: string,
-        uid: string,
         votes: number
     }
 

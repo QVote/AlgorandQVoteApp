@@ -2,32 +2,33 @@ import { useEffect, useState, useRef } from 'react';
 
 //I dont like this where are the types!!
 declare global {
-    interface Window { ethereum: any; }
+    interface Window { zilPay: any; }
 }
 
 if (typeof window != 'undefined') {
-    window.ethereum = window.ethereum || undefined;
+    window.zilPay = window.zilPay || undefined;
 }
 
-const ethEnabled = () => {
-    if (typeof window != 'undefined' && (window.ethereum)) {
-        return true;
-    }
-    return false;
+const zilPayEnabled = () => {
+	if (typeof window != 'undefined' && (window.zilPay)) {
+		return true; 
+	}
+	return false; 
 }
 
-export const useEth = () => {
+export const useZilPay= () => {
     const [thereIsAProvider, setThereIsAProvider] = useState(false);
     const [loadingProvider, setLoadingProvider] = useState(true);
-    const eth = useRef(null);
+    const zil = useRef(null);
+
     useEffect(() => {
-        if (ethEnabled()) {
+        if (zilPayEnabled()) {
             setThereIsAProvider(true);
-            eth.current = window.ethereum!!;
+            zil.current = window.zilPay!!;
         } else {
             setThereIsAProvider(false);
         }
         setLoadingProvider(false);
     }, [])
-    return { thereIsAProvider, loadingProvider, eth }
+    return { thereIsAProvider, loadingProvider, zil }
 }
