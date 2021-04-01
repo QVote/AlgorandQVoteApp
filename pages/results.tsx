@@ -2,8 +2,8 @@ import { Text, Box } from 'grommet'
 import { useResults } from '../hooks/useResults'
 import { GlobalContext } from '../components/GlobalContext';
 import { useContext, useState } from 'react';
-import { QVBSC } from '../types';
-import { DecisionPreview } from '../components/DecisionCreator/DecisionPreview';
+// import { QVBSC } from '../types';
+// import { DecisionPreview } from '../components/DecisionCreator/DecisionPreview';
 
 export default function Results() {
     const g = useContext(GlobalContext);
@@ -17,7 +17,7 @@ export default function Results() {
                 { type: "slideLeft", duration: 1000 },
             ]}>
             { typeof results != "undefined" ?
-                <DecisionPreview r={results} />
+               null // <DecisionPreview r={results} />
                 :
                 checkedDecision || !g.isAddress &&
                 <Box align="center" fill="horizontal" >

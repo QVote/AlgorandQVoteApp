@@ -56,6 +56,10 @@ export function getDateTime(milis: number) {
   return { date: date, time: timeString };
 }
 
+export async function sleep(milis: number): Promise<void> {
+  await new Promise<void>((res) => setTimeout(() => res(), milis));
+}
+
 export {
   concatStrings,
   unConcatStrings,

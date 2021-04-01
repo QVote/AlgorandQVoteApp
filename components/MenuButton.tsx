@@ -7,10 +7,12 @@ const _LOGO_WEAK = "#666666";
 
 export function MenuButton({
   txt,
+  txtColor,
   IconToDisp,
   onClick,
   isCurrent,
 }: {
+  txtColor?: string;
   txt: string;
   IconToDisp?: Icon;
   onClick: () => void | Promise<void>;
@@ -38,7 +40,9 @@ export function MenuButton({
             <Text
               weight={IconToDisp ? "normal" : "bold"}
               size={IconToDisp ? "xsmall" : "small"}
-              color={isCurrent ? _LOGO_STRONG : _LOGO_WEAK}
+              color={
+                txtColor ? txtColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
+              }
             >
               {txt}
             </Text>

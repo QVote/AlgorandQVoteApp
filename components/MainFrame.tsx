@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import { Box, ResponsiveContext, Button, Text } from "grommet";
 import { useRouter } from "next/router";
 import { Add, List, Close, Icon, FormEdit } from "grommet-icons";
 import { QVoteLogo } from "./QVoteLogo";
 import { MenuButton } from "./MenuButton";
+import { BlockchainInfo, BLOCKCHAINS } from "../config";
 
 const _COMPANY_SITE = "https://qvote.co.uk";
 
@@ -16,12 +17,69 @@ const PATHS = {
   results: "/results",
 };
 
+export const MainFrameContext = createContext<{
+  curAcc: string | undefined;
+  connected: boolean;
+  blockchainInfo: BlockchainInfo
+}>({
+  curAcc: undefined,
+  connected: false,
+  blockchainInfo: BLOCKCHAINS.private
+});
+
 export function MainFrame({ children }: { children: JSX.Element }) {
   const router = useRouter();
+  const [curAcc, setCurAcc] = useState<string | undefined>();
+  const [blockchainInfo, setBlockchainInfo] = useState<BlockchainInfo>();
+  const [connected, setConnected] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   async function onGoTo(path: string) {
     await router.push(path);
   }
+
+  useEffect(() => {
+    if (curAcc) {
+      setConnected(true);
+    } else {
+      setConnected(false);
+    }
+    setLoading(false);
+  }, [curAcc]);
+
+  function setNet(net: string) {
+    if (Object.keys(BLOCKCHAINS).includes(net)) {
+      setBlockchainInfo(BLOCKCHAINS[net]);
+    } else {
+      setBlockchainInfo(BLOCKCHAINS.private);
+    }
+  }
+
+  async function connect():Promise<boolean> {
+    return window.zilPay.wallet.connect()
+  }
+
+  async function onStart() {
+    if (window.zilPay) {
+      const isConnect = await connect();
+      if (isConnect) {
+        setCurAcc(window.zilPay.wallet.defaultAccount.base16);
+        window.zilPay.wallet.observableAccount().subscribe((account) => {
+          setCurAcc(account.base16);
+        });
+        setNet(window.zilPay.wallet.net);
+        window.zilPay.wallet
+          .observableNetwork()
+          .subscribe((net: "mainnet" | "testnet" | "private") => setNet(net));
+      } else {
+        setConnected(false);
+      }
+    }
+  }
+
+  useEffect(() => {
+    onStart();
+  }, []);
 
   return (
     <Box
@@ -83,13 +141,16 @@ export function MainFrame({ children }: { children: JSX.Element }) {
         </Box>
         <Box width="30%" direction="row" align="center" justify="end">
           <MenuButton
-            txt={"Connect to Wallet"}
-            onClick={() => console.log("yeet")}
+            txtColor={connected ? "status-ok" : undefined}
+            txt={loading ? "" : connected ? "Connected" : "Connect to Wallet"}
+            onClick={() => onStart()}
             isCurrent={false}
           />
         </Box>
       </Box>
-      {children}
+      <MainFrameContext.Provider value={{ connected, curAcc, blockchainInfo }}>
+        {children}
+      </MainFrameContext.Provider>
     </Box>
   );
 }

@@ -23,6 +23,7 @@ export module QVote {
         name: string,
         description: string,
         options: Option[],
+        registerEndTime: number,
         endTime: number
     }
 

@@ -10,16 +10,19 @@ import {
   Text,
   ResponsiveContext,
 } from "grommet";
-import { DecisionPreview } from "./DecisionPreview";
 import { v4 as uuidv4 } from "uuid";
 import { DateTimeDrop } from "../DateTimeDrop";
 import { decisionValidate } from "./script";
 import { GlobalContext } from "../GlobalContext";
-import { CopyOnly } from "../WithMetamask/CopyOnly";
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { ScrollBox } from "../ScrollBox";
 import { Checkmark } from "grommet-icons";
-import { areOptionsUnique, getDateTime } from "../../scripts";
+import { areOptionsUnique, sleep } from "../../scripts";
+import { Zilliqa } from "@zilliqa-js/zilliqa";
+import { Contract } from "@zilliqa-js/contract";
+import { Transaction } from "@zilliqa-js/account";
+import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
+import { BLOCKCHAINS } from "../../config";
+import { useMainContext } from "../../hooks/useMainContext";
 
 export function DecisionCreator({
   initDecision,
@@ -27,6 +30,7 @@ export function DecisionCreator({
   initDecision: QVote.Decision;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
+  const main = useMainContext();
   const [decision, setDecision] = useState(initDecision);
   const [isAddOption, setIsAddOption] = useState(true);
   const [tempOption, setTempOption] = useState("");
@@ -103,48 +107,43 @@ export function DecisionCreator({
     return { date: date, time: timeString };
   }
 
+  function onChangeRegisterEndTime(time: number) {
+    updateDecision({ ...decision, registerEndTime: time });
+  }
+
   function onChangeEndTime(time: number) {
     updateDecision({ ...decision, endTime: time });
   }
 
-  function onDeleteOption(o: QVote.Option) {
-    const newOptions = decision.options.filter((x) => x.uid != o.uid);
-    updateDecision({ ...decision, options: newOptions });
+  // function onDeleteOption(o: QVote.Option) {
+  //   const newOptions = decision.options.filter((x) => x.uid != o.uid);
+  //   updateDecision({ ...decision, options: newOptions });
+  // }
+
+  async function retryLoop(
+    maxRetries: number,
+    intervalMs: number,
+    func: () => Promise<{ shouldRetry: boolean; res: any }>
+  ): Promise<any> {
+    let err = {};
+    for (let x = 0; x < maxRetries; x++) {
+      await sleep(x * intervalMs);
+      try {
+        const temp = await func();
+        if (!temp.shouldRetry) {
+          return temp.res;
+        }
+      } catch (e) {
+        console.error(e);
+        continue;
+      }
+    }
+    throw new Error("Function didnt manage to run in time");
   }
 
-  /*async function onDeployOLD() {
-        if (!loading && decisionValid) {
-            try {
-                setLoading(true);
-                setSuccess(["", ""]);
-                setDeployingToTxt("");
-                setErrTxt("");
-                const provider = new ethers.providers.Web3Provider(g.eth.current)
-                const factory = new ContractFactory(abi, bytecode, provider.getSigner());
-                const payload: [string, string, string[], number] = [
-                    "QVote",
-                    concatStrings(decision.name, decision.description),
-                    decision.options.map(o => {
-                        const uniqOption = makeStringUniq(o.optName);
-                        return ethers.utils.formatBytes32String(uniqOption)
-                    }),
-                    Math.round(decision.endTime / (1000 * 60))
-                ]
-                const contract = await factory.deploy(...payload);
-                setIsDeploying(true);
-                setDeployingToTxt(`Deploying to: ${contract.address} ...`);
-                const receipt = await contract.deployTransaction.wait();
-                if (receipt.status == 1) {
-                    setSuccess(["Success! QVote address:", contract.address])
-                    g.setQvoteAddress(contract.address)
-                }
-                setLoading(false);
-            } catch (e) {
-                setLoading(false);
-                setErrTxt(e.message);
-            }
-        }
-    }*/
+  function isSuccess(receipt: any): boolean {
+    return receipt.success;
+  }
 
   async function onDeploy() {
     if (!loading && decisionValid) {
@@ -152,24 +151,25 @@ export function DecisionCreator({
         setLoading(true);
         setSuccess(["", ""]);
         setDeployingToTxt("");
+        setIsDeploying(true);
         setErrTxt("");
-        const qv = new QVoteZilliqa();
-        const isConnected = await window.zilPay.connect();
-        if (!isConnected) {
-          throw new Error("user rejected");
-        }
-        const zil = window.zilPay;
-        // set up config
-        const txblock = await zil.blockchain.getLatestTxBlock();
+
+        const zilPay = window.zilPay;
+        const zilPayContractApi = zilPay.contracts;
+        const zilPayBlockchainApi = zilPay.blockchain;
+
+        // Do zilliqa sdk stuff
+        const txblock = await zilPayBlockchainApi.getLatestTxBlock();
         const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
+        console.log(main.blockchainInfo.protocol);
+        const qv = new QVoteZilliqa(null, main.blockchainInfo.protocol);
         const gasPrice = await qv.handleMinGas(
-          zil.blockchain.getMinimumGasPrice()
+          zilPayBlockchainApi.getMinimumGasPrice()
         );
 
-        // zil.wallet.setDefault(deployerAddress);    // this should be taken care of by zilpay
-        // TODO could set this by subscribing to the event (check zilpay api)
-        const deployerAddress = zil.wallet.defaultAccount.base16;
-        const contract = zil.contracts.new(
+        // *******************************************************
+
+        const contract = zilPayContractApi.new(
           ...qv.payloadQv({
             payload: {
               name: "Test hi",
@@ -177,7 +177,6 @@ export function DecisionCreator({
               options: ["opt1", "opt2", "opt3", "opt4"],
               creditToTokenRatio: "1000",
               //can register for next 0 min
-              // TODO make times variable
               registrationEndTime: qv.futureTxBlockNumber(
                 curBlockNumber,
                 60 * 0
@@ -186,20 +185,33 @@ export function DecisionCreator({
               expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * 15),
               tokenId: "DogeCoinZilToken",
             },
-            ownerAddress: deployerAddress,
+            ownerAddress: main.curAcc,
           })
         );
-
-        setIsDeploying(true);
-        setDeployingToTxt(`Deploying to: ${contract.address} ...`);
-        const [qvotingAddress, instance, deployTx] = await qv.handleDeploy(
-          contract.deploy(...qv.payloadDeploy({ gasPrice }))
+        const [params, attempts, interval] = qv.payloadDeploy({ gasPrice });
+        console.log(contract, { params, attempts, interval });
+        const [tx, contractInstance] = await contract.deploy(
+          params,
+          attempts,
+          interval
         );
-        setSuccess(["Success! QVote address:", contract.address]);
-        g.setQvoteAddress(contract.address);
+        //RETRY UNTIL WE HAVE A RECEIPT
+        const receipt = await retryLoop(15, 5000, async () => {
+          const resTx = await zilPayBlockchainApi.getTransaction(tx.ID);
+          if (resTx.receipt) {
+            return { res: resTx.receipt, shouldRetry: false };
+          }
+          return { res: undefined, shouldRetry: true };
+        });
+        console.log({ receipt });
+        if (isSuccess(receipt)) {
+          console.log(contractInstance.address);
+        }
+        //setSuccess(["Success! QVote address:", contract.address]);
+        //g.setQvoteAddress(contractInstance.address);
         setLoading(false);
-        console.log(qvotingAddress);
       } catch (e) {
+        console.error(e);
         setLoading(false);
         setErrTxt(e.message);
       }
@@ -241,8 +253,8 @@ export function DecisionCreator({
               />
               <DateTimeDrop
                 placeholder="Register by:"
-                dt={getDateTime(decision.endTime)}
-                onChange={(v) => onChangeEndTime(v)}
+                dt={getDateTime(decision.registerEndTime)}
+                onChange={(v) => onChangeRegisterEndTime(v)}
               />
               <DateTimeDrop
                 placeholder="Start on:"
@@ -261,7 +273,7 @@ export function DecisionCreator({
             <Heading level={responsiveContext == "small" ? "2" : "1"}>
               Options
             </Heading>
-            <Box direction="row" margin={{bottom:"medium"}}>
+            <Box direction="row" margin={{ bottom: "medium" }}>
               <Keyboard onEnter={onAddNewOption}>
                 <Box fill direction="row">
                   <TextInput
@@ -313,61 +325,11 @@ export function DecisionCreator({
             <Button
               disabled={loading || !decisionValid}
               label={"Deploy"}
-              onClick={onDeploy}
+              onClick={() => onDeploy()}
             />
           </Box>
         </Box>
       </Box>
-      {/* <Box flex round="small" pad="medium" gap="small">
-      <TextInput
-        placeholder="Name"
-        value={decision.name}
-        maxLength={100}
-        onChange={(e) => onChangeName(e.target.value)}
-      />
-      <TextArea
-        placeholder="Details"
-        value={decision.description}
-        resize="vertical"
-        maxLength={100}
-        onChange={(e) => onChangeDescription(e.target.value)}
-      />
-      <DateTimeDrop
-        placeholder="End time"
-        dt={getDateTime(decision.endTime)}
-        onChange={(v) => onChangeEndTime(v)}
-      />
-      <Keyboard onEnter={onAddNewOption}>
-        <Box align="start">
-          {isAddOption ? (
-            <Box fill gap="small">
-              <TextInput
-                placeholder="Option Name"
-                value={tempOption}
-                onChange={(e) => setTempOption(e.target.value)}
-                maxLength={26}
-              />
-              <Box align="start">
-                <Button
-                  disabled={!canAddOption()}
-                  label={"Confirm"}
-                  onClick={onAddNewOption}
-                />
-              </Box>
-            </Box>
-          ) : (
-            <Button label={"Add option"} onClick={() => setIsAddOption(true)} />
-          )}
-        </Box>
-      </Keyboard>
-      <Box align="start">
-        <Button
-          disabled={loading || !decisionValid}
-          label={"Deploy"}
-          onClick={onDeploy}
-        />
-      </Box>
-    </Box> */}
     </Box>
   );
 }
