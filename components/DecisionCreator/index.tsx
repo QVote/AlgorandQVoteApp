@@ -1,5 +1,5 @@
 import { QVote } from "../../types";
-import { useState, useContext, useRef } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import {
   Box,
   TextInput,
@@ -21,6 +21,7 @@ import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { Contract } from "@zilliqa-js/contract";
 import { Transaction } from "@zilliqa-js/account";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
+import Cookie from "js-cookie";
 import { BLOCKCHAINS } from "../../config";
 import { useMainContext } from "../../hooks/useMainContext";
 
@@ -43,7 +44,6 @@ export function DecisionCreator({
   const [success, setSuccess] = useState<[string, string]>(["", ""]);
   const [errTxt, setErrTxt] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
-  const g = useContext(GlobalContext);
   const lastOption = useRef(null);
 
   const canAddOption = () =>
@@ -125,7 +125,6 @@ export function DecisionCreator({
     intervalMs: number,
     func: () => Promise<{ shouldRetry: boolean; res: any }>
   ): Promise<any> {
-    let err = {};
     for (let x = 0; x < maxRetries; x++) {
       await sleep(x * intervalMs);
       try {
@@ -205,7 +204,7 @@ export function DecisionCreator({
         });
         console.log({ receipt });
         if (isSuccess(receipt)) {
-          console.log(contractInstance.address);
+          main.contractAddressses.pushAddress(contractInstance.address);
         }
         //setSuccess(["Success! QVote address:", contract.address]);
         //g.setQvoteAddress(contractInstance.address);

@@ -60,6 +60,19 @@ export async function sleep(milis: number): Promise<void> {
   await new Promise<void>((res) => setTimeout(() => res(), milis));
 }
 
+export function onCopy(toCopy:string) {
+  const x = document.createElement("INPUT");
+  x.setAttribute("type", "text");
+  x.setAttribute("value", toCopy);
+  // @ts-ignore it works it is a txt input
+  x.select();
+  // @ts-ignore
+  x.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  // @ts-ignore 
+  navigator.clipboard.writeText(toCopy);
+}
+
 export {
   concatStrings,
   unConcatStrings,

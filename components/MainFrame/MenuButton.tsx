@@ -9,6 +9,7 @@ export function MenuButton({
   txt,
   txtColor,
   IconToDisp,
+  iconColor,
   onClick,
   isCurrent,
 }: {
@@ -17,6 +18,7 @@ export function MenuButton({
   IconToDisp?: Icon;
   onClick: () => void | Promise<void>;
   isCurrent: boolean;
+  iconColor?: string;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
 
@@ -34,7 +36,11 @@ export function MenuButton({
           }}
         >
           {IconToDisp && (
-            <IconToDisp color={isCurrent ? _LOGO_STRONG : _LOGO_WEAK} />
+            <IconToDisp
+              color={
+                iconColor ? iconColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
+              }
+            />
           )}
           {(responsiveContext != "small" || !IconToDisp) && (
             <Text
