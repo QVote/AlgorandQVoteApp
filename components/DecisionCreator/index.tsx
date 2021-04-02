@@ -1,5 +1,5 @@
 import { QVote } from "../../types";
-import { useState, useContext, useRef, useEffect } from "react";
+import { useState, useContext, useRef } from "react";
 import {
   Box,
   TextInput,
@@ -14,7 +14,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate } from "../../scripts";
 import { ScrollBox } from "../ScrollBox";
-import { Checkmark, Money, Clock, InProgress, Scorecard } from "grommet-icons";
+import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { areOptionsUnique, sleep } from "../../scripts";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../../hooks/useMainContext";
@@ -106,10 +106,10 @@ export function DecisionCreator({
     }
   }
 
-  // function onDeleteOption(o: QVote.Option) {
-  //   const newOptions = decision.options.filter((x) => x.uid != o.uid);
-  //   updateDecision({ ...decision, options: newOptions });
-  // }
+  function onDeleteOption(o: QVote.Option) {
+    const newOptions = decision.options.filter((x) => x.uid != o.uid);
+    updateDecision({ ...decision, options: newOptions });
+  }
 
   async function retryLoop(
     maxRetries: number,
@@ -213,9 +213,7 @@ export function DecisionCreator({
         <TwoCards
           Card1={
             <Box fill>
-              <Heading level={responsiveContext == "small" ? "2" : "1"}>
-                Details
-              </Heading>
+              <RHeading {...{ responsiveContext, txt: "Details" }} />
               <Box fill gap="small">
                 <TextInput
                   placeholder="Name"
@@ -238,10 +236,12 @@ export function DecisionCreator({
           }
           Card2={
             <Box fill>
-              <Heading level={responsiveContext == "small" ? "2" : "1"}>
-                Options
-              </Heading>
-              <Box direction="row" margin={{ bottom: "medium" }}>
+              <RHeading {...{ responsiveContext, txt: "Options" }} />
+              <Box
+                direction="row"
+                margin={{ bottom: "small" }}
+                height={{ min: "xxsmall" }}
+              >
                 <Keyboard onEnter={onAddNewOption}>
                   <Box fill direction="row" gap="small">
                     <Box fill>
@@ -263,8 +263,7 @@ export function DecisionCreator({
                     </Box>
                     <Box align="center" justify="center" height="xxsmall">
                       <Button
-                        size="small"
-                        label={"Add"}
+                        icon={<Add />}
                         disabled={!isTempOptionValid}
                         onClick={onAddNewOption}
                       />
@@ -272,11 +271,11 @@ export function DecisionCreator({
                   </Box>
                 </Keyboard>
               </Box>
-              <ScrollBox props={{ pad: "small" }}>
+              <ScrollBox props={{ gap: "small" }}>
                 {decision.options.map((o, i) => {
                   return (
                     <Box
-                      height={{ min: "30px" }}
+                      height={{ min: "50px" }}
                       justify="center"
                       key={`option${o.optName}`}
                       ref={lastOption}
@@ -284,10 +283,19 @@ export function DecisionCreator({
                       pad={{ left: "small" }}
                       background="white"
                       round="xsmall"
+                      direction="row"
                     >
-                      <Text truncate size="small">
-                        {`${i + 1}. ${o.optName}`}
-                      </Text>
+                      <Box fill justify="center">
+                        <Text truncate size="small">
+                          {`${i + 1}. ${o.optName}`}
+                        </Text>
+                      </Box>
+                      <Box align="center" justify="center">
+                        <Button
+                          onClick={() => onDeleteOption(o)}
+                          icon={<Trash />}
+                        />
+                      </Box>
                     </Box>
                   );
                 })}
@@ -322,9 +330,7 @@ export function DecisionCreator({
         <TwoCards
           Card1={
             <Box fill>
-              <Heading level={responsiveContext == "small" ? "2" : "1"}>
-                Time
-              </Heading>
+              <RHeading {...{ responsiveContext, txt: "Time" }} />
               <Box fill gap="small">
                 <Text>Registration open:</Text>
                 <TextInput
@@ -349,9 +355,7 @@ export function DecisionCreator({
           }
           Card2={
             <Box fill>
-              <Heading level={responsiveContext == "small" ? "2" : "1"}>
-                Tokens
-              </Heading>
+              <RHeading {...{ responsiveContext, txt: "Tokens" }} />
               <Box fill gap="small">
                 <Text>Credit to token ratio</Text>
                 <TextInput
@@ -397,6 +401,18 @@ export function DecisionCreator({
         />
       )}
     </Box>
+  );
+}
+
+function RHeading({
+  txt,
+  responsiveContext,
+}: {
+  txt: string;
+  responsiveContext: string;
+}) {
+  return (
+    <Heading level={responsiveContext == "small" ? "2" : "1"}>{txt}</Heading>
   );
 }
 
