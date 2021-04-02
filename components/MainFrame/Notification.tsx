@@ -1,7 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from "react";
 import type { MutableRefObject } from "react";
 import { Layer, Box, Text, Button } from "grommet";
-import { StatusGood, FormClose } from "grommet-icons";
+import { StatusGood, Close } from "grommet-icons";
 
 export type NotificationHandle = {
   onShowNotification: (txt: string) => void;
@@ -58,7 +58,7 @@ function NotificationComp(
           </Text>
         </Box>
         <Button
-          icon={<FormClose color="white" size="small" />}
+          icon={<Close color="white" size="small" />}
           onClick={onCloseShowNotification}
           plain
         />

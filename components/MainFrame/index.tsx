@@ -6,6 +6,7 @@ import { MenuBar } from "./MenuBar";
 import { useContractAddresses } from "../../hooks/useContractAddresses";
 import { MainFrameContext } from "./MainFrameContext";
 import { Notification, NotificationHandle } from "./Notification";
+import { LongNotification, LongNotificationHandle } from "./LongNotification";
 
 export { MainFrameContext };
 
@@ -19,6 +20,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   const [loading, setLoading] = useState<boolean>(true);
   const contractAddressses = useContractAddresses(blockchainInfo);
   const notificationRef = useRef<NotificationHandle>();
+  const longNotificationRef = useRef<LongNotificationHandle>();
 
   useEffect(() => {
     if (curAcc) {
@@ -90,6 +92,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
         />
         {children}
         <Notification ref={notificationRef} />
+        <LongNotification ref={longNotificationRef} />
       </MainFrameContext.Provider>
     </Box>
   );

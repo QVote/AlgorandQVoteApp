@@ -165,10 +165,10 @@ export function DecisionCreator({
               //can register for next 0 min
               registrationEndTime: qv.futureTxBlockNumber(
                 curBlockNumber,
-                60 * 0
+                60 * decision.registerEndTime
               ),
               //can vote in 0 min and voting is open for 15 min
-              expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * 15),
+              expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * decision.endTime),
               tokenId: decision.tokenId,
             },
             ownerAddress: main.curAcc,
