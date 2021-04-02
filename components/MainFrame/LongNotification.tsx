@@ -11,6 +11,9 @@ import { StatusGood, Close, StatusCritical, StatusInfo } from "grommet-icons";
 export type LongNotificationHandle = {
   onShowNotification: (txt: string) => void;
   onCloseShowNotification: () => void;
+  setLoading: () => void;
+  setSuccess: () => void;
+  setError: () => void;
 };
 
 type NotificationTypes = {
@@ -98,7 +101,7 @@ function LongNotificationComp(
         {custom.type == "error" && <StatusCritical color={custom.txtColor} />}
         <Box align="center" direction="row" gap="xsmall" width="100%">
           <Text textAlign="center" size="small" color={custom.txtColor}>
-            {"Sending the transaction to shard"}
+            {txt}
           </Text>
         </Box>
         <Button

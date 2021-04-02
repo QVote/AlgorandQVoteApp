@@ -12,6 +12,7 @@ export function MenuButton({
   iconColor,
   onClick,
   isCurrent,
+  spin,
 }: {
   txtColor?: string;
   txt: string;
@@ -19,11 +20,12 @@ export function MenuButton({
   onClick: () => void | Promise<void>;
   isCurrent: boolean;
   iconColor?: string;
+  spin?: boolean;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
 
   return (
-    <Box height="7vh" width={IconToDisp ? "9vw" : "25vw"}>
+    <Box height="7vh" width={IconToDisp ? "10vw" : "25vw"}>
       <Button fill plain onClick={onClick}>
         <Box
           fill
@@ -36,11 +38,13 @@ export function MenuButton({
           }}
         >
           {IconToDisp && (
-            <IconToDisp
-              color={
-                iconColor ? iconColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
-              }
-            />
+            <Box animation={spin ? "rotateRight" : null}>
+              <IconToDisp
+                color={
+                  iconColor ? iconColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
+                }
+              />
+            </Box>
           )}
           {(responsiveContext != "small" || !IconToDisp) && (
             <Text

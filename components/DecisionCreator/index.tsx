@@ -116,7 +116,7 @@ export function DecisionCreator({
     intervalMs: number,
     func: () => Promise<{ shouldRetry: boolean; res: any }>
   ): Promise<any> {
-    for (let x = 0; x < maxRetries; x++) {
+    for (let x = 1; x < maxRetries+1; x++) {
       await sleep(x * intervalMs);
       try {
         const temp = await func();
@@ -139,11 +139,9 @@ export function DecisionCreator({
     if (!loading && decisionValid.isValid) {
       try {
         setLoading(true);
-
         const zilPay = window.zilPay;
         const zilPayContractApi = zilPay.contracts;
         const zilPayBlockchainApi = zilPay.blockchain;
-
         // Do zilliqa sdk stuff
         const txblock = await zilPayBlockchainApi.getLatestTxBlock();
         const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
@@ -152,9 +150,7 @@ export function DecisionCreator({
         const gasPrice = await qv.handleMinGas(
           zilPayBlockchainApi.getMinimumGasPrice()
         );
-
         // *******************************************************
-
         const contract = zilPayContractApi.new(
           ...qv.payloadQv({
             payload: {
@@ -168,7 +164,10 @@ export function DecisionCreator({
                 60 * decision.registerEndTime
               ),
               //can vote in 0 min and voting is open for 15 min
-              expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * decision.endTime),
+              expirationBlock: qv.futureTxBlockNumber(
+                curBlockNumber,
+                60 * decision.endTime
+              ),
               tokenId: decision.tokenId,
             },
             ownerAddress: main.curAcc,
@@ -181,23 +180,56 @@ export function DecisionCreator({
           attempts,
           interval
         );
-        //RETRY UNTIL WE HAVE A RECEIPT
-        const receipt = await retryLoop(15, 5000, async () => {
-          const resTx = await zilPayBlockchainApi.getTransaction(tx.ID);
-          if (resTx.receipt) {
-            return { res: resTx.receipt, shouldRetry: false };
-          }
-          return { res: undefined, shouldRetry: true };
-        });
-        console.log({ receipt });
-        if (isSuccess(receipt)) {
-          main.contractAddressses.pushAddress(contractInstance.address);
-        }
+        main.jobsScheduler.runJob(
+          {
+            id: tx.ID,
+            name: `Deploy Transaction: ${tx.ID}`,
+            status: "waiting",
+            details:
+              "Asking the blockchain for the confirmation of the deploy transaction",
+          },
+          async () => {
+            //RETRY UNTIL WE HAVE A RECEIPT
+            const receipt = await retryLoop(15, 5000, async () => {
+              const resTx = await zilPayBlockchainApi.getTransaction(tx.ID);
+              if (resTx.receipt) {
+                return { res: resTx.receipt, shouldRetry: false };
+              }
+              return { res: undefined, shouldRetry: true };
+            });
+            console.log({ receipt });
+            if (isSuccess(receipt)) {
+              main.contractAddressses.pushAddress(contractInstance.address);
+              main.longNotification.current.setSuccess();
+              main.longNotification.current.onShowNotification(
+                "Success. QVote decision deployed!"
+              );
+            } else {
+              dispError();
+            }
+          },
+          dispError
+        );
+        main.longNotification.current.setLoading();
+        main.longNotification.current.onShowNotification(
+          "Waiting for transaction confirmation..."
+        );
         setLoading(false);
       } catch (e) {
         console.error(e);
         setLoading(false);
       }
+    }
+  }
+
+  async function dispError(err?:any) {
+    try {
+      main.longNotification.current.setError();
+      main.longNotification.current.onShowNotification(
+        "Failed to deploy!"
+      );
+    } catch(e) {
+      console.error(e);
     }
   }
 

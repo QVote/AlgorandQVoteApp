@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { BlockchainInfo, BLOCKCHAINS } from "../../config";
 import { MenuBar } from "./MenuBar";
 import { useContractAddresses } from "../../hooks/useContractAddresses";
+import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
 import { Notification, NotificationHandle } from "./Notification";
 import { LongNotification, LongNotificationHandle } from "./LongNotification";
@@ -19,6 +20,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   const [connected, setConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const contractAddressses = useContractAddresses(blockchainInfo);
+  const jobsScheduler = useJobScheduler(blockchainInfo);
   const notificationRef = useRef<NotificationHandle>();
   const longNotificationRef = useRef<LongNotificationHandle>();
 
@@ -80,6 +82,8 @@ export function MainFrame({ children }: { children: JSX.Element }) {
           blockchainInfo,
           contractAddressses,
           notification: notificationRef,
+          jobsScheduler,
+          longNotification: longNotificationRef,
         }}
       >
         <MenuBar
