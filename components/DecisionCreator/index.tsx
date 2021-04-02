@@ -9,20 +9,14 @@ import {
   Keyboard,
   Text,
   ResponsiveContext,
+  BoxProps,
 } from "grommet";
 import { v4 as uuidv4 } from "uuid";
-import { DateTimeDrop } from "../DateTimeDrop";
-import { decisionValidate } from "./script";
-import { GlobalContext } from "../GlobalContext";
+import { decisionValidate } from "../../scripts";
 import { ScrollBox } from "../ScrollBox";
-import { Checkmark } from "grommet-icons";
+import { Checkmark, Money, Clock, InProgress, Scorecard } from "grommet-icons";
 import { areOptionsUnique, sleep } from "../../scripts";
-import { Zilliqa } from "@zilliqa-js/zilliqa";
-import { Contract } from "@zilliqa-js/contract";
-import { Transaction } from "@zilliqa-js/account";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
-import Cookie from "js-cookie";
-import { BLOCKCHAINS } from "../../config";
 import { useMainContext } from "../../hooks/useMainContext";
 
 export function DecisionCreator({
@@ -33,18 +27,14 @@ export function DecisionCreator({
   const responsiveContext = useContext(ResponsiveContext);
   const main = useMainContext();
   const [decision, setDecision] = useState(initDecision);
-  const [isAddOption, setIsAddOption] = useState(true);
   const [tempOption, setTempOption] = useState("");
   const [isTempOptionValid, setIsTempOptionValid] = useState(false);
   const [decisionValid, setDecisionValid] = useState(
     decisionValidate(initDecision)
   );
   const [loading, setLoading] = useState(false);
-  const [deployingToTxt, setDeployingToTxt] = useState("");
-  const [success, setSuccess] = useState<[string, string]>(["", ""]);
-  const [errTxt, setErrTxt] = useState("");
-  const [isDeploying, setIsDeploying] = useState(false);
   const lastOption = useRef(null);
+  const [nextCard, setNextCard] = useState(false);
 
   const canAddOption = () =>
     tempOption != "" && areOptionsUnique(decision.options);
@@ -85,34 +75,35 @@ export function DecisionCreator({
       }
     }
   }
-
-  function getDateTime(milis: number) {
-    const date = new Date(milis);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    let pmOrAm = "";
-    if (hours > 12) {
-      hours = hours % 12;
-      pmOrAm = "pm";
-    } else {
-      pmOrAm = "am";
+  function onChangeRegisterEndTime(time: string) {
+    const registerEndTime = parseInt(time);
+    if (Number.isInteger(registerEndTime)) {
+      if (registerEndTime >= 0) {
+        updateDecision({ ...decision, registerEndTime });
+      }
     }
-    let timeString = "";
-    if (minutes < 10) {
-      timeString = `${hours}:0${minutes} ${pmOrAm}`;
-    } else {
-      timeString = `${hours}:${minutes} ${pmOrAm}`;
-    }
-
-    return { date: date, time: timeString };
   }
 
-  function onChangeRegisterEndTime(time: number) {
-    updateDecision({ ...decision, registerEndTime: time });
+  function onChangeEndTime(time: string) {
+    const endTime = parseInt(time);
+    if (Number.isInteger(endTime)) {
+      if (endTime > 0) {
+        updateDecision({ ...decision, endTime });
+      }
+    }
   }
 
-  function onChangeEndTime(time: number) {
-    updateDecision({ ...decision, endTime: time });
+  function onChangeTokenId(tokenId: string) {
+    updateDecision({ ...decision, tokenId });
+  }
+
+  function onChangeCreditToTokenRatio(creditToTokenRatio: string) {
+    const ratio = parseInt(creditToTokenRatio);
+    if (Number.isInteger(ratio)) {
+      if (10000 > ratio && ratio > 0) {
+        updateDecision({ ...decision, creditToTokenRatio });
+      }
+    }
   }
 
   // function onDeleteOption(o: QVote.Option) {
@@ -145,13 +136,9 @@ export function DecisionCreator({
   }
 
   async function onDeploy() {
-    if (!loading && decisionValid) {
+    if (!loading && decisionValid.isValid) {
       try {
         setLoading(true);
-        setSuccess(["", ""]);
-        setDeployingToTxt("");
-        setIsDeploying(true);
-        setErrTxt("");
 
         const zilPay = window.zilPay;
         const zilPayContractApi = zilPay.contracts;
@@ -171,10 +158,10 @@ export function DecisionCreator({
         const contract = zilPayContractApi.new(
           ...qv.payloadQv({
             payload: {
-              name: "Test hi",
-              description: "Hello hi",
-              options: ["opt1", "opt2", "opt3", "opt4"],
-              creditToTokenRatio: "1000",
+              name: decision.name,
+              description: decision.description,
+              options: decision.options.map((o) => o.optName),
+              creditToTokenRatio: decision.creditToTokenRatio,
               //can register for next 0 min
               registrationEndTime: qv.futureTxBlockNumber(
                 curBlockNumber,
@@ -182,7 +169,7 @@ export function DecisionCreator({
               ),
               //can vote in 0 min and voting is open for 15 min
               expirationBlock: qv.futureTxBlockNumber(curBlockNumber, 60 * 15),
-              tokenId: "DogeCoinZilToken",
+              tokenId: decision.tokenId,
             },
             ownerAddress: main.curAcc,
           })
@@ -206,13 +193,10 @@ export function DecisionCreator({
         if (isSuccess(receipt)) {
           main.contractAddressses.pushAddress(contractInstance.address);
         }
-        //setSuccess(["Success! QVote address:", contract.address]);
-        //g.setQvoteAddress(contractInstance.address);
         setLoading(false);
       } catch (e) {
         console.error(e);
         setLoading(false);
-        setErrTxt(e.message);
       }
     }
   }
@@ -220,115 +204,231 @@ export function DecisionCreator({
   return (
     <Box
       fill
-      animation={[{ type: "fadeIn", duration: 500 }]}
       align="center"
       justify="center"
       pad="large"
+      animation={[{ type: "fadeIn", duration: 500 }]}
     >
-      <Box fill background="white" round="xsmall">
-        <Box
-          fill
-          pad="medium"
-          direction={responsiveContext == "small" ? "column" : "row"}
+      {!nextCard ? (
+        <TwoCards
+          Card1={
+            <Box fill>
+              <Heading level={responsiveContext == "small" ? "2" : "1"}>
+                Details
+              </Heading>
+              <Box fill gap="small">
+                <TextInput
+                  placeholder="Name"
+                  size="small"
+                  value={decision.name}
+                  maxLength={100}
+                  onChange={(e) => onChangeName(e.target.value)}
+                />
+                <TextArea
+                  resize={false}
+                  fill
+                  placeholder="Details"
+                  size="small"
+                  value={decision.description}
+                  maxLength={100}
+                  onChange={(e) => onChangeDescription(e.target.value)}
+                />
+              </Box>
+            </Box>
+          }
+          Card2={
+            <Box fill>
+              <Heading level={responsiveContext == "small" ? "2" : "1"}>
+                Options
+              </Heading>
+              <Box direction="row" margin={{ bottom: "medium" }}>
+                <Keyboard onEnter={onAddNewOption}>
+                  <Box fill direction="row" gap="small">
+                    <Box fill>
+                      <TextInput
+                        placeholder="Option Name"
+                        size="small"
+                        value={tempOption}
+                        onChange={(e) => {
+                          setTempOption(e.target.value);
+                          setIsTempOptionValid(
+                            areOptionsUnique([
+                              ...decision.options,
+                              { optName: e.target.value, uid: "tempOP" },
+                            ])
+                          );
+                        }}
+                        maxLength={26}
+                      />
+                    </Box>
+                    <Box align="center" justify="center" height="xxsmall">
+                      <Button
+                        size="small"
+                        label={"Add"}
+                        disabled={!isTempOptionValid}
+                        onClick={onAddNewOption}
+                      />
+                    </Box>
+                  </Box>
+                </Keyboard>
+              </Box>
+              <ScrollBox props={{ pad: "small" }}>
+                {decision.options.map((o, i) => {
+                  return (
+                    <Box
+                      height={{ min: "30px" }}
+                      justify="center"
+                      key={`option${o.optName}`}
+                      ref={lastOption}
+                      margin={{ bottom: "small" }}
+                      pad={{ left: "small" }}
+                      background="white"
+                      round="xsmall"
+                    >
+                      <Text truncate size="small">
+                        {`${i + 1}. ${o.optName}`}
+                      </Text>
+                    </Box>
+                  );
+                })}
+              </ScrollBox>
+            </Box>
+          }
+          NextButton={
+            <Box fill direction="row">
+              <Box
+                justify="center"
+                align="center"
+                pad={{ left: "small" }}
+                fill
+              ></Box>
+              <Box align="center" justify="center" fill pad="small">
+                <Button
+                  disabled={
+                    !(
+                      decisionValid.nameValid &&
+                      decisionValid.descriptionValid &&
+                      decisionValid.optionsValid
+                    )
+                  }
+                  label={"Next"}
+                  onClick={() => setNextCard(true)}
+                />
+              </Box>
+            </Box>
+          }
+        />
+      ) : (
+        <TwoCards
+          Card1={
+            <Box fill>
+              <Heading level={responsiveContext == "small" ? "2" : "1"}>
+                Time
+              </Heading>
+              <Box fill gap="small">
+                <Text>Registration open:</Text>
+                <TextInput
+                  icon={<Clock />}
+                  placeholder="Minutes for registration"
+                  size="small"
+                  type="number"
+                  value={decision.registerEndTime}
+                  onChange={(e) => onChangeRegisterEndTime(e.target.value)}
+                />
+                <Text>Voting open after registration:</Text>
+                <TextInput
+                  icon={<InProgress />}
+                  placeholder="Minutes voting is open after registration"
+                  size="small"
+                  type="number"
+                  value={decision.endTime}
+                  onChange={(e) => onChangeEndTime(e.target.value)}
+                />
+              </Box>
+            </Box>
+          }
+          Card2={
+            <Box fill>
+              <Heading level={responsiveContext == "small" ? "2" : "1"}>
+                Tokens
+              </Heading>
+              <Box fill gap="small">
+                <Text>Credit to token ratio</Text>
+                <TextInput
+                  icon={<Scorecard />}
+                  placeholder="Credit to token ratio"
+                  size="small"
+                  type="number"
+                  value={decision.creditToTokenRatio}
+                  maxLength={3}
+                  onChange={(e) => onChangeCreditToTokenRatio(e.target.value)}
+                />
+                <Text>Token ID</Text>
+                <TextInput
+                  icon={<Money />}
+                  placeholder="Token ID"
+                  size="small"
+                  value={decision.tokenId}
+                  maxLength={100}
+                  onChange={(e) => onChangeTokenId(e.target.value)}
+                />
+              </Box>
+            </Box>
+          }
+          NextButton={
+            <Box fill direction="row">
+              <Box justify="center" align="center" pad={{ left: "small" }} fill>
+                <Button
+                  disabled={false}
+                  secondary
+                  label={"Go Back"}
+                  onClick={() => setNextCard(false)}
+                />
+              </Box>
+              <Box align="center" justify="center" fill pad="small">
+                <Button
+                  disabled={loading || !decisionValid.isValid}
+                  label={"Deploy to zilliqa"}
+                  onClick={() => onDeploy()}
+                />
+              </Box>
+            </Box>
+          }
+        />
+      )}
+    </Box>
+  );
+}
+
+function TwoCards({
+  Card1,
+  Card2,
+  NextButton,
+}: {
+  Card1: JSX.Element;
+  Card2: JSX.Element;
+  NextButton: JSX.Element;
+}) {
+  const responsiveContext = useContext(ResponsiveContext);
+  return (
+    <Box fill background="white" round="xsmall" overflow="hidden">
+      <Box
+        fill
+        pad="medium"
+        direction={responsiveContext == "small" ? "column" : "row"}
+      >
+        <ScrollBox props={{ pad: "medium" }}>{Card1}</ScrollBox>
+        <ScrollBox
+          props={{
+            background: "light-1",
+            pad: "medium",
+            round: "xsmall",
+          }}
         >
-          <ScrollBox props={{ pad: "medium" }}>
-            <Heading level={responsiveContext == "small" ? "2" : "1"}>
-              Details
-            </Heading>
-            <Box fill gap="small">
-              <TextInput
-                placeholder="Name"
-                size="small"
-                value={decision.name}
-                maxLength={100}
-                onChange={(e) => onChangeName(e.target.value)}
-              />
-              <TextInput
-                placeholder="Details"
-                size="small"
-                value={decision.description}
-                maxLength={100}
-                onChange={(e) => onChangeDescription(e.target.value)}
-              />
-              <DateTimeDrop
-                placeholder="Register by:"
-                dt={getDateTime(decision.registerEndTime)}
-                onChange={(v) => onChangeRegisterEndTime(v)}
-              />
-              <DateTimeDrop
-                placeholder="Start on:"
-                dt={getDateTime(decision.endTime)}
-                onChange={(v) => onChangeEndTime(v)}
-              />
-            </Box>
-          </ScrollBox>
-          <ScrollBox
-            props={{
-              background: "light-1",
-              pad: "medium",
-              round: "xsmall",
-            }}
-          >
-            <Heading level={responsiveContext == "small" ? "2" : "1"}>
-              Options
-            </Heading>
-            <Box direction="row" margin={{ bottom: "medium" }}>
-              <Keyboard onEnter={onAddNewOption}>
-                <Box fill direction="row">
-                  <TextInput
-                    placeholder="Option Name"
-                    size="small"
-                    value={tempOption}
-                    onChange={(e) => {
-                      setTempOption(e.target.value);
-                      setIsTempOptionValid(
-                        areOptionsUnique([
-                          ...decision.options,
-                          { optName: e.target.value, uid: "tempOP" },
-                        ])
-                      );
-                    }}
-                    maxLength={26}
-                  />
-                  <Box align="center">
-                    <Button
-                      disabled={!isTempOptionValid}
-                      icon={<Checkmark />}
-                      onClick={onAddNewOption}
-                    />
-                  </Box>
-                </Box>
-              </Keyboard>
-            </Box>
-            <ScrollBox props={{ pad: "small" }}>
-              {decision.options.map((o, i) => {
-                return (
-                  <Box
-                    height={{ min: "30px" }}
-                    justify="center"
-                    key={`option${o.optName}`}
-                    ref={lastOption}
-                    margin={{ bottom: "small" }}
-                  >
-                    <Text truncate size="small">
-                      {`${i + 1}. ${o.optName}`}
-                    </Text>
-                  </Box>
-                );
-              })}
-            </ScrollBox>
-          </ScrollBox>
-        </Box>
-        <Box height={{ min: "60px" }}>
-          <Box align="center" justify="center" fill>
-            <Button
-              disabled={loading || !decisionValid}
-              label={"Deploy"}
-              onClick={() => onDeploy()}
-            />
-          </Box>
-        </Box>
+          {Card2}
+        </ScrollBox>
       </Box>
+      <Box height={{ min: "60px" }}>{NextButton}</Box>
     </Box>
   );
 }

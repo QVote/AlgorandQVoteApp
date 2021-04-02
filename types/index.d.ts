@@ -25,6 +25,8 @@ export module QVote {
         options: Option[],
         registerEndTime: number,
         endTime: number
+        creditToTokenRatio: string,
+        tokenId: string,
     }
 
     export type ResultOption = {

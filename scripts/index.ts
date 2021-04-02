@@ -1,5 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
-import { QVote } from "../types";
+import {
+  addMinutes,
+  decisionValidate,
+  areOptionsUnique,
+  areOptionsValid,
+  getInitDecision,
+} from "./decisionValidate";
 
 function concatStrings(name: string, desc: string) {
   const mark = uuidv4().substr(0, 6);
@@ -18,21 +24,6 @@ function unConcatStrings(concat: string) {
 function makeStringUniq(s: string) {
   const mark = uuidv4().substr(0, 5);
   return `${mark}_${s}`;
-}
-
-function areOptionsValid(d: QVote.Decision) {
-  const areUnique = areOptionsUnique(d.options);
-  return d.options.length > 1 && areUnique;
-}
-
-function areOptionsUnique(d: QVote.Option[]) {
-  const res: { [key: string]: QVote.Option } = {};
-  d.forEach((o) => {
-    res[o.optName] = o;
-  });
-  const optionsSize = d.length;
-  const areUnique = Object.entries(res).length == optionsSize;
-  return areUnique;
 }
 
 export function getDateTime(milis: number) {
@@ -60,7 +51,7 @@ export async function sleep(milis: number): Promise<void> {
   await new Promise<void>((res) => setTimeout(() => res(), milis));
 }
 
-export function onCopy(toCopy:string) {
+export function onCopy(toCopy: string) {
   const x = document.createElement("INPUT");
   x.setAttribute("type", "text");
   x.setAttribute("value", toCopy);
@@ -69,7 +60,7 @@ export function onCopy(toCopy:string) {
   // @ts-ignore
   x.setSelectionRange(0, 99999);
   document.execCommand("copy");
-  // @ts-ignore 
+  // @ts-ignore
   navigator.clipboard.writeText(toCopy);
 }
 
@@ -79,4 +70,7 @@ export {
   makeStringUniq,
   areOptionsValid,
   areOptionsUnique,
+  addMinutes,
+  decisionValidate,
+  getInitDecision,
 };
