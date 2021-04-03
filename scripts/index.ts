@@ -88,6 +88,17 @@ export function isSuccess(receipt: any): boolean {
   return receipt.success;
 }
 
+//my codebase my rules @MszBednarski
+export function intPls(sOrN: string | number): number {
+  let resVal = 0;
+  if (typeof sOrN == "string") {
+      resVal = parseInt(sOrN);
+  } else if (typeof sOrN == "number") {
+      resVal = sOrN;
+  }
+  return resVal;
+}
+
 
 export {
   concatStrings,

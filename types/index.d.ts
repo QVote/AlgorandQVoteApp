@@ -57,4 +57,15 @@ export module QVote {
     _scilla_version: string;
     _this_address: string;
   };
+
+  export type SliderDs = {
+    max: number;
+    min: number;
+    cur: number;
+    name: string;
+  };
+  export type CreditDist = {
+    creditsRemaining: number;
+    options: SliderDs[];
+  };
 }
