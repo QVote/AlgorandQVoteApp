@@ -19,7 +19,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   );
   const [connected, setConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const contractAddressses = useContractAddresses(blockchainInfo);
+  const contractAddressses = useContractAddresses(blockchainInfo, connected);
   const notificationRef = useRef<NotificationHandle>();
   const longNotificationRef = useRef<LongNotificationHandle>();
   const jobsScheduler = useJobScheduler(

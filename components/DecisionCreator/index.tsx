@@ -142,7 +142,7 @@ export function DecisionCreator({
               //can vote in 0 min and voting is open for 15 min
               expirationBlock: qv.futureTxBlockNumber(
                 curBlockNumber,
-                60 * decision.endTime
+                60 * decision.endTime + 60 * decision.registerEndTime
               ),
               tokenId: decision.tokenId,
             },
