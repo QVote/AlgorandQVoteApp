@@ -9,13 +9,12 @@ import {
   Keyboard,
   Text,
   ResponsiveContext,
-  BoxProps,
 } from "grommet";
 import { v4 as uuidv4 } from "uuid";
-import { decisionValidate, retryLoop, isSuccess } from "../../scripts";
+import { decisionValidate, getInitDecision } from "../../scripts";
 import { ScrollBox } from "../ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
-import { areOptionsUnique, sleep } from "../../scripts";
+import { areOptionsUnique } from "../../scripts";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../../hooks/useMainContext";
 
@@ -35,6 +34,7 @@ export function DecisionCreator({
   const [loading, setLoading] = useState(false);
   const lastOption = useRef(null);
   const [nextCard, setNextCard] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const canAddOption = () =>
     tempOption != "" && areOptionsUnique(decision.options);
@@ -156,6 +156,7 @@ export function DecisionCreator({
           attempts,
           interval
         );
+        setSubmitted(true);
         main.jobsScheduler.checkReceiptDeploy(
           {
             id: tx.ID,
@@ -164,9 +165,7 @@ export function DecisionCreator({
             contractAddress: contractInstance.address,
             type: "Deploy",
           },
-          async () => {
-            console.log("Success");
-          },
+          async () => {},
           async () => {}
         );
         main.longNotification.current.setLoading();
@@ -181,7 +180,37 @@ export function DecisionCreator({
     }
   }
 
-  return (
+  return submitted ? (
+    <Box
+      fill
+      align="center"
+      justify="center"
+      pad="large"
+      animation={[{ type: "fadeIn", duration: 500 }]}
+    >
+      <Box height="small" />
+      <Heading
+        textAlign="center"
+        level={responsiveContext == "small" ? "2" : "1"}
+      >
+        {"Transaction submitted!"}
+      </Heading>
+      <Box height="20%" justify="center" align="center">
+        <Text truncate>{"Create another decision?"}</Text>
+      </Box>
+      <Box align="center" justify="center" gap="medium">
+        <Button
+          label={"Go to create"}
+          onClick={() => {
+            updateDecision(getInitDecision());
+            setNextCard(false);
+            setSubmitted(false);
+          }}
+        />
+      </Box>
+      <Box fill />
+    </Box>
+  ) : (
     <Box
       fill
       align="center"

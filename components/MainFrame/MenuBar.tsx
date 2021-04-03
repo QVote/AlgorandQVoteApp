@@ -278,7 +278,7 @@ export function MenuBar({
                         bg={
                           a.status == "done"
                             ? "status-ok"
-                            : main.jobsScheduler.jobs[0].status == "error"
+                            : a.status == "error"
                             ? "status-error"
                             : "status-unknown"
                         }
