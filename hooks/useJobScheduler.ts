@@ -58,7 +58,9 @@ export const useJobScheduler = (
         await onSuccess();
         updateJob(job.id, { ...job, status: "done" });
       } else {
-        throw new Error("The tx was unsuccessful");
+        longNotification.current.setError();
+        longNotification.current.onShowNotification("Failed to deploy!");
+        throw new Error("Failed to confirm transaction");
       }
     } catch (e) {
       updateJob(job.id, { ...job, status: "error" });

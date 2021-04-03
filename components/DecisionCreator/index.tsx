@@ -167,7 +167,7 @@ export function DecisionCreator({
           async () => {
             console.log("Success");
           },
-          dispError
+          async () => {}
         );
         main.longNotification.current.setLoading();
         main.longNotification.current.onShowNotification(
@@ -178,15 +178,6 @@ export function DecisionCreator({
         console.error(e);
         setLoading(false);
       }
-    }
-  }
-
-  async function dispError(err?: any) {
-    try {
-      main.longNotification.current.setError();
-      main.longNotification.current.onShowNotification("Failed to deploy!");
-    } catch (e) {
-      console.error(e);
     }
   }
 
