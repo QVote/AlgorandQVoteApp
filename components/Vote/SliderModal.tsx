@@ -47,11 +47,7 @@ function SliderModal({
   }
 
   return (
-    <Layer
-      animation="slide"
-      onClickOutside={() => onClickOutside()}
-      responsive={false}
-    >
+    <Layer onClickOutside={() => onClickOutside()} responsive={false}>
       <Card gap="medium" align="center" background="qvBg" pad="medium">
         <PosWithMeters
           noElevate

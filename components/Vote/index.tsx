@@ -104,14 +104,17 @@ export function Vote({
   }
 
   return (
-    <Box pad={{ horizontal: "large", vertical: "small" }} fill={true} gap="small">
+    <Box
+      pad={{ horizontal: "large", vertical: "small" }}
+      fill={true}
+      gap="small"
+    >
       {canSubmit() ? (
         <Box
           height={{ min: "100px", max: "100px" }}
           align="center"
           justify="end"
           pad={{ bottom: "medium" }}
-          animation={[{ type: "fadeIn", duration: 300 }]}
         >
           <Button disabled={!canSubmit()} onClick={() => onVoteSubmit()}>
             <Box
@@ -144,7 +147,7 @@ export function Vote({
           overflow="hidden"
         >
           <Heading
-            style={{ wordBreak: "break-all" }}
+            style={{ wordBreak: "break-word" }}
             level={responsiveContext == "small" ? "3" : "2"}
           >
             {decision.name}
@@ -152,7 +155,7 @@ export function Vote({
           <Paragraph
             style={{
               whiteSpace: "pre-line",
-              wordBreak: "break-all",
+              wordBreak: "break-word",
             }}
           >
             {decision.description.replace(/\\n/g, "\n")}
@@ -197,7 +200,7 @@ function CreditsLeft({ left, max }: { left: number; max: number }) {
         justify="end"
         background="white"
         margin={{ left: "medium", right: "medium" }}
-        pad={{horizontal:"large"}}
+        pad={{ horizontal: "large" }}
       >
         <Heading
           responsive={false}

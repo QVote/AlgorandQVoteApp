@@ -1,5 +1,5 @@
 import { QVote } from "../../types";
-import { useState, useContext, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   Box,
   TextInput,
@@ -8,7 +8,6 @@ import {
   Heading,
   Keyboard,
   Text,
-  ResponsiveContext,
 } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision } from "../../scripts";
@@ -17,13 +16,16 @@ import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { areOptionsUnique } from "../../scripts";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../../hooks/useMainContext";
+import { TwoCards } from "../TwoCards";
+import { RHeading } from "../RHeading";
+import { useReponsiveContext } from "../../hooks/useReponsiveContext";
 
 export function DecisionCreator({
   initDecision,
 }: {
   initDecision: QVote.Decision;
 }) {
-  const responsiveContext = useContext(ResponsiveContext);
+  const responsiveContext = useReponsiveContext();
   const main = useMainContext();
   const [decision, setDecision] = useState(initDecision);
   const [tempOption, setTempOption] = useState("");
@@ -181,13 +183,7 @@ export function DecisionCreator({
   }
 
   return submitted ? (
-    <Box
-      fill
-      align="center"
-      justify="center"
-      pad="large"
-      animation={[{ type: "fadeIn", duration: 500 }]}
-    >
+    <Box fill align="center" justify="center" pad="large">
       <Box height="small" />
       <Heading
         textAlign="center"
@@ -211,13 +207,7 @@ export function DecisionCreator({
       <Box fill />
     </Box>
   ) : (
-    <Box
-      fill
-      align="center"
-      justify="center"
-      pad="large"
-      animation={[{ type: "fadeIn", duration: 500 }]}
-    >
+    <Box fill align="center" justify="center" pad="large">
       {!nextCard ? (
         <TwoCards
           Card1={
@@ -409,51 +399,6 @@ export function DecisionCreator({
           }
         />
       )}
-    </Box>
-  );
-}
-
-function RHeading({
-  txt,
-  responsiveContext,
-}: {
-  txt: string;
-  responsiveContext: string;
-}) {
-  return (
-    <Heading level={responsiveContext == "small" ? "2" : "1"}>{txt}</Heading>
-  );
-}
-
-function TwoCards({
-  Card1,
-  Card2,
-  NextButton,
-}: {
-  Card1: JSX.Element;
-  Card2: JSX.Element;
-  NextButton: JSX.Element;
-}) {
-  const responsiveContext = useContext(ResponsiveContext);
-  return (
-    <Box fill background="white" round="xsmall" overflow="hidden">
-      <Box
-        fill
-        pad="medium"
-        direction={responsiveContext == "small" ? "column" : "row"}
-      >
-        <ScrollBox props={{ pad: "medium" }}>{Card1}</ScrollBox>
-        <ScrollBox
-          props={{
-            background: "light-1",
-            pad: "medium",
-            round: "xsmall",
-          }}
-        >
-          {Card2}
-        </ScrollBox>
-      </Box>
-      <Box height={{ min: "60px" }}>{NextButton}</Box>
     </Box>
   );
 }
