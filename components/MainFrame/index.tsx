@@ -14,9 +14,11 @@ export { MainFrameContext };
 export function MainFrame({ children }: { children: JSX.Element }) {
   const router = useRouter();
   const [curAcc, setCurAcc] = useState<string | undefined>();
-  const [blockchainInfo, setBlockchainInfo] = useState<BlockchainInfo>(
-    BLOCKCHAINS.private
-  );
+  const [blockchainInfo, setBlockchainInfo] = useState<BlockchainInfo>({
+    name: "none__",
+    protocol: { chainId: 0, msgVersion: 1 },
+    url: "",
+  });
   const [connected, setConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const contractAddressses = useContractAddresses(blockchainInfo, connected);

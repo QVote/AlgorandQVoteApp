@@ -13,6 +13,7 @@ import {
   Integration,
   Transaction,
   Update,
+  Stakeholder,
 } from "grommet-icons";
 import { ScrollBox } from "../ScrollBox";
 import { MainFrameContext } from "./MainFrameContext";
@@ -26,6 +27,7 @@ const _LOGO_WEAK = "#666666";
 const PATHS = {
   create: "/",
   vote: "/vote",
+  register: "/register",
   results: "/results",
 };
 
@@ -112,6 +114,12 @@ export function MenuBar({
           IconToDisp={Add}
           onClick={() => onGoTo(PATHS.create)}
           isCurrent={router.pathname == PATHS.create}
+        />
+        <MenuButton
+          txt={"Register"}
+          IconToDisp={Stakeholder}
+          onClick={() => onGoTo(PATHS.register)}
+          isCurrent={router.pathname == PATHS.register}
         />
         <MenuButton
           txt={"Vote"}
