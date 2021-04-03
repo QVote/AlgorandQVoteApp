@@ -64,6 +64,31 @@ export function onCopy(toCopy: string) {
   navigator.clipboard.writeText(toCopy);
 }
 
+export async function retryLoop(
+  maxRetries: number,
+  intervalMs: number,
+  func: () => Promise<{ shouldRetry: boolean; res: any }>
+): Promise<any> {
+  for (let x = 1; x < maxRetries+1; x++) {
+    await sleep(x * intervalMs);
+    try {
+      const temp = await func();
+      if (!temp.shouldRetry) {
+        return temp.res;
+      }
+    } catch (e) {
+      console.error(e);
+      continue;
+    }
+  }
+  throw new Error("Function didnt manage to run in time");
+}
+
+export function isSuccess(receipt: any): boolean {
+  return receipt.success;
+}
+
+
 export {
   concatStrings,
   unConcatStrings,

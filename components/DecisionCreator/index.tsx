@@ -12,7 +12,7 @@ import {
   BoxProps,
 } from "grommet";
 import { v4 as uuidv4 } from "uuid";
-import { decisionValidate } from "../../scripts";
+import { decisionValidate, retryLoop, isSuccess } from "../../scripts";
 import { ScrollBox } from "../ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { areOptionsUnique, sleep } from "../../scripts";
@@ -111,30 +111,6 @@ export function DecisionCreator({
     updateDecision({ ...decision, options: newOptions });
   }
 
-  async function retryLoop(
-    maxRetries: number,
-    intervalMs: number,
-    func: () => Promise<{ shouldRetry: boolean; res: any }>
-  ): Promise<any> {
-    for (let x = 1; x < maxRetries+1; x++) {
-      await sleep(x * intervalMs);
-      try {
-        const temp = await func();
-        if (!temp.shouldRetry) {
-          return temp.res;
-        }
-      } catch (e) {
-        console.error(e);
-        continue;
-      }
-    }
-    throw new Error("Function didnt manage to run in time");
-  }
-
-  function isSuccess(receipt: any): boolean {
-    return receipt.success;
-  }
-
   async function onDeploy() {
     if (!loading && decisionValid.isValid) {
       try {
@@ -180,33 +156,16 @@ export function DecisionCreator({
           attempts,
           interval
         );
-        main.jobsScheduler.runJob(
+        main.jobsScheduler.checkReceiptDeploy(
           {
             id: tx.ID,
             name: `Deploy Transaction: ${tx.ID}`,
             status: "waiting",
-            details:
-              "Asking the blockchain for the confirmation of the deploy transaction",
+            contractAddress: contractInstance.address,
+            type: "Deploy",
           },
           async () => {
-            //RETRY UNTIL WE HAVE A RECEIPT
-            const receipt = await retryLoop(15, 5000, async () => {
-              const resTx = await zilPayBlockchainApi.getTransaction(tx.ID);
-              if (resTx.receipt) {
-                return { res: resTx.receipt, shouldRetry: false };
-              }
-              return { res: undefined, shouldRetry: true };
-            });
-            console.log({ receipt });
-            if (isSuccess(receipt)) {
-              main.contractAddressses.pushAddress(contractInstance.address);
-              main.longNotification.current.setSuccess();
-              main.longNotification.current.onShowNotification(
-                "Success. QVote decision deployed!"
-              );
-            } else {
-              dispError();
-            }
+            console.log("Success");
           },
           dispError
         );
@@ -222,13 +181,11 @@ export function DecisionCreator({
     }
   }
 
-  async function dispError(err?:any) {
+  async function dispError(err?: any) {
     try {
       main.longNotification.current.setError();
-      main.longNotification.current.onShowNotification(
-        "Failed to deploy!"
-      );
-    } catch(e) {
+      main.longNotification.current.onShowNotification("Failed to deploy!");
+    } catch (e) {
       console.error(e);
     }
   }

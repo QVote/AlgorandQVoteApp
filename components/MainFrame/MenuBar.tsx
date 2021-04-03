@@ -168,7 +168,7 @@ export function MenuBar({
                       label={"Go to create"}
                       onClick={() => {
                         router.push("/");
-                        setContractMenu(false);
+                        setOpen("none");
                       }}
                     />
                   </ScrollBox>

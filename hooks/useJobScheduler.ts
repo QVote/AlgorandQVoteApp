@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 import Cookie from "js-cookie";
 import type { BlockchainInfo } from "../config";
+import { retryLoop, isSuccess } from "../scripts";
+import type { useContractAddresses } from "./useContractAddresses";
+import type { LongNotificationHandle } from "../components/MainFrame/LongNotification";
 
 type Job = {
   id: string;
   name: string;
   status: "waiting" | "inProgress" | "done" | "error";
-  details: string;
+  type: "Deploy" | "Vote";
+  contractAddress: string;
 };
 
 type JobsCookie = { jobs: Job[]; someInProgress: boolean };
@@ -16,19 +20,46 @@ const init: JobsCookie = {
   someInProgress: false,
 };
 
-export const useJobScheduler = (blockchainInfo: BlockchainInfo) => {
+export const useJobScheduler = (
+  blockchainInfo: BlockchainInfo,
+  contractAddressses: ReturnType<typeof useContractAddresses>,
+  longNotification: MutableRefObject<LongNotificationHandle>,
+  connected: boolean
+) => {
   const [cookieState, setCookieState] = useState<JobsCookie>(init);
 
-  async function runJob(
+  /**
+   * Run this only when the user is connected to wallet
+   */
+  async function checkReceiptDeploy(
     job: Job,
-    jobFunction: () => Promise<void>,
+    onSuccess: () => Promise<void>,
     onError: (e: any) => Promise<void>
   ) {
     pushJob(job);
     try {
+      const zilPay = window.zilPay;
+      const zilPayBlockchainApi = zilPay.blockchain;
       updateJob(job.id, { ...job, status: "inProgress" });
-      await jobFunction();
-      updateJob(job.id, { ...job, status: "done" });
+      //RETRY UNTIL WE HAVE A RECEIPT
+      const receipt = await retryLoop(15, 5000, async () => {
+        const resTx = await zilPayBlockchainApi.getTransaction(job.id);
+        if (resTx.receipt) {
+          return { res: resTx.receipt, shouldRetry: false };
+        }
+        return { res: undefined, shouldRetry: true };
+      });
+      if (isSuccess(receipt)) {
+        contractAddressses.pushAddress(job.contractAddress);
+        longNotification.current.setSuccess();
+        longNotification.current.onShowNotification(
+          "Success. QVote decision deployed!"
+        );
+        await onSuccess();
+        updateJob(job.id, { ...job, status: "done" });
+      } else {
+        throw new Error("The tx was unsuccessful");
+      }
     } catch (e) {
       updateJob(job.id, { ...job, status: "error" });
       await onError(e);
@@ -41,7 +72,6 @@ export const useJobScheduler = (blockchainInfo: BlockchainInfo) => {
   }
 
   function thereAreInProgress(next: Job[]) {
-    console.log(next);
     return next.reduce(
       (prev, cur) => (cur.status == "inProgress" ? true : prev),
       false
@@ -50,13 +80,36 @@ export const useJobScheduler = (blockchainInfo: BlockchainInfo) => {
 
   function pushJob(add: Job) {
     const cookie = getCookie();
-    const next = [add, ...cookie.jobs];
-    setCookie({ ...cookie, jobs: next });
+    const isAlreadyIn = cookie.jobs.filter((j) => add.id == j.id).length == 1;
+    if (!isAlreadyIn) {
+      const next = [add, ...cookie.jobs];
+      setCookie({ ...cookie, jobs: next });
+    }
   }
 
   function onChange() {
     setCookie(getCookie());
   }
+
+  /**
+   * Essentially regenerate the jobs that were in progress but the site was
+   * refreshed
+   */
+  useEffect(() => {
+    if (connected) {
+      getCookie().jobs.map((j) => {
+        if (j.status == "waiting" || j.status == "inProgress") {
+          if (j.type == "Deploy") {
+            checkReceiptDeploy(
+              j,
+              async () => {},
+              async () => {}
+            );
+          }
+        }
+      });
+    }
+  }, [connected]);
 
   useEffect(() => {
     onChange();
@@ -80,5 +133,5 @@ export const useJobScheduler = (blockchainInfo: BlockchainInfo) => {
     return Cookie.getJSON(getCookieName()) || init;
   }
 
-  return { ...cookieState, runJob };
+  return { ...cookieState, checkReceiptDeploy };
 };

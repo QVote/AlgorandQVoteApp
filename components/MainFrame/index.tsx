@@ -20,9 +20,14 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   const [connected, setConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const contractAddressses = useContractAddresses(blockchainInfo);
-  const jobsScheduler = useJobScheduler(blockchainInfo);
   const notificationRef = useRef<NotificationHandle>();
   const longNotificationRef = useRef<LongNotificationHandle>();
+  const jobsScheduler = useJobScheduler(
+    blockchainInfo,
+    contractAddressses,
+    longNotificationRef,
+    connected
+  );
 
   useEffect(() => {
     if (curAcc) {
