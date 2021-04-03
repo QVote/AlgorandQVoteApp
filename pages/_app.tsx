@@ -17,7 +17,7 @@ const customTheme = deepMerge(grommetTheme, {
       brand: "#242424",
       "accent-1": "#24CC96",
       "accent-2": "#F9F6DC",
-      "accent-3": "#C91D7B",
+      "accent-3": "#6dbfbd",
     },
   },
 });
