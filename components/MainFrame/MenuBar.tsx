@@ -14,6 +14,7 @@ import {
   Transaction,
   Update,
   Stakeholder,
+  Cubes,
 } from "grommet-icons";
 import { ScrollBox } from "../ScrollBox";
 import { MainFrameContext } from "./MainFrameContext";
@@ -67,10 +68,32 @@ export function MenuBar({
         `https://viewblock.io/zilliqa/tx/0x${id}?network=${main.blockchainInfo.name}`
       );
     } else {
+      networkNotSupported();
+    }
+  }
+
+  function tryToViewBlockContract(address: string) {
+    //Try to open a viewblock
+    if (
+      main.blockchainInfo.name == "testnet" ||
+      main.blockchainInfo.name == "mainnet"
+    ) {
+      window.open(
+        `https://viewblock.io/zilliqa/address/${address}?network=${main.blockchainInfo.name}`
+      );
+    } else {
+      networkNotSupported();
+    }
+  }
+
+  function networkNotSupported() {
+    try {
       main.longNotification.current.setError();
       main.longNotification.current.onShowNotification(
         "Viewblock not supported on current network."
       );
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -200,6 +223,11 @@ export function MenuBar({
                           main.contractAddressses.addresses[0]
                         )
                       }
+                      onViewBlock={() => {
+                        tryToViewBlockContract(
+                          main.contractAddressses.addresses[0]
+                        );
+                      }}
                       onCopyTxt={() =>
                         onCopyText(
                           main.contractAddressses.addresses[0],
@@ -211,16 +239,17 @@ export function MenuBar({
                       <Notice txt={"Your other decisions:"} />
                     )}
                     {main.contractAddressses.addresses.length > 1 &&
-                      main.contractAddressses.addresses
-                        .slice(1)
-                        .map((a) => (
-                          <Address
-                            txt={a}
-                            key={`contact${a}`}
-                            onClick={() => main.contractAddressses.makeFirst(a)}
-                            onCopyTxt={() => onCopyText(a, "Address Copied!")}
-                          />
-                        ))}
+                      main.contractAddressses.addresses.slice(1).map((a) => (
+                        <Address
+                          txt={a}
+                          key={`contact${a}`}
+                          onClick={() => main.contractAddressses.makeFirst(a)}
+                          onCopyTxt={() => onCopyText(a, "Address Copied!")}
+                          onViewBlock={() => {
+                            tryToViewBlockContract(a);
+                          }}
+                        />
+                      ))}
                   </ScrollBox>
                 )}
               </Box>
@@ -291,10 +320,10 @@ export function MenuBar({
                             : "status-unknown"
                         }
                         key={`transaction${a.id}`}
-                        onClick={() => tryToViewBlock(a.id)}
                         onCopyTxt={() =>
                           onCopyText(`0x${a.id}`, "Transaction hash copied!")
                         }
+                        onViewBlock={() => tryToViewBlock(a.id)}
                       />
                     ))}
                   </ScrollBox>
@@ -334,11 +363,13 @@ function Address({
   bg,
   onClick,
   onCopyTxt,
+  onViewBlock,
 }: {
   txt: string;
   bg?: string;
   onClick?: () => void;
   onCopyTxt?: () => void;
+  onViewBlock?: () => void;
 }) {
   return (
     <Box
@@ -350,7 +381,7 @@ function Address({
     >
       <Box fill direction="row" justify="between" align="center">
         <Box fill>
-          <Button fill plain onClick={onClick}>
+          <Button fill plain onClick={onClick ? onClick : null}>
             <Box fill>
               <Text truncate size={"xsmall"} color={bg ? "white" : _LOGO_WEAK}>
                 {txt}
@@ -358,6 +389,16 @@ function Address({
             </Box>
           </Button>
         </Box>
+        {onViewBlock && (
+          <Box pad="xxsmall" margin={{right: "small"}}>
+            <Button
+              fill
+              plain
+              icon={<Cubes color={bg && "white"} />}
+              onClick={onViewBlock}
+            />
+          </Box>
+        )}
         {onCopyTxt && (
           <Box pad="xxsmall">
             <Button
