@@ -9,7 +9,7 @@ type Job = {
   id: string;
   name: string;
   status: "waiting" | "inProgress" | "done" | "error";
-  type: "Deploy" | "Vote";
+  type: "Deploy" | "Vote" | "Register";
   contractAddress: string;
 };
 
@@ -28,27 +28,32 @@ export const useJobScheduler = (
 ) => {
   const [cookieState, setCookieState] = useState<JobsCookie>(init);
 
+  async function runJob(job: Job) {
+    pushJob(job);
+    const zilPay = window.zilPay;
+    const zilPayBlockchainApi = zilPay.blockchain;
+    updateJob(job.id, { ...job, status: "inProgress" });
+    //RETRY UNTIL WE HAVE A RECEIPT
+    const receipt = await retryLoop(15, 5000, async () => {
+      const resTx = await zilPayBlockchainApi.getTransaction(job.id);
+      if (resTx.receipt) {
+        return { res: resTx.receipt, shouldRetry: false };
+      }
+      return { res: undefined, shouldRetry: true };
+    });
+    return receipt;
+  }
+
   /**
    * Run this only when the user is connected to wallet
    */
-  async function checkReceiptDeploy(
+  async function checkDeployCall(
     job: Job,
     onSuccess: () => Promise<void>,
     onError: (e: any) => Promise<void>
   ) {
-    pushJob(job);
     try {
-      const zilPay = window.zilPay;
-      const zilPayBlockchainApi = zilPay.blockchain;
-      updateJob(job.id, { ...job, status: "inProgress" });
-      //RETRY UNTIL WE HAVE A RECEIPT
-      const receipt = await retryLoop(15, 5000, async () => {
-        const resTx = await zilPayBlockchainApi.getTransaction(job.id);
-        if (resTx.receipt) {
-          return { res: resTx.receipt, shouldRetry: false };
-        }
-        return { res: undefined, shouldRetry: true };
-      });
+      const receipt = await runJob(job);
       if (isSuccess(receipt)) {
         contractAddressses.pushAddress(job.contractAddress);
         longNotification.current.setSuccess();
@@ -60,6 +65,33 @@ export const useJobScheduler = (
       } else {
         longNotification.current.setError();
         longNotification.current.onShowNotification("Failed to deploy!");
+        throw new Error("Failed to confirm transaction");
+      }
+    } catch (e) {
+      updateJob(job.id, { ...job, status: "error" });
+      await onError(e);
+    }
+  }
+
+  async function checkContractCall(
+    job: Job,
+    onSuccess: () => Promise<void>,
+    onError: (e: any) => Promise<void>
+  ) {
+    try {
+      const receipt = await runJob(job);
+      if (isSuccess(receipt)) {
+        longNotification.current.setSuccess();
+        longNotification.current.onShowNotification(
+          "Decision contract call successful!"
+        );
+        await onSuccess();
+        updateJob(job.id, { ...job, status: "done" });
+      } else {
+        longNotification.current.setError();
+        longNotification.current.onShowNotification(
+          "Failed to call decision contract!"
+        );
         throw new Error("Failed to confirm transaction");
       }
     } catch (e) {
@@ -102,7 +134,13 @@ export const useJobScheduler = (
       getCookie().jobs.map((j) => {
         if (j.status == "waiting" || j.status == "inProgress") {
           if (j.type == "Deploy") {
-            checkReceiptDeploy(
+            checkDeployCall(
+              j,
+              async () => {},
+              async () => {}
+            );
+          } else if (j.type == "Register") {
+            checkContractCall(
               j,
               async () => {},
               async () => {}
@@ -135,5 +173,5 @@ export const useJobScheduler = (
     return Cookie.getJSON(getCookieName()) || init;
   }
 
-  return { ...cookieState, checkReceiptDeploy };
+  return { ...cookieState, checkDeployCall, checkContractCall };
 };

@@ -145,7 +145,7 @@ export default function DecisionCreator() {
           interval
         );
         setSubmitted(true);
-        main.jobsScheduler.checkReceiptDeploy(
+        main.jobsScheduler.checkDeployCall(
           {
             id: tx.ID,
             name: `Deploy Transaction: ${tx.ID}`,
