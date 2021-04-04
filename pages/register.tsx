@@ -1,5 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Box, Button, Text, Paragraph, Keyboard, TextInput } from "grommet";
+import {
+  Box,
+  Button,
+  Text,
+  Paragraph,
+  Keyboard,
+  TextInput,
+  Heading,
+} from "grommet";
 import { useMainContext } from "../hooks/useMainContext";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { TwoCards } from "../components/TwoCards";
@@ -23,6 +31,7 @@ export default function RegisterPage() {
     credits: 100,
   });
   const lastVoterToAdd = useRef(null);
+  const [nextCard, setNextCard] = useState(false);
 
   async function onOwnerRegister() {
     if (!loading) {
@@ -124,122 +133,235 @@ export default function RegisterPage() {
 
   return main.contractAddressses.currentContract.owner != "" ? (
     <Box fill align="center" justify="center" pad="large">
-      <TwoCards
-        Card1={
-          <Box fill>
-            <RHeading {...{ responsiveContext, txt: "Register users" }} />
-            <Paragraph style={{ wordBreak: "break-word" }}>
-              As an owner of a decision contract you can register voters and the
-              number of credits they can vote with.
-            </Paragraph>
-            <ScrollBox props={{ gap: "small" }}>
-              {Object.entries(
-                main.contractAddressses.currentContract.voter_balances
-              ).map(([k, v], i) => {
-                return (
-                  <Box
-                    height={{ min: "50px" }}
-                    justify="center"
-                    key={`option${k}`}
-                    margin={{ bottom: "small" }}
-                    pad={{ left: "small" }}
-                    background="white"
-                    round="xsmall"
-                    direction="row"
-                  >
-                    <Box fill justify="center">
-                      <Text truncate size="small">
-                        {`${i + 1}. ${k}`}
-                      </Text>
-                      <Text truncate size="small">
-                        {`Credits: ${v}`}
-                      </Text>
-                    </Box>
-                  </Box>
-                );
-              })}
-            </ScrollBox>
-          </Box>
-        }
-        Card2={
-          <Box fill>
-            <RHeading {...{ responsiveContext, txt: "Voters" }} />
-            <Box
-              direction="row"
-              margin={{ bottom: "small" }}
-              height={{ min: "xxsmall" }}
-            >
-              <Keyboard onEnter={onAddTempVoter}>
-                <Box fill direction="row" gap="small">
-                  <Box fill>
-                    <TextInput
-                      placeholder="Voter Address"
-                      size="small"
-                      value={tempVoter.address}
-                      onChange={(e) => {
-                        const next = { ...tempVoter, address: e.target.value };
-                        setTempVoter(next);
-                        setTempVoterValid(isTempVoterValid(next));
-                      }}
-                      maxLength={42}
-                    />
-                  </Box>
-                  <Box width="70%">
-                    <TextInput
-                      placeholder="Credit to token ratio"
-                      size="small"
-                      type="number"
-                      value={tempVoter.credits}
-                      maxLength={3}
-                      onChange={(e) => onChangeCredits(e.target.value)}
-                    />
-                  </Box>
-                  <Box align="center" justify="center" height="xxsmall">
-                    <Button
-                      icon={<Add />}
-                      disabled={!tempVoterValid}
-                      onClick={onAddTempVoter}
-                    />
-                  </Box>
-                </Box>
-              </Keyboard>
+      {!nextCard ? (
+        <TwoCards
+          Card1={
+            <Box fill>
+              <RHeading {...{ responsiveContext, txt: "Register users" }} />
+              <Paragraph style={{ wordBreak: "break-word" }}>
+                As an owner of a decision contract you can register voters and
+                the number of credits they can vote with.
+              </Paragraph>
             </Box>
-            <ScrollBox props={{ gap: "small" }}>
-              {votersToAdd.map((v, i) => {
-                return (
-                  <Box
-                    height={{ min: "50px" }}
-                    justify="center"
-                    key={`voter${v.address}`}
-                    ref={lastVoterToAdd}
-                    margin={{ bottom: "small" }}
-                    pad={{ left: "small" }}
-                    background="white"
-                    round="xsmall"
-                    direction="row"
-                  >
-                    <Box fill justify="center">
-                      <Text truncate size="small">
-                        {`${i + 1}. ${v.address}`}
-                      </Text>
-                      <Text truncate size="small">
-                        {`Credits: ${v.credits}`}
-                      </Text>
+          }
+          Card2={
+            <Box fill justify="around">
+              <Heading style={{ wordBreak: "break-word" }} level={"3"}>
+                {main.contractAddressses.currentContract.name}
+              </Heading>
+              <Paragraph
+                style={{
+                  whiteSpace: "pre-line",
+                  wordBreak: "break-word",
+                }}
+                size="small"
+              >
+                {main.contractAddressses.currentContract.description.replace(
+                  /\\n/g,
+                  "\n"
+                )}
+              </Paragraph>
+              <Paragraph
+                style={{
+                  whiteSpace: "pre-line",
+                  wordBreak: "break-word",
+                }}
+                size="small"
+              >
+                {`Owner: ${main.contractAddressses.currentContract.owner}`}
+              </Paragraph>
+              <Paragraph
+                style={{
+                  whiteSpace: "pre-line",
+                  wordBreak: "break-word",
+                }}
+                size="small"
+                color={
+                  main.contractAddressses.currentContract.owner == main.curAcc
+                    ? "status-ok"
+                    : "status-critical"
+                }
+              >
+                {main.contractAddressses.currentContract.owner == main.curAcc
+                  ? "You are the owner of this decision."
+                  : `You are not the owner of this decision!`}
+              </Paragraph>
+              <Box align="start" justify="center">
+                <Button
+                  label={"Show other decisions"}
+                  onClick={() =>
+                    main.menu.current.setOpen(
+                      main.menu.current.open != "contracts"
+                        ? "contracts"
+                        : "none"
+                    )
+                  }
+                />
+              </Box>
+            </Box>
+          }
+          NextButton={
+            <Box fill direction="row">
+              <Box
+                justify="center"
+                align="center"
+                pad={{ left: "small" }}
+                fill
+              ></Box>
+              <Box align="center" justify="center" fill pad="small">
+                <Button
+                  disabled={
+                    !(
+                      main.contractAddressses.currentContract.owner ==
+                      main.curAcc
+                    )
+                  }
+                  label={"Next"}
+                  onClick={() => setNextCard(true)}
+                />
+              </Box>
+            </Box>
+          }
+        />
+      ) : (
+        <TwoCards
+          Card1={
+            <Box fill>
+              <RHeading {...{ responsiveContext, txt: "Register users" }} />
+              <Paragraph style={{ wordBreak: "break-word" }}>
+                As an owner of a decision contract you can register voters and
+                the number of credits they can vote with.
+              </Paragraph>
+              <ScrollBox props={{ gap: "small" }}>
+                {Object.entries(
+                  main.contractAddressses.currentContract.voter_balances
+                ).map(([k, v], i) => {
+                  return (
+                    <Box
+                      height={{ min: "50px" }}
+                      justify="center"
+                      key={`option${k}`}
+                      margin={{ bottom: "small" }}
+                      pad={{ left: "small" }}
+                      background="white"
+                      round="xsmall"
+                      direction="row"
+                    >
+                      <Box fill justify="center">
+                        <Text truncate size="small">
+                          {`${i + 1}. ${k}`}
+                        </Text>
+                        <Text truncate size="small">
+                          {`Credits: ${v}`}
+                        </Text>
+                      </Box>
                     </Box>
-                    <Box align="center" justify="center">
+                  );
+                })}
+              </ScrollBox>
+            </Box>
+          }
+          Card2={
+            <Box fill>
+              <RHeading {...{ responsiveContext, txt: "Voters" }} />
+              <Box
+                direction="row"
+                margin={{ bottom: "small" }}
+                height={{ min: "xxsmall" }}
+              >
+                <Keyboard onEnter={onAddTempVoter}>
+                  <Box fill direction="row" gap="small">
+                    <Box fill>
+                      <TextInput
+                        placeholder="Voter Address"
+                        size="small"
+                        value={tempVoter.address}
+                        onChange={(e) => {
+                          const next = {
+                            ...tempVoter,
+                            address: e.target.value,
+                          };
+                          setTempVoter(next);
+                          setTempVoterValid(isTempVoterValid(next));
+                        }}
+                        maxLength={42}
+                      />
+                    </Box>
+                    <Box width="70%">
+                      <TextInput
+                        placeholder="Credit to token ratio"
+                        size="small"
+                        type="number"
+                        value={tempVoter.credits}
+                        maxLength={3}
+                        onChange={(e) => onChangeCredits(e.target.value)}
+                      />
+                    </Box>
+                    <Box align="center" justify="center" height="xxsmall">
                       <Button
-                        onClick={() => onDeleteVoter(v.address)}
-                        icon={<Trash />}
+                        icon={<Add />}
+                        disabled={!tempVoterValid}
+                        onClick={onAddTempVoter}
                       />
                     </Box>
                   </Box>
-                );
-              })}
-            </ScrollBox>
-          </Box>
-        }
-        NextButton={<Button label={"hi"} />}
-      />
+                </Keyboard>
+              </Box>
+              <ScrollBox props={{ gap: "small" }}>
+                {votersToAdd.map((v, i) => {
+                  return (
+                    <Box
+                      height={{ min: "50px" }}
+                      justify="center"
+                      key={`voter${v.address}`}
+                      ref={lastVoterToAdd}
+                      margin={{ bottom: "small" }}
+                      pad={{ left: "small" }}
+                      background="white"
+                      round="xsmall"
+                      direction="row"
+                    >
+                      <Box fill justify="center">
+                        <Text truncate size="small">
+                          {`${i + 1}. ${v.address}`}
+                        </Text>
+                        <Text truncate size="small">
+                          {`Credits: ${v.credits}`}
+                        </Text>
+                      </Box>
+                      <Box align="center" justify="center">
+                        <Button
+                          onClick={() => onDeleteVoter(v.address)}
+                          icon={<Trash />}
+                        />
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </ScrollBox>
+            </Box>
+          }
+          NextButton={
+            <Box fill direction="row">
+              <Box justify="center" align="center" pad={{ left: "small" }} fill>
+                <Button
+                  disabled={false}
+                  secondary
+                  label={"Go Back"}
+                  onClick={() => setNextCard(false)}
+                />
+              </Box>
+              <Box align="center" justify="center" fill pad="small">
+                <Button
+                  disabled={loading}
+                  label={"Deploy to zilliqa"}
+                  onClick={() => console.log("asfe")}
+                />
+              </Box>
+            </Box>
+          }
+        />
+      )}
     </Box>
   ) : (
     <Text>Choose a decision contract you own to register voters.</Text>

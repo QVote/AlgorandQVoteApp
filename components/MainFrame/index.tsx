@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, ResponsiveContext, Button, Text } from "grommet";
 import { useRouter } from "next/router";
 import { BlockchainInfo, BLOCKCHAINS } from "../../config";
-import { MenuBar } from "./MenuBar";
+import { MenuBar, MenuHandle } from "./MenuBar";
 import { useContractAddresses } from "../../hooks/useContractAddresses";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
@@ -24,6 +24,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   const contractAddressses = useContractAddresses(blockchainInfo, connected);
   const notificationRef = useRef<NotificationHandle>();
   const longNotificationRef = useRef<LongNotificationHandle>();
+  const menuRef = useRef<MenuHandle>();
   const jobsScheduler = useJobScheduler(
     blockchainInfo,
     contractAddressses,
@@ -91,9 +92,11 @@ export function MainFrame({ children }: { children: JSX.Element }) {
           notification: notificationRef,
           jobsScheduler,
           longNotification: longNotificationRef,
+          menu: menuRef,
         }}
       >
         <MenuBar
+          ref={menuRef}
           {...{
             router,
             connected,

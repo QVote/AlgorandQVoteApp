@@ -1,4 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, {
+  useContext,
+  useState,
+  MutableRefObject,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import { Box, Text, ResponsiveContext, Button, Stack } from "grommet";
 import type { NextRouter } from "next/router";
 import { QVoteLogo } from "../QVoteLogo";
@@ -32,22 +38,35 @@ const PATHS = {
   results: "/results",
 };
 
-export function MenuBar({
-  router,
-  connected,
-  loading,
-  onStart,
-}: {
-  router: NextRouter;
-  connected: boolean;
-  loading: boolean;
-  onStart: () => Promise<void>;
-}) {
+type OpenTypes = "none" | "contracts" | "transactions";
+
+export type MenuHandle = {
+  setOpen: (t: OpenTypes) => void;
+  open: OpenTypes;
+};
+
+function MenuBarComponent(
+  {
+    router,
+    connected,
+    loading,
+    onStart,
+  }: {
+    router: NextRouter;
+    connected: boolean;
+    loading: boolean;
+    onStart: () => Promise<void>;
+  },
+  ref: MutableRefObject<MenuHandle>
+) {
   const responsiveContext = useContext(ResponsiveContext);
   const main = useContext(MainFrameContext);
-  const [open, setOpen] = useState<"none" | "contracts" | "transactions">(
-    "none"
-  );
+  const [open, setOpen] = useState<OpenTypes>("none");
+
+  useImperativeHandle(ref, () => ({
+    setOpen,
+    open,
+  }));
 
   async function onGoTo(path: string) {
     await router.push(path);
@@ -390,7 +409,7 @@ function Address({
           </Button>
         </Box>
         {onViewBlock && (
-          <Box pad="xxsmall" margin={{right: "small"}}>
+          <Box pad="xxsmall" margin={{ right: "small" }}>
             <Button
               fill
               plain
@@ -413,3 +432,5 @@ function Address({
     </Box>
   );
 }
+
+export const MenuBar = forwardRef(MenuBarComponent);
