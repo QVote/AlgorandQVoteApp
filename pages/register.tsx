@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Button,
@@ -19,19 +19,38 @@ import { scrollTo, areUniqueOnKey } from "../scripts";
 import { validation } from "@zilliqa-js/util";
 
 type VoterToAdd = { address: string; credits: number };
+const initVoterToAdd = {
+  address: "",
+  credits: 100,
+};
 
 export default function RegisterPage() {
   const main = useMainContext();
   const [loading, setLoading] = useState(false);
   const responsiveContext = useReponsiveContext();
   const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
+  const [curDecision, setCurDecision] = useState(
+    main.contractAddressses.currentContract
+  );
   const [tempVoterValid, setTempVoterValid] = useState(false);
-  const [tempVoter, setTempVoter] = useState<VoterToAdd>({
-    address: "",
-    credits: 100,
-  });
+  const [tempVoter, setTempVoter] = useState<VoterToAdd>(initVoterToAdd);
   const lastVoterToAdd = useRef(null);
   const [nextCard, setNextCard] = useState(false);
+
+  /**
+   * If user changes the contract reset
+   */
+  useEffect(() => {
+    if (
+      main.contractAddressses.currentContract._this_address !=
+      curDecision._this_address
+    ) {
+      setNextCard(false);
+      setVotersToAdd([]);
+      setTempVoter(initVoterToAdd);
+    }
+    setCurDecision(main.contractAddressses.currentContract);
+  }, [main.contractAddressses.currentContract]);
 
   async function onOwnerRegister() {
     if (!loading) {
