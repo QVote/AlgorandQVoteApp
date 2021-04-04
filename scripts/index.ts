@@ -3,7 +3,7 @@ import type { MutableRefObject } from "react";
 import {
   addMinutes,
   decisionValidate,
-  areOptionsUnique,
+  areUniqueOnKey,
   areOptionsValid,
   getInitDecision,
 } from "./decisionValidate";
@@ -120,7 +120,7 @@ export {
   unConcatStrings,
   makeStringUniq,
   areOptionsValid,
-  areOptionsUnique,
+  areUniqueOnKey,
   addMinutes,
   decisionValidate,
   getInitDecision,

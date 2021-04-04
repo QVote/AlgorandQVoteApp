@@ -7,7 +7,8 @@ import { RHeading } from "../components/RHeading";
 import { useReponsiveContext } from "../hooks/useReponsiveContext";
 import { ScrollBox } from "../components/ScrollBox";
 import { Trash, Add } from "grommet-icons";
-import { scrollTo } from "../scripts";
+import { scrollTo, areUniqueOnKey } from "../scripts";
+import { validation } from "@zilliqa-js/util";
 
 type VoterToAdd = { address: string; credits: number };
 
@@ -45,7 +46,7 @@ export default function RegisterPage() {
               name: decision.name,
               description: decision.description,
               options: decision.options.map((o) => o.optName),
-              creditToTokenRatio: decision.creditToTokenRatio,
+              credits: decision.credits,
               //can register for next 0 min
               registrationEndTime: qv.futureTxBlockNumber(
                 curBlockNumber,
@@ -93,18 +94,32 @@ export default function RegisterPage() {
   }
 
   function isTempVoterValid(v: VoterToAdd) {
-    return true;
+    return (
+      validation.isAddress(v.address) &&
+      areUniqueOnKey([v, ...votersToAdd], "address")
+    );
   }
 
   function onAddTempVoter() {
     if (tempVoterValid) {
       setVotersToAdd([...votersToAdd, tempVoter]);
       scrollTo(lastVoterToAdd);
+      setTempVoter({ address: "", credits: tempVoter.credits });
+      setTempVoterValid(false);
     }
   }
 
   function onDeleteVoter(address: string) {
     setVotersToAdd(votersToAdd.filter((v) => v.address != address));
+  }
+
+  function onChangeCredits(credits: string) {
+    const c = parseInt(credits);
+    if (Number.isInteger(c)) {
+      if (10000 > c && c > 0) {
+        setTempVoter({ ...tempVoter, credits: c });
+      }
+    }
   }
 
   return main.contractAddressses.currentContract.owner != "" ? (
@@ -166,7 +181,17 @@ export default function RegisterPage() {
                         setTempVoter(next);
                         setTempVoterValid(isTempVoterValid(next));
                       }}
-                      maxLength={26}
+                      maxLength={42}
+                    />
+                  </Box>
+                  <Box width="70%">
+                    <TextInput
+                      placeholder="Credit to token ratio"
+                      size="small"
+                      type="number"
+                      value={tempVoter.credits}
+                      maxLength={3}
+                      onChange={(e) => onChangeCredits(e.target.value)}
                     />
                   </Box>
                   <Box align="center" justify="center" height="xxsmall">

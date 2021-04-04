@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision } from "../../scripts";
 import { ScrollBox } from "../ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
-import { areOptionsUnique } from "../../scripts";
+import { areUniqueOnKey } from "../../scripts";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../../hooks/useMainContext";
 import { TwoCards } from "../TwoCards";
@@ -40,7 +40,7 @@ export function DecisionCreator({
   const [submitted, setSubmitted] = useState(false);
 
   const canAddOption = () =>
-    tempOption != "" && areOptionsUnique(decision.options);
+    tempOption != "" && areUniqueOnKey(decision.options, "optName");
 
   function updateDecision(d: QVote.Decision) {
     setDecision(d);
@@ -242,10 +242,10 @@ export function DecisionCreator({
                         onChange={(e) => {
                           setTempOption(e.target.value);
                           setIsTempOptionValid(
-                            areOptionsUnique([
+                            areUniqueOnKey([
                               ...decision.options,
                               { optName: e.target.value, uid: "tempOP" },
-                            ])
+                            ], "optName")
                           );
                         }}
                         maxLength={26}

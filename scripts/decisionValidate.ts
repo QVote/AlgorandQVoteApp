@@ -1,18 +1,18 @@
 import { QVote } from "../types";
 
-export function areOptionsValid(d: QVote.Decision) {
-  const areUnique = areOptionsUnique(d.options);
-  return d.options.length > 1 && areUnique;
+export function areUniqueOnKey(d: { [key: string]: string | number }[], key:string) {
+  const res: { [key: string]: { [key: string]: string | number } } = {};
+  d.forEach((o) => {
+    res[o[key]] = o;
+  });
+  const size = d.length;
+  const areUnique = Object.entries(res).length == size;
+  return areUnique;
 }
 
-export function areOptionsUnique(d: QVote.Option[]) {
-  const res: { [key: string]: QVote.Option } = {};
-  d.forEach((o) => {
-    res[o.optName] = o;
-  });
-  const optionsSize = d.length;
-  const areUnique = Object.entries(res).length == optionsSize;
-  return areUnique;
+export function areOptionsValid(d: QVote.Decision) {
+  const areUnique = areUniqueOnKey(d.options, "optName");
+  return d.options.length > 1 && areUnique;
 }
 
 export function decisionValidate(
