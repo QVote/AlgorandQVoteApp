@@ -1,15 +1,27 @@
-import React, { useState } from "react";
-import { Box, Button, Text, Paragraph } from "grommet";
+import React, { useState, useRef } from "react";
+import { Box, Button, Text, Paragraph, Keyboard, TextInput } from "grommet";
 import { useMainContext } from "../hooks/useMainContext";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { TwoCards } from "../components/TwoCards";
 import { RHeading } from "../components/RHeading";
 import { useReponsiveContext } from "../hooks/useReponsiveContext";
+import { ScrollBox } from "../components/ScrollBox";
+import { Trash, Add } from "grommet-icons";
+import { scrollTo } from "../scripts";
 
-export default function RegsiterPage() {
+type VoterToAdd = { address: string; credits: number };
+
+export default function RegisterPage() {
   const main = useMainContext();
   const [loading, setLoading] = useState(false);
   const responsiveContext = useReponsiveContext();
+  const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
+  const [tempVoterValid, setTempVoterValid] = useState(false);
+  const [tempVoter, setTempVoter] = useState<VoterToAdd>({
+    address: "",
+    credits: 100,
+  });
+  const lastVoterToAdd = useRef(null);
 
   async function onOwnerRegister() {
     if (!loading) {
@@ -80,7 +92,22 @@ export default function RegsiterPage() {
     }
   }
 
-  return main.contractAddressses.addresses.length > 0 ? (
+  function isTempVoterValid(v: VoterToAdd) {
+    return true;
+  }
+
+  function onAddTempVoter() {
+    if (tempVoterValid) {
+      setVotersToAdd([...votersToAdd, tempVoter]);
+      scrollTo(lastVoterToAdd);
+    }
+  }
+
+  function onDeleteVoter(address: string) {
+    setVotersToAdd(votersToAdd.filter((v) => v.address != address));
+  }
+
+  return main.contractAddressses.currentContract.owner != "" ? (
     <Box fill align="center" justify="center" pad="large">
       <TwoCards
         Card1={
@@ -90,9 +117,102 @@ export default function RegsiterPage() {
               As an owner of a decision contract you can register voters and the
               number of credits they can vote with.
             </Paragraph>
+            <ScrollBox props={{ gap: "small" }}>
+              {Object.entries(
+                main.contractAddressses.currentContract.voter_balances
+              ).map(([k, v], i) => {
+                return (
+                  <Box
+                    height={{ min: "50px" }}
+                    justify="center"
+                    key={`option${k}`}
+                    margin={{ bottom: "small" }}
+                    pad={{ left: "small" }}
+                    background="white"
+                    round="xsmall"
+                    direction="row"
+                  >
+                    <Box fill justify="center">
+                      <Text truncate size="small">
+                        {`${i + 1}. ${k}`}
+                      </Text>
+                      <Text truncate size="small">
+                        {`Credits: ${v}`}
+                      </Text>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </ScrollBox>
           </Box>
         }
-        Card2={<Text>Hello</Text>}
+        Card2={
+          <Box fill>
+            <RHeading {...{ responsiveContext, txt: "Voters" }} />
+            <Box
+              direction="row"
+              margin={{ bottom: "small" }}
+              height={{ min: "xxsmall" }}
+            >
+              <Keyboard onEnter={onAddTempVoter}>
+                <Box fill direction="row" gap="small">
+                  <Box fill>
+                    <TextInput
+                      placeholder="Voter Address"
+                      size="small"
+                      value={tempVoter.address}
+                      onChange={(e) => {
+                        const next = { ...tempVoter, address: e.target.value };
+                        setTempVoter(next);
+                        setTempVoterValid(isTempVoterValid(next));
+                      }}
+                      maxLength={26}
+                    />
+                  </Box>
+                  <Box align="center" justify="center" height="xxsmall">
+                    <Button
+                      icon={<Add />}
+                      disabled={!tempVoterValid}
+                      onClick={onAddTempVoter}
+                    />
+                  </Box>
+                </Box>
+              </Keyboard>
+            </Box>
+            <ScrollBox props={{ gap: "small" }}>
+              {votersToAdd.map((v, i) => {
+                return (
+                  <Box
+                    height={{ min: "50px" }}
+                    justify="center"
+                    key={`voter${v.address}`}
+                    ref={lastVoterToAdd}
+                    margin={{ bottom: "small" }}
+                    pad={{ left: "small" }}
+                    background="white"
+                    round="xsmall"
+                    direction="row"
+                  >
+                    <Box fill justify="center">
+                      <Text truncate size="small">
+                        {`${i + 1}. ${v.address}`}
+                      </Text>
+                      <Text truncate size="small">
+                        {`Credits: ${v.credits}`}
+                      </Text>
+                    </Box>
+                    <Box align="center" justify="center">
+                      <Button
+                        onClick={() => onDeleteVoter(v.address)}
+                        icon={<Trash />}
+                      />
+                    </Box>
+                  </Box>
+                );
+              })}
+            </ScrollBox>
+          </Box>
+        }
         NextButton={<Button label={"hi"} />}
       />
     </Box>

@@ -1,5 +1,5 @@
 import { QVote } from "../../types";
-import { useState, useRef } from "react";
+import { useState, useRef, MutableRefObject } from "react";
 import {
   Box,
   TextInput,
@@ -19,6 +19,7 @@ import { useMainContext } from "../../hooks/useMainContext";
 import { TwoCards } from "../TwoCards";
 import { RHeading } from "../RHeading";
 import { useReponsiveContext } from "../../hooks/useReponsiveContext";
+import { scrollTo } from "../../scripts";
 
 export function DecisionCreator({
   initDecision,
@@ -63,20 +64,10 @@ export function DecisionCreator({
       updateDecision({ ...decision, options: [...decision.options, toAdd] });
       setTempOption("");
       setIsTempOptionValid(false);
-      try {
-        setTimeout(
-          () =>
-            lastOption.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            }),
-          50
-        );
-      } catch (e) {
-        console.log(e);
-      }
+      scrollTo(lastOption);
     }
   }
+
   function onChangeRegisterEndTime(time: string) {
     const registerEndTime = parseInt(time);
     if (Number.isInteger(registerEndTime)) {

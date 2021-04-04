@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import type { MutableRefObject } from "react";
 import {
   addMinutes,
   decisionValidate,
@@ -69,7 +70,7 @@ export async function retryLoop(
   intervalMs: number,
   func: () => Promise<{ shouldRetry: boolean; res: any }>
 ): Promise<any> {
-  for (let x = 1; x < maxRetries+1; x++) {
+  for (let x = 1; x < maxRetries + 1; x++) {
     await sleep(x * intervalMs);
     try {
       const temp = await func();
@@ -92,13 +93,27 @@ export function isSuccess(receipt: any): boolean {
 export function intPls(sOrN: string | number): number {
   let resVal = 0;
   if (typeof sOrN == "string") {
-      resVal = parseInt(sOrN);
+    resVal = parseInt(sOrN);
   } else if (typeof sOrN == "number") {
-      resVal = sOrN;
+    resVal = sOrN;
   }
   return resVal;
 }
 
+export function scrollTo(someRef: MutableRefObject<any>) {
+  try {
+    setTimeout(
+      () =>
+        someRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        }),
+      50
+    );
+  } catch (e) {
+    console.error(e);
+  }
+}
 
 export {
   concatStrings,
