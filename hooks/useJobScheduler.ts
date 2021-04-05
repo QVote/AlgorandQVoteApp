@@ -132,7 +132,7 @@ export const useJobScheduler = (
               async () => {},
               async () => {}
             );
-          } else if (j.type == "Register") {
+          } else if (j.type == "Register" || j.type == "Vote") {
             checkContractCall(
               j,
               async () => {},

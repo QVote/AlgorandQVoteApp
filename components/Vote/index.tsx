@@ -1,10 +1,4 @@
-import {
-  Box,
-  Text,
-  Heading,
-  Button,
-  ResponsiveContext,
-} from "grommet";
+import { Box, Text, Heading, Button, ResponsiveContext } from "grommet";
 import React, { useContext, useEffect } from "react";
 import { Send } from "grommet-icons";
 import { useState } from "react";
@@ -17,13 +11,19 @@ import { onSliderConfirm } from "./utill";
 import { QVote } from "../../types";
 import { ScrollBox } from "../ScrollBox";
 import { QParagraph } from "../QParagraph";
+import { QHeading } from "../QHeading";
+import { TwoCards } from "../TwoCards";
+import { BlockchainApi } from "../../helpers/BlockchainApi";
+import type { useMainContext } from "../../hooks/useMainContext";
 
 export function Vote({
   decision,
   userAllowedCredits,
+  main,
 }: {
-  decision: QVote.ContractDecision;
+  decision: QVote.ContractDecisionProcessed;
   userAllowedCredits: number;
+  main: ReturnType<typeof useMainContext>;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
   const [loading, setLoading] = useState(false);
@@ -37,6 +37,7 @@ export function Vote({
     cur: 0,
     name: "",
   });
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     setCurCredDist(createSlidersState(decision, userAllowedCredits));
@@ -96,6 +97,29 @@ export function Vote({
     if (canSubmit()) {
       setLoading(true);
       try {
+        const blockchainApi = new BlockchainApi({
+          wallet: "zilPay",
+          protocol: main.blockchainInfo.protocol,
+        });
+        const tx = await blockchainApi.vote(decision._this_address, {
+          creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
+        });
+        setSubmitted(true);
+        main.jobsScheduler.checkContractCall(
+          {
+            id: tx.ID,
+            name: `Vote Transaction: ${tx.ID}`,
+            status: "waiting",
+            contractAddress: decision._this_address,
+            type: "Vote",
+          },
+          async () => {},
+          async () => {}
+        );
+        main.longNotification.current.setLoading();
+        main.longNotification.current.onShowNotification(
+          "Waiting for transaction confirmation..."
+        );
       } catch (e) {
         console.error(e);
       }
@@ -104,81 +128,73 @@ export function Vote({
   }
 
   return (
-    <Box
-      pad={{ horizontal: "large", vertical: "small" }}
-      fill={true}
-      gap="small"
-    >
-      {canSubmit() ? (
-        <Box
-          height={{ min: "100px", max: "100px" }}
-          align="center"
-          justify="end"
-          pad={{ bottom: "medium" }}
-        >
-          <Button disabled={!canSubmit()} onClick={() => onVoteSubmit()}>
-            <Box
-              background={"brand"}
-              round={"17px"}
-              pad={"14px"}
-              direction="row"
-              gap="medium"
+    <Box fill align="center" justify="center" pad="large">
+      <TwoCards
+        Card1={
+          <Box fill>
+            <QHeading>{"Vote"}</QHeading>
+            <Heading
+              style={{ wordBreak: "break-word" }}
+              level={responsiveContext == "small" ? "3" : "2"}
             >
-              <Send />
-              <Text weight="bold">{"Submit"}</Text>
-            </Box>
-          </Button>
-        </Box>
-      ) : (
-        <CreditsLeft
-          left={curCredDist.creditsRemaining}
-          max={userAllowedCredits}
-        />
-      )}
-      <ScrollBox props={{ gap: "small", pad: "medium" }}>
-        <Box
-          height={{ min: "medium" }}
-          fill="horizontal"
-          background="white"
-          pad="large"
-          align="center"
-          round="xsmall"
-          elevation="small"
-          overflow="hidden"
-        >
-          <Heading
-            style={{ wordBreak: "break-word" }}
-            level={responsiveContext == "small" ? "3" : "2"}
-          >
-            {decision.name}
-          </Heading>
-          <QParagraph>{decision.description.replace(/\\n/g, "\n")}</QParagraph>
-        </Box>
-
-        {curCredDist.options.map((o, index) => {
-          return (
-            <PosWithMeters
-              {...{
-                onClick: () => showGivenSlider(o.name),
-                credits: intPls(curCredDist.options[index].cur),
-                maxCredits: userAllowedCredits,
-                optionName: o.name,
-                key: `posWithMeters ${o.name}`,
-              }}
+              {decision.name}
+            </Heading>
+            <QParagraph>
+              {decision.description.replace(/\\n/g, "\n")}
+            </QParagraph>
+          </Box>
+        }
+        Card2={
+          <Box fill={true} gap="small">
+            <CreditsLeft
+              left={curCredDist.creditsRemaining}
+              max={userAllowedCredits}
             />
-          );
-        })}
-      </ScrollBox>
-      {showSlider && (
-        <SliderModal
-          {...{
-            sliderState,
-            setSlider,
-            onClickOutside: () => setShowSlider(false),
-            globalMax: userAllowedCredits,
-          }}
-        />
-      )}
+            <ScrollBox props={{ gap: "small", pad: "medium" }}>
+              {curCredDist.options.map((o, index) => {
+                return (
+                  <PosWithMeters
+                    {...{
+                      onClick: () => showGivenSlider(o.name),
+                      credits: intPls(curCredDist.options[index].cur),
+                      maxCredits: userAllowedCredits,
+                      optionName: o.name,
+                      key: `posWithMeters ${o.name}`,
+                    }}
+                  />
+                );
+              })}
+            </ScrollBox>
+            {showSlider && (
+              <SliderModal
+                {...{
+                  sliderState,
+                  setSlider,
+                  onClickOutside: () => setShowSlider(false),
+                  globalMax: userAllowedCredits,
+                }}
+              />
+            )}
+          </Box>
+        }
+        NextButton={
+          <Box fill direction="row">
+            <Box
+              justify="center"
+              align="center"
+              pad={{ left: "small" }}
+              fill
+            ></Box>
+            <Box align="center" justify="center" fill pad="small">
+              <Button
+                disabled={!canSubmit()}
+                onClick={() => onVoteSubmit()}
+                label={"Submit"}
+              />
+            </Box>
+          </Box>
+        }
+      />
     </Box>
   );
 }

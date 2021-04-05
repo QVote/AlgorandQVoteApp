@@ -1,7 +1,7 @@
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
-import { Zilliqa } from "@zilliqa-js/zilliqa";
+import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
 import { retryLoop } from "../scripts";
 
 type walletApi = "zilPay" | "moonlet";
@@ -62,16 +62,30 @@ export class BlockchainApi {
     return parseFloat(info.result!.TxBlockRate);
   }
 
-  async deploy(decision: QVote.Decision, curAccount: string) {
-    const zilPay = BlockchainApi.getZilPay();
-    const zilPayContractApi = zilPay.contracts;
-    const zilPayBlockchainApi = zilPay.blockchain;
-    const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
-    const rate = await BlockchainApi.getCurrentTxBlockRate();
-    const qv = new QVoteZilliqa(null, this.protocol, Math.round(1 / rate));
-    const gasPrice = await qv.handleMinGas(
-      zilPayBlockchainApi.getMinimumGasPrice()
+  private async getQV(includeRate?: boolean): Promise<[QVoteZilliqa, BN]> {
+    let rate;
+    if (includeRate) {
+      rate = await BlockchainApi.getCurrentTxBlockRate();
+    }
+    const qv = new QVoteZilliqa(
+      null,
+      this.protocol,
+      rate ? Math.round(1 / rate) : undefined
     );
+    const gasPrice = await qv.handleMinGas(
+      BlockchainApi.getZilPay().blockchain.getMinimumGasPrice()
+    );
+    return [qv, gasPrice];
+  }
+
+  private getContract(address: string) {
+    return BlockchainApi.getZilPay().contracts.at(address);
+  }
+
+  async deploy(decision: QVote.Decision, curAccount: string) {
+    const zilPayContractApi = BlockchainApi.getZilPay().contracts;
+    const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
+    const [qv, gasPrice] = await this.getQV(true);
     const contract = zilPayContractApi.new(
       ...qv.payloadQv({
         payload: {
@@ -108,12 +122,25 @@ export class BlockchainApi {
       creditsForAddresses: number[];
     }
   ) {
-    const qv = new QVoteZilliqa(null, this.protocol);
-    const gasPrice = await qv.handleMinGas(
-      BlockchainApi.getZilPay().blockchain.getMinimumGasPrice()
-    );
-    const contract = BlockchainApi.getZilPay().contracts.at(contractAddress);
+    const [qv, gasPrice] = await this.getQV();
+    const contract = this.getContract(contractAddress);
     const [transition, args, params] = qv.payloadOwnerRegister({
+      payload: payload,
+      gasPrice,
+    });
+    const tx = await contract.call(transition, args, params, true);
+    return tx;
+  }
+
+  async vote(
+    contractAddress: string,
+    payload: {
+      creditsToOption: string[];
+    }
+  ) {
+    const [qv, gasPrice] = await this.getQV();
+    const contract = this.getContract(contractAddress);
+    const [transition, args, params] = qv.payloadVote({
       payload: payload,
       gasPrice,
     });

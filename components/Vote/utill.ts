@@ -10,7 +10,7 @@ function getVotesFromCredits(c: number) {
 
 type onSliderConfirm = (name:string, newVal:number,) => void;
 
-function createSlidersState(decision: QVote.ContractDecision, userCredits: number): QVote.CreditDist {
+function createSlidersState(decision: QVote.ContractDecisionProcessed, userCredits: number): QVote.CreditDist {
     const sliderDS: QVote.CreditDist = {
         creditsRemaining: 0, options: []
     };

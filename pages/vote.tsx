@@ -9,7 +9,18 @@ export default function VotePage() {
   return main.contractAddressses.currentContract.owner != "" ? (
     <Vote
       decision={main.contractAddressses.currentContract}
-      userAllowedCredits={100}
+      userAllowedCredits={
+        main.contractAddressses.currentContract.voter_balances &&
+        main.curAcc &&
+        parseInt(
+          main.contractAddressses.currentContract.voter_balances[main.curAcc]
+            ? main.contractAddressses.currentContract.voter_balances[
+                main.curAcc
+              ]
+            : "0"
+        )
+      }
+      main={main}
     />
   ) : (
     <Text>{"no decision"}</Text>

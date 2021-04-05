@@ -13,7 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";

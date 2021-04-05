@@ -7,6 +7,7 @@ import {
   areOptionsValid,
   getInitDecision,
 } from "./decisionValidate";
+import { fromBech32Address } from "@zilliqa-js/crypto";
 
 function concatStrings(name: string, desc: string) {
   const mark = uuidv4().substr(0, 6);
@@ -113,6 +114,19 @@ export function scrollTo(someRef: MutableRefObject<any>) {
   } catch (e) {
     console.error(e);
   }
+}
+
+export function convertToHex(bench32OrHex: string) {
+  let a = bench32OrHex;
+  try {
+    a =
+      bench32OrHex.startsWith("zil") && bench32OrHex.length == 42
+        ? fromBech32Address(bench32OrHex)
+        : bench32OrHex;
+  } catch (e) {
+    console.error(e);
+  }
+  return a.toLocaleLowerCase();
 }
 
 export {

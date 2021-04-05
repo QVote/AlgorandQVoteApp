@@ -6,9 +6,8 @@ import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { ScrollBox } from "../components/ScrollBox";
 import { Trash, Add } from "grommet-icons";
-import { scrollTo, areUniqueOnKey } from "../scripts";
+import { scrollTo, areUniqueOnKey, convertToHex } from "../scripts";
 import { validation } from "@zilliqa-js/util";
-import { fromBech32Address } from "@zilliqa-js/crypto";
 import { QVote } from "../types";
 import { QParagraph } from "../components/QParagraph";
 import { BlockchainApi } from "../helpers/BlockchainApi";
@@ -180,19 +179,6 @@ function Register({
     };
     setTempVoter(next);
     setTempVoterValid(isTempVoterValid(next));
-  }
-
-  function convertToHex(bench32OrHex: string) {
-    let a = bench32OrHex;
-    try {
-      a =
-        bench32OrHex.startsWith("zil") && bench32OrHex.length == 42
-          ? fromBech32Address(bench32OrHex)
-          : bench32OrHex;
-    } catch (e) {
-      console.error(e);
-    }
-    return a;
   }
 
   return submitted ? (
