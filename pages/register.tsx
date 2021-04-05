@@ -1,16 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Text,
-  Keyboard,
-  TextInput,
-  Heading,
-} from "grommet";
+import { Box, Button, Text, Keyboard, TextInput, Heading } from "grommet";
 import { useMainContext } from "../hooks/useMainContext";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { TwoCards } from "../components/TwoCards";
-import { RHeading } from "../components/RHeading";
+import { QHeading } from "../components/QHeading";
 import { useReponsiveContext } from "../hooks/useReponsiveContext";
 import { ScrollBox } from "../components/ScrollBox";
 import { Trash, Add } from "grommet-icons";
@@ -214,7 +207,7 @@ function Register({
   return submitted ? (
     <Box fill align="center" justify="center" pad="large">
       <Box height="small" />
-      <RHeading {...{ responsiveContext, txt: "Transaction submitted!" }} />
+      <QHeading>{"Transaction submitted!"}</QHeading>
       <Box height="20%" justify="center" align="center">
         <Text truncate>{"Register more voters?"}</Text>
       </Box>
@@ -229,7 +222,7 @@ function Register({
         <TwoCards
           Card1={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Register users" }} />
+              <QHeading>{"Register users"}</QHeading>
               <QParagraph>
                 As an owner of a decision contract you can register voters and
                 the number of credits they can vote with.
@@ -321,9 +314,7 @@ function Register({
         <TwoCards
           Card1={
             <Box fill>
-              <RHeading
-                {...{ responsiveContext, txt: "Already Registered:" }}
-              />
+              <QHeading>{"Already Registered:"}</QHeading>
               {Object.entries(curDecision.voter_balances).length != 0 ? (
                 <ScrollBox props={{ gap: "small" }}>
                   {Object.entries(curDecision.voter_balances).map(
@@ -361,7 +352,7 @@ function Register({
           }
           Card2={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Voters" }} />
+              <QHeading>{"Voters"}</QHeading>
               <Box
                 direction="row"
                 margin={{ bottom: "small" }}

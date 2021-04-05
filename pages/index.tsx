@@ -16,7 +16,7 @@ import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
-import { RHeading } from "../components/RHeading";
+import { QHeading } from "../components/QHeading";
 import { useReponsiveContext } from "../hooks/useReponsiveContext";
 import { scrollTo } from "../scripts";
 
@@ -198,7 +198,9 @@ export default function DecisionCreator() {
         <TwoCards
           Card1={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Details" }} />
+              <QHeading>
+                {"Details"}
+              </QHeading>
               <Box fill gap="small">
                 <TextInput
                   placeholder="Name"
@@ -221,7 +223,7 @@ export default function DecisionCreator() {
           }
           Card2={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Options" }} />
+              <QHeading>{"Options"}</QHeading>
               <Box
                 direction="row"
                 margin={{ bottom: "small" }}
@@ -318,7 +320,7 @@ export default function DecisionCreator() {
         <TwoCards
           Card1={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Time" }} />
+              <QHeading>{"Time"}</QHeading>
               <Box fill gap="small">
                 <Text>Registration open:</Text>
                 <TextInput
@@ -343,7 +345,7 @@ export default function DecisionCreator() {
           }
           Card2={
             <Box fill>
-              <RHeading {...{ responsiveContext, txt: "Tokens" }} />
+              <QHeading>{"Tokens"}</QHeading>
               <Box fill gap="small">
                 <Text>Credit to token ratio</Text>
                 <TextInput
