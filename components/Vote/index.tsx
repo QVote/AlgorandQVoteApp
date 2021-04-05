@@ -4,7 +4,6 @@ import {
   Heading,
   Button,
   ResponsiveContext,
-  Paragraph,
 } from "grommet";
 import React, { useContext, useEffect } from "react";
 import { Send } from "grommet-icons";
@@ -17,6 +16,7 @@ import Meters from "./Meters";
 import { onSliderConfirm } from "./utill";
 import { QVote } from "../../types";
 import { ScrollBox } from "../ScrollBox";
+import { QParagraph } from "../QParagraph";
 
 export function Vote({
   decision,
@@ -152,14 +152,7 @@ export function Vote({
           >
             {decision.name}
           </Heading>
-          <Paragraph
-            style={{
-              whiteSpace: "pre-line",
-              wordBreak: "break-word",
-            }}
-          >
-            {decision.description.replace(/\\n/g, "\n")}
-          </Paragraph>
+          <QParagraph>{decision.description.replace(/\\n/g, "\n")}</QParagraph>
         </Box>
 
         {curCredDist.options.map((o, index) => {

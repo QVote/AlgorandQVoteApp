@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Text,
-  Paragraph,
   Keyboard,
   TextInput,
   Heading,
@@ -19,6 +18,7 @@ import { scrollTo, areUniqueOnKey } from "../scripts";
 import { validation } from "@zilliqa-js/util";
 import { fromBech32Address } from "@zilliqa-js/crypto";
 import { QVote } from "../types";
+import { QParagraph } from "../components/QParagraph";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -230,18 +230,14 @@ function Register({
           Card1={
             <Box fill>
               <RHeading {...{ responsiveContext, txt: "Register users" }} />
-              <Paragraph
-                style={{ wordBreak: "break-word", whiteSpace: "pre-line" }}
-              >
+              <QParagraph>
                 As an owner of a decision contract you can register voters and
                 the number of credits they can vote with.
-              </Paragraph>
-              <Paragraph
-                style={{ wordBreak: "break-word", whiteSpace: "pre-line" }}
-              >
+              </QParagraph>
+              <QParagraph>
                 If you call register multiple times only the last registration
                 will be valid!
-              </Paragraph>
+              </QParagraph>
             </Box>
           }
           Card2={
@@ -249,20 +245,10 @@ function Register({
               <Heading style={{ wordBreak: "break-word" }} level={"3"}>
                 {curDecision.name}
               </Heading>
-              <Paragraph
-                style={{
-                  whiteSpace: "pre-line",
-                  wordBreak: "break-word",
-                }}
-                size="small"
-              >
+              <QParagraph size="small">
                 {curDecision.description.replace(/\\n/g, "\n")}
-              </Paragraph>
-              <Paragraph
-                style={{
-                  whiteSpace: "pre-line",
-                  wordBreak: "break-word",
-                }}
+              </QParagraph>
+              <QParagraph
                 size="small"
                 color={
                   curDecision.owner == main.curAcc
@@ -273,12 +259,8 @@ function Register({
                 {curDecision.owner == main.curAcc
                   ? "You are the owner of this decision."
                   : `You are not the owner of this decision!`}
-              </Paragraph>
-              <Paragraph
-                style={{
-                  whiteSpace: "pre-line",
-                  wordBreak: "break-word",
-                }}
+              </QParagraph>
+              <QParagraph
                 size="small"
                 color={
                   parseInt(curDecision.registration_end_time) - curBlock > 0
@@ -297,7 +279,7 @@ function Register({
                           60
                       )} minutes.`
                     : `Registration period ended.`)}
-              </Paragraph>
+              </QParagraph>
               <Box align="start" justify="center">
                 <Button
                   label={"Show other decisions"}
@@ -371,15 +353,9 @@ function Register({
                   )}
                 </ScrollBox>
               ) : (
-                <Paragraph
-                  size="small"
-                  style={{
-                    whiteSpace: "pre-line",
-                    wordBreak: "break-word",
-                  }}
-                >
+                <QParagraph size="small">
                   {"There are no registered voters on this decision."}
-                </Paragraph>
+                </QParagraph>
               )}
             </Box>
           }
