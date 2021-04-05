@@ -2,7 +2,7 @@ import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
 import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
-import { retryLoop } from "../scripts";
+import { retryLoop, convertToHex } from "../scripts";
 
 type walletApi = "zilPay" | "moonlet";
 
@@ -158,7 +158,13 @@ export class BlockchainApi {
     const state = await qv.getContractState(curAccount);
     const registration_end_time = parseInt(state.registration_end_time);
     const expiration_block = parseInt(state.expiration_block);
-    const res = { ...state, registration_end_time, expiration_block };
+    const res = {
+      ...state,
+      registration_end_time,
+      expiration_block,
+      owner: convertToHex(state.owner),
+      _this_address: convertToHex(state._this_address),
+    };
     return res;
   }
 }

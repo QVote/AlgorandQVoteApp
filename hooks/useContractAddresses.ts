@@ -10,28 +10,45 @@ const init: ContractAddressesCookie = {
   addresses: [],
 };
 
+const curContractInit = {
+  credit_to_token_ratio: "",
+  description: "",
+  expiration_block: -1,
+  name: "",
+  options: [],
+  options_to_votes_map: {},
+  owner: "",
+  registered_voters: [],
+  registration_end_time: -1,
+  token_id: "",
+  voter_balances: {},
+  _balance: "",
+  _creation_block: "",
+  _scilla_version: "",
+  _this_address: "",
+};
+
 export const useContractAddresses = (
   blockchainInfo: BlockchainInfo,
   connected: boolean
 ) => {
   const [cookieState, setCookieState] = useState<ContractAddressesCookie>(init);
-  const [currentContract, setCurrentContract] = useState<QVote.ContractDecisionProcessed>({
-    credit_to_token_ratio: "",
-    description: "",
-    expiration_block: -1,
-    name: "",
-    options: [],
-    options_to_votes_map: {},
-    owner: "",
-    registered_voters: [],
-    registration_end_time: -1,
-    token_id: "",
-    voter_balances: {},
-    _balance: "",
-    _creation_block: "",
-    _scilla_version: "",
-    _this_address: "",
-  });
+  const [
+    currentContract,
+    setCurrentContract,
+  ] = useState<QVote.ContractDecisionProcessed>(curContractInit);
+  //it toggles when the cur contract is updated
+  const [change, setChange] = useState(false);
+  const [prevDecision, setPrevDecision] = useState(curContractInit);
+  /**
+   * If the contract changes toggle change
+   */
+  useEffect(() => {
+    if (currentContract._this_address != prevDecision._this_address) {
+      setChange(!change);
+    }
+    setPrevDecision(currentContract);
+  }, [currentContract]);
 
   function makeFirst(toMakeFirst: string) {
     const cur = getCookie().addresses;
@@ -97,5 +114,5 @@ export const useContractAddresses = (
     onChange();
   }, [blockchainInfo.name]);
 
-  return { ...cookieState, pushAddress, makeFirst, currentContract };
+  return { ...cookieState, pushAddress, makeFirst, currentContract, change };
 };

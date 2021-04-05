@@ -20,29 +20,13 @@ const initVoterToAdd = {
 
 export default function RegisterPage() {
   const main = useMainContext();
-  const [curDecision, setCurDecision] = useState(
-    main.contractAddressses.currentContract
-  );
-  const [change, setChange] = useState(false);
-  /**
-   * If user changes the contract toggle change to reset
-   */
-  useEffect(() => {
-    if (
-      main.contractAddressses.currentContract._this_address !=
-      curDecision._this_address
-    ) {
-      setChange(!change);
-    }
-    setCurDecision(main.contractAddressses.currentContract);
-  }, [main.contractAddressses.currentContract]);
 
-  return curDecision.owner != "" ? (
+  return main.contractAddressses.currentContract.owner != "" ? (
     <Register
       {...{
         main,
         curDecision: main.contractAddressses.currentContract,
-        change,
+        change: main.contractAddressses.change,
       }}
     />
   ) : (
