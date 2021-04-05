@@ -16,14 +16,23 @@ import { TwoCards } from "../TwoCards";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
 import type { useMainContext } from "../../hooks/useMainContext";
 
+const sliderInit = {
+  max: 0,
+  min: 0,
+  cur: 0,
+  name: "",
+};
+
 export function Vote({
   decision,
   userAllowedCredits,
   main,
+  change,
 }: {
   decision: QVote.ContractDecisionProcessed;
   userAllowedCredits: number;
   main: ReturnType<typeof useMainContext>;
+  change: boolean;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
   const [loading, setLoading] = useState(false);
@@ -31,17 +40,22 @@ export function Vote({
     createSlidersState(decision, userAllowedCredits)
   );
   const [showSlider, setShowSlider] = useState(false);
-  const [sliderState, setSliderState] = useState<QVote.SliderDs>({
-    max: 0,
-    min: 0,
-    cur: 0,
-    name: "",
-  });
+  const [sliderState, setSliderState] = useState<QVote.SliderDs>(sliderInit);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     setCurCredDist(createSlidersState(decision, userAllowedCredits));
   }, [decision]);
+
+  function reset() {
+    setCurCredDist(createSlidersState(decision, userAllowedCredits));
+    setSubmitted(false);
+    setSliderState(sliderInit);
+    setLoading(false);
+    setShowSlider(false);
+  }
+
+  useEffect(() => {}, [change]);
 
   //update all except one option
   function updateByExcept(ds: QVote.CreditDist, curName: string, diff: number) {
@@ -127,7 +141,19 @@ export function Vote({
     }
   }
 
-  return (
+  return submitted ? (
+    <Box fill align="center" justify="center" pad="large">
+      <Box height="small" />
+      <QHeading>{"Transaction submitted!"}</QHeading>
+      <Box height="20%" justify="center" align="center">
+        <Text truncate>{"Vote again?"}</Text>
+      </Box>
+      <Box align="center" justify="center" gap="medium">
+        <Button label={"Go to vote"} onClick={() => reset()} />
+      </Box>
+      <Box fill />
+    </Box>
+  ) : (
     <Box fill align="center" justify="center" pad="large">
       <TwoCards
         Card1={
