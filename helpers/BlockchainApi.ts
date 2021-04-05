@@ -66,9 +66,9 @@ export class BlockchainApi {
     const zilPay = BlockchainApi.getZilPay();
     const zilPayContractApi = zilPay.contracts;
     const zilPayBlockchainApi = zilPay.blockchain;
-    const txblock = await zilPayBlockchainApi.getLatestTxBlock();
-    const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
-    const qv = new QVoteZilliqa(null, this.protocol);
+    const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
+    const rate = await BlockchainApi.getCurrentTxBlockRate();
+    const qv = new QVoteZilliqa(null, this.protocol, Math.round(1 / rate));
     const gasPrice = await qv.handleMinGas(
       zilPayBlockchainApi.getMinimumGasPrice()
     );
