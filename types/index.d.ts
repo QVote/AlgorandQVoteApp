@@ -58,6 +58,24 @@ export module QVote {
     _this_address: string;
   };
 
+  export type ContractDecisionProcessed = {
+    credit_to_token_ratio: string;
+    description: string;
+    expiration_block: number;
+    name: string;
+    options: string[];
+    options_to_votes_map: { [key: string]: number };
+    owner: string;
+    registered_voters: string[];
+    registration_end_time: number;
+    token_id: string;
+    voter_balances: { [key: string]: string };
+    _balance: string;
+    _creation_block: string;
+    _scilla_version: string;
+    _this_address: string;
+  };
+
   export type SliderDs = {
     max: number;
     min: number;

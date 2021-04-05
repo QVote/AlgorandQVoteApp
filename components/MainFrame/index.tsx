@@ -8,6 +8,7 @@ import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
 import { Notification, NotificationHandle } from "./Notification";
 import { LongNotification, LongNotificationHandle } from "./LongNotification";
+import { BlockchainApi } from "../../helpers/BlockchainApi";
 
 export { MainFrameContext };
 
@@ -50,20 +51,23 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   }
 
   async function connect(): Promise<boolean> {
-    return window.zilPay.wallet.connect();
+    return BlockchainApi.getZilPay().wallet.connect();
   }
 
   async function onStart() {
-    if (window.zilPay) {
+    console.log(BlockchainApi.thereIsZilPay())
+    if (BlockchainApi.thereIsZilPay()) {
       const isConnect = await connect();
       if (isConnect) {
-        setCurAcc(window.zilPay.wallet.defaultAccount.base16);
-        window.zilPay.wallet.observableAccount().subscribe((account) => {
-          setCurAcc(account.base16);
-        });
-        setNet(window.zilPay.wallet.net);
-        window.zilPay.wallet
-          .observableNetwork()
+        setCurAcc(BlockchainApi.getZilPay().wallet.defaultAccount.base16);
+        BlockchainApi.getZilPay()
+          .wallet.observableAccount()
+          .subscribe((account) => {
+            setCurAcc(account.base16);
+          });
+        setNet(BlockchainApi.getZilPay().wallet.net);
+        BlockchainApi.getZilPay()
+          .wallet.observableNetwork()
           .subscribe((net: "mainnet" | "testnet" | "private") => setNet(net));
       } else {
         setConnected(false);

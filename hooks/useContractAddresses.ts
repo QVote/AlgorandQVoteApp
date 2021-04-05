@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import Cookie from "js-cookie";
 import type { BlockchainInfo } from "../config";
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
-import { Zilliqa } from "@zilliqa-js/zilliqa";
 import type { QVote } from "../types";
+import { BlockchainApi } from "../helpers/BlockchainApi";
 
 type ContractAddressesCookie = { addresses: string[] };
 
@@ -16,19 +15,16 @@ export const useContractAddresses = (
   connected: boolean
 ) => {
   const [cookieState, setCookieState] = useState<ContractAddressesCookie>(init);
-  const [
-    currentContract,
-    setCurrentContract,
-  ] = useState<QVote.ContractDecision>({
+  const [currentContract, setCurrentContract] = useState<QVote.ContractDecisionProcessed>({
     credit_to_token_ratio: "",
     description: "",
-    expiration_block: "",
+    expiration_block: -1,
     name: "",
     options: [],
     options_to_votes_map: {},
     owner: "",
     registered_voters: [],
-    registration_end_time: "",
+    registration_end_time: -1,
     token_id: "",
     voter_balances: {},
     _balance: "",
@@ -74,11 +70,11 @@ export const useContractAddresses = (
   async function getCurrentContract() {
     const curAddress = cookieState.addresses[0];
     try {
-      const qv = new QVoteZilliqa(
-        new Zilliqa("", window.zilPay.provider),
-        blockchainInfo.protocol
-      );
-      const state = await qv.getContractState(curAddress);
+      const blockchainApi = new BlockchainApi({
+        wallet: "zilPay",
+        protocol: blockchainInfo.protocol,
+      });
+      const state = await blockchainApi.getContractState(curAddress);
       setCurrentContract(state);
     } catch (e) {
       console.error(e);

@@ -1,207 +1,43 @@
-//this is embarrasing
+/**
+ * There are no types for the *modified* Zilliqa sdk object
+ * So the types are determined experimentally from chrome devtools :)
+ */
+
+type Wallet = {
+  connect: () => Promise<boolean>;
+  net: string;
+  observableAccount: () => {
+    subscribe: (func: (account: any) => void) => void;
+  };
+  observableNetwork: () => {
+    subscribe: (func: (net: any) => void) => void;
+  };
+  defaultAccount?: { base16: string };
+};
+
+type Provider = any;
 
 export type ZilPay = {
-  provider: {
-    middleware: {
-      request: {};
-      response: {};
-    };
-    RPCMethod: {
-      GetNetworkId: "GetNetworkId";
-      GetBlockchainInfo: "GetBlockchainInfo";
-      GetShardingStructure: "GetShardingStructure";
-      GetDSBlock: "GetDsBlock";
-      GetLatestDSBlock: "GetLatestDsBlock";
-      GetNumDSBlocks: "GetNumDSBlocks";
-      GetDSBlockRate: "GetDSBlockRate";
-      DSBlockListing: "DSBlockListing";
-      GetTxBlock: "GetTxBlock";
-      GetLatestTxBlock: "GetLatestTxBlock";
-      GetNumTxBlocks: "GetNumTxBlocks";
-      GetTxBlockRate: "GetTxBlockRate";
-      TxBlockListing: "TxBlockListing";
-      GetNumTransactions: "GetNumTransactions";
-      GetTransactionRate: "GetTransactionRate";
-      GetCurrentMiniEpoch: "GetCurrentMiniEpoch";
-      GetCurrentDSEpoch: "GetCurrentDSEpoch";
-      GetPrevDifficulty: "GetPrevDifficulty";
-      GetPrevDSDifficulty: "GetPrevDSDifficulty";
-      GetTotalCoinSupply: "GetTotalCoinSupply";
-      GetMinerInfo: "GetMinerInfo";
-      CreateTransaction: "CreateTransaction";
-      GetTransaction: "GetTransaction";
-      GetTransactionStatus: "GetTransactionStatus";
-      GetRecentTransactions: "GetRecentTransactions";
-      GetTransactionsForTxBlock: "GetTransactionsForTxBlock";
-      GetTxnBodiesForTxBlock: "GetTxnBodiesForTxBlock";
-      GetNumTxnsTxEpoch: "GetNumTxnsTxEpoch";
-      GetNumTxnsDSEpoch: "GetNumTxnsDSEpoch";
-      GetMinimumGasPrice: "GetMinimumGasPrice";
-      GetPendingTxn: "GetPendingTxn";
-      GetPendingTxns: "GetPendingTxns";
-      GetSmartContracts: "GetSmartContracts";
-      GetSmartContractCode: "GetSmartContractCode";
-      GetSmartContractInit: "GetSmartContractInit";
-      GetSmartContractState: "GetSmartContractState";
-      GetSmartContractSubState: "GetSmartContractSubState";
-      GetContractAddressFromTransactionID: "GetContractAddressFromTransactionID";
-      GetBalance: "GetBalance";
-    };
-  };
-  wallet: {};
+  provider: Provider;
+  wallet: Wallet;
   blockchain: {
     getLatestTxBlock: () => Promise<any>;
     getMinimumGasPrice: () => Promise<any>;
-    provider: {
-      middleware: {
-        request: {};
-        response: {};
-      };
-      RPCMethod: {
-        GetNetworkId: "GetNetworkId";
-        GetBlockchainInfo: "GetBlockchainInfo";
-        GetShardingStructure: "GetShardingStructure";
-        GetDSBlock: "GetDsBlock";
-        GetLatestDSBlock: "GetLatestDsBlock";
-        GetNumDSBlocks: "GetNumDSBlocks";
-        GetDSBlockRate: "GetDSBlockRate";
-        DSBlockListing: "DSBlockListing";
-        GetTxBlock: "GetTxBlock";
-        GetLatestTxBlock: "GetLatestTxBlock";
-        GetNumTxBlocks: "GetNumTxBlocks";
-        GetTxBlockRate: "GetTxBlockRate";
-        TxBlockListing: "TxBlockListing";
-        GetNumTransactions: "GetNumTransactions";
-        GetTransactionRate: "GetTransactionRate";
-        GetCurrentMiniEpoch: "GetCurrentMiniEpoch";
-        GetCurrentDSEpoch: "GetCurrentDSEpoch";
-        GetPrevDifficulty: "GetPrevDifficulty";
-        GetPrevDSDifficulty: "GetPrevDSDifficulty";
-        GetTotalCoinSupply: "GetTotalCoinSupply";
-        GetMinerInfo: "GetMinerInfo";
-        CreateTransaction: "CreateTransaction";
-        GetTransaction: "GetTransaction";
-        GetTransactionStatus: "GetTransactionStatus";
-        GetRecentTransactions: "GetRecentTransactions";
-        GetTransactionsForTxBlock: "GetTransactionsForTxBlock";
-        GetTxnBodiesForTxBlock: "GetTxnBodiesForTxBlock";
-        GetNumTxnsTxEpoch: "GetNumTxnsTxEpoch";
-        GetNumTxnsDSEpoch: "GetNumTxnsDSEpoch";
-        GetMinimumGasPrice: "GetMinimumGasPrice";
-        GetPendingTxn: "GetPendingTxn";
-        GetPendingTxns: "GetPendingTxns";
-        GetSmartContracts: "GetSmartContracts";
-        GetSmartContractCode: "GetSmartContractCode";
-        GetSmartContractInit: "GetSmartContractInit";
-        GetSmartContractState: "GetSmartContractState";
-        GetSmartContractSubState: "GetSmartContractSubState";
-        GetContractAddressFromTransactionID: "GetContractAddressFromTransactionID";
-        GetBalance: "GetBalance";
-      };
-    };
-    wallet: {};
+    getTransaction: (id: string) => Promise<any>;
+    getBlockChainInfo: () => Promise<any>;
+    provider: Provider;
+    wallet: Wallet;
   };
   transactions: {
-    provider: {
-      middleware: {
-        request: {};
-        response: {};
-      };
-      RPCMethod: {
-        GetNetworkId: "GetNetworkId";
-        GetBlockchainInfo: "GetBlockchainInfo";
-        GetShardingStructure: "GetShardingStructure";
-        GetDSBlock: "GetDsBlock";
-        GetLatestDSBlock: "GetLatestDsBlock";
-        GetNumDSBlocks: "GetNumDSBlocks";
-        GetDSBlockRate: "GetDSBlockRate";
-        DSBlockListing: "DSBlockListing";
-        GetTxBlock: "GetTxBlock";
-        GetLatestTxBlock: "GetLatestTxBlock";
-        GetNumTxBlocks: "GetNumTxBlocks";
-        GetTxBlockRate: "GetTxBlockRate";
-        TxBlockListing: "TxBlockListing";
-        GetNumTransactions: "GetNumTransactions";
-        GetTransactionRate: "GetTransactionRate";
-        GetCurrentMiniEpoch: "GetCurrentMiniEpoch";
-        GetCurrentDSEpoch: "GetCurrentDSEpoch";
-        GetPrevDifficulty: "GetPrevDifficulty";
-        GetPrevDSDifficulty: "GetPrevDSDifficulty";
-        GetTotalCoinSupply: "GetTotalCoinSupply";
-        GetMinerInfo: "GetMinerInfo";
-        CreateTransaction: "CreateTransaction";
-        GetTransaction: "GetTransaction";
-        GetTransactionStatus: "GetTransactionStatus";
-        GetRecentTransactions: "GetRecentTransactions";
-        GetTransactionsForTxBlock: "GetTransactionsForTxBlock";
-        GetTxnBodiesForTxBlock: "GetTxnBodiesForTxBlock";
-        GetNumTxnsTxEpoch: "GetNumTxnsTxEpoch";
-        GetNumTxnsDSEpoch: "GetNumTxnsDSEpoch";
-        GetMinimumGasPrice: "GetMinimumGasPrice";
-        GetPendingTxn: "GetPendingTxn";
-        GetPendingTxns: "GetPendingTxns";
-        GetSmartContracts: "GetSmartContracts";
-        GetSmartContractCode: "GetSmartContractCode";
-        GetSmartContractInit: "GetSmartContractInit";
-        GetSmartContractState: "GetSmartContractState";
-        GetSmartContractSubState: "GetSmartContractSubState";
-        GetContractAddressFromTransactionID: "GetContractAddressFromTransactionID";
-        GetBalance: "GetBalance";
-      };
-    };
-    wallet: {};
+    provider: Provider;
+    wallet: Wallet;
   };
   contracts: {
     new: (code: string, init: any) => any;
+    at: (address:string) => any;
     transactions: {
-      provider: {
-        middleware: {
-          request: {};
-          response: {};
-        };
-        RPCMethod: {
-          GetNetworkId: "GetNetworkId";
-          GetBlockchainInfo: "GetBlockchainInfo";
-          GetShardingStructure: "GetShardingStructure";
-          GetDSBlock: "GetDsBlock";
-          GetLatestDSBlock: "GetLatestDsBlock";
-          GetNumDSBlocks: "GetNumDSBlocks";
-          GetDSBlockRate: "GetDSBlockRate";
-          DSBlockListing: "DSBlockListing";
-          GetTxBlock: "GetTxBlock";
-          GetLatestTxBlock: "GetLatestTxBlock";
-          GetNumTxBlocks: "GetNumTxBlocks";
-          GetTxBlockRate: "GetTxBlockRate";
-          TxBlockListing: "TxBlockListing";
-          GetNumTransactions: "GetNumTransactions";
-          GetTransactionRate: "GetTransactionRate";
-          GetCurrentMiniEpoch: "GetCurrentMiniEpoch";
-          GetCurrentDSEpoch: "GetCurrentDSEpoch";
-          GetPrevDifficulty: "GetPrevDifficulty";
-          GetPrevDSDifficulty: "GetPrevDSDifficulty";
-          GetTotalCoinSupply: "GetTotalCoinSupply";
-          GetMinerInfo: "GetMinerInfo";
-          CreateTransaction: "CreateTransaction";
-          GetTransaction: "GetTransaction";
-          GetTransactionStatus: "GetTransactionStatus";
-          GetRecentTransactions: "GetRecentTransactions";
-          GetTransactionsForTxBlock: "GetTransactionsForTxBlock";
-          GetTxnBodiesForTxBlock: "GetTxnBodiesForTxBlock";
-          GetNumTxnsTxEpoch: "GetNumTxnsTxEpoch";
-          GetNumTxnsDSEpoch: "GetNumTxnsDSEpoch";
-          GetMinimumGasPrice: "GetMinimumGasPrice";
-          GetPendingTxn: "GetPendingTxn";
-          GetPendingTxns: "GetPendingTxns";
-          GetSmartContracts: "GetSmartContracts";
-          GetSmartContractCode: "GetSmartContractCode";
-          GetSmartContractInit: "GetSmartContractInit";
-          GetSmartContractState: "GetSmartContractState";
-          GetSmartContractSubState: "GetSmartContractSubState";
-          GetContractAddressFromTransactionID: "GetContractAddressFromTransactionID";
-          GetBalance: "GetBalance";
-        };
-      };
-      wallet: {};
+      provider: Provider;
+      wallet: Wallet;
     };
   };
   utils: {

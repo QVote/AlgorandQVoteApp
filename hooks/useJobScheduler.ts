@@ -4,6 +4,7 @@ import type { BlockchainInfo } from "../config";
 import { retryLoop, isSuccess } from "../scripts";
 import type { useContractAddresses } from "./useContractAddresses";
 import type { LongNotificationHandle } from "../components/MainFrame/LongNotification";
+import { BlockchainApi } from "../helpers/BlockchainApi";
 
 type Job = {
   id: string;
@@ -30,17 +31,9 @@ export const useJobScheduler = (
 
   async function runJob(job: Job) {
     pushJob(job);
-    const zilPay = window.zilPay;
-    const zilPayBlockchainApi = zilPay.blockchain;
     updateJob(job.id, { ...job, status: "inProgress" });
     //RETRY UNTIL WE HAVE A RECEIPT
-    const receipt = await retryLoop(15, 5000, async () => {
-      const resTx = await zilPayBlockchainApi.getTransaction(job.id);
-      if (resTx.receipt) {
-        return { res: resTx.receipt, shouldRetry: false };
-      }
-      return { res: undefined, shouldRetry: true };
-    });
+    const receipt = await BlockchainApi.checkReceipt(job.id);
     return receipt;
   }
 

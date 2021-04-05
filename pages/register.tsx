@@ -4,7 +4,6 @@ import { useMainContext } from "../hooks/useMainContext";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
-import { useReponsiveContext } from "../hooks/useReponsiveContext";
 import { ScrollBox } from "../components/ScrollBox";
 import { Trash, Add } from "grommet-icons";
 import { scrollTo, areUniqueOnKey } from "../scripts";
@@ -12,6 +11,7 @@ import { validation } from "@zilliqa-js/util";
 import { fromBech32Address } from "@zilliqa-js/crypto";
 import { QVote } from "../types";
 import { QParagraph } from "../components/QParagraph";
+import { BlockchainApi } from "../helpers/BlockchainApi";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -56,12 +56,11 @@ function Register({
   main,
   change,
 }: {
-  curDecision: QVote.ContractDecision;
+  curDecision: QVote.ContractDecisionProcessed;
   main: ReturnType<typeof useMainContext>;
   change: boolean;
 }) {
   const [loading, setLoading] = useState(false);
-  const responsiveContext = useReponsiveContext();
   const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
   const [tempVoterValid, setTempVoterValid] = useState(false);
   const [tempVoter, setTempVoter] = useState<VoterToAdd>(initVoterToAdd);
@@ -97,11 +96,8 @@ function Register({
 
   async function getCurBlock() {
     try {
-      const zilPayBlockchainApi = window.zilPay.blockchain;
-      const txblock = await zilPayBlockchainApi.getLatestTxBlock();
-      const info = await zilPayBlockchainApi.getBlockChainInfo();
-      const rate = parseFloat(info.result!.TxBlockRate);
-      const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
+      const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
+      const rate = await BlockchainApi.getCurrentTxBlockRate();
       setCurBlock(curBlockNumber);
       setTxRate(rate);
     } catch (e) {
@@ -113,22 +109,17 @@ function Register({
     if (!loading) {
       try {
         setLoading(true);
-        const zilPay = window.zilPay;
-        const zilPayContractApi = zilPay.contracts;
-        const zilPayBlockchainApi = zilPay.blockchain;
-        const qv = new QVoteZilliqa(null, main.blockchainInfo.protocol);
-        const gasPrice = await qv.handleMinGas(
-          zilPayBlockchainApi.getMinimumGasPrice()
-        );
-        const contract = await zilPayContractApi.at(curDecision._this_address);
-        const [transition, args, params] = qv.payloadOwnerRegister({
-          payload: {
+        const blockchainApi = new BlockchainApi({
+          wallet: "zilPay",
+          protocol: main.blockchainInfo.protocol,
+        });
+        const tx = await blockchainApi.ownerRegister(
+          curDecision._this_address,
+          {
             addresses: votersToAdd.map((v) => convertToHex(v.address)),
             creditsForAddresses: votersToAdd.map((v) => v.credits),
-          },
-          gasPrice,
-        });
-        const tx = await contract.call(transition, args, params, true);
+          }
+        );
         setSubmitted(true);
         main.jobsScheduler.checkContractCall(
           {
@@ -256,18 +247,17 @@ function Register({
               <QParagraph
                 size="small"
                 color={
-                  parseInt(curDecision.registration_end_time) - curBlock > 0
+                  curDecision.registration_end_time - curBlock > 0
                     ? "status-ok"
                     : "status-critical"
                 }
               >
                 {curBlock != -1 &&
-                  (parseInt(curDecision.registration_end_time) - curBlock > 0
+                  (curDecision.registration_end_time - curBlock > 0
                     ? `Registration ends in ${
-                        parseInt(curDecision.registration_end_time) - curBlock
+                        curDecision.registration_end_time - curBlock
                       } blocks, ~${Math.round(
-                        (parseInt(curDecision.registration_end_time) -
-                          curBlock) /
+                        (curDecision.registration_end_time - curBlock) /
                           txRate /
                           60
                       )} minutes.`
@@ -300,7 +290,7 @@ function Register({
                   disabled={
                     !(
                       curDecision.owner == main.curAcc &&
-                      parseInt(curDecision.registration_end_time) - curBlock > 0
+                      curDecision.registration_end_time - curBlock > 0
                     )
                   }
                   label={"Next"}

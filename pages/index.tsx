@@ -100,16 +100,12 @@ export default function DecisionCreator() {
     updateDecision({ ...decision, options: newOptions });
   }
 
-  useEffect(() => {
-    console.log(window.zilPay);
-  }, []);
-
   async function onDeploy() {
     if (!loading && decisionValid.isValid) {
       try {
         setLoading(true);
         const blockchain = new BlockchainApi({
-          wallet: "zilpay",
+          wallet: "zilPay",
           protocol: main.blockchainInfo.protocol,
         });
         const [tx, contractInstance] = await blockchain.deploy(
