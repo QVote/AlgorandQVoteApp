@@ -69,3 +69,5 @@ export module QVote {
     options: SliderDs[];
   };
 }
+
+export { ZilPay } from "./ZilPay";

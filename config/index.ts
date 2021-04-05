@@ -1,4 +1,4 @@
-type Protocol = { chainId: number; msgVersion: number };
+export type Protocol = { chainId: number; msgVersion: number };
 
 export type BlockchainInfo = {
   url: string;

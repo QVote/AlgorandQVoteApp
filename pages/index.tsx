@@ -1,5 +1,5 @@
 import { QVote } from "../types";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Box,
   TextInput,
@@ -19,6 +19,7 @@ import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { useReponsiveContext } from "../hooks/useReponsiveContext";
 import { scrollTo } from "../scripts";
+import { BlockchainApi } from "../helpers/BlockchainApi";
 
 export default function DecisionCreator() {
   const responsiveContext = useReponsiveContext();
@@ -99,50 +100,21 @@ export default function DecisionCreator() {
     updateDecision({ ...decision, options: newOptions });
   }
 
+  useEffect(() => {
+    console.log(window.zilPay);
+  }, []);
+
   async function onDeploy() {
     if (!loading && decisionValid.isValid) {
       try {
         setLoading(true);
-        const zilPay = window.zilPay;
-        const zilPayContractApi = zilPay.contracts;
-        const zilPayBlockchainApi = zilPay.blockchain;
-        // Do zilliqa sdk stuff
-        const txblock = await zilPayBlockchainApi.getLatestTxBlock();
-        const curBlockNumber = parseInt(txblock.result!.header!.BlockNum);
-        console.log(main.blockchainInfo.protocol);
-        const qv = new QVoteZilliqa(null, main.blockchainInfo.protocol);
-        const gasPrice = await qv.handleMinGas(
-          zilPayBlockchainApi.getMinimumGasPrice()
-        );
-        // *******************************************************
-        const contract = zilPayContractApi.new(
-          ...qv.payloadQv({
-            payload: {
-              name: decision.name,
-              description: decision.description,
-              options: decision.options.map((o) => o.optName),
-              creditToTokenRatio: decision.creditToTokenRatio,
-              //can register for next 0 min
-              registrationEndTime: qv.futureTxBlockNumber(
-                curBlockNumber,
-                60 * decision.registerEndTime
-              ),
-              //can vote in 0 min and voting is open for 15 min
-              expirationBlock: qv.futureTxBlockNumber(
-                curBlockNumber,
-                60 * decision.endTime + 60 * decision.registerEndTime
-              ),
-              tokenId: decision.tokenId,
-            },
-            ownerAddress: main.curAcc,
-          })
-        );
-        const [params, attempts, interval] = qv.payloadDeploy({ gasPrice });
-        console.log(contract, { params, attempts, interval });
-        const [tx, contractInstance] = await contract.deploy(
-          params,
-          attempts,
-          interval
+        const blockchain = new BlockchainApi({
+          wallet: "zilpay",
+          protocol: main.blockchainInfo.protocol,
+        });
+        const [tx, contractInstance] = await blockchain.deploy(
+          decision,
+          main.curAcc
         );
         setSubmitted(true);
         main.jobsScheduler.checkDeployCall(
@@ -198,9 +170,7 @@ export default function DecisionCreator() {
         <TwoCards
           Card1={
             <Box fill>
-              <QHeading>
-                {"Details"}
-              </QHeading>
+              <QHeading>{"Details"}</QHeading>
               <Box fill gap="small">
                 <TextInput
                   placeholder="Name"
