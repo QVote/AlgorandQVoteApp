@@ -293,7 +293,7 @@ function CreditsLeft({ left, max }: { left: number; max: number }) {
       <Heading
         responsive={false}
         textAlign="center"
-        level="3"
+        level="4"
         size="small"
       >{`Credits Left: ${left}`}</Heading>
       <Meters credits={left} maxCredits={max} onlyPos />

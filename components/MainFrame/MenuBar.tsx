@@ -1,11 +1,11 @@
 import React, {
-  useContext,
   useState,
   MutableRefObject,
   useImperativeHandle,
   forwardRef,
+  useEffect,
 } from "react";
-import { Box, Text, ResponsiveContext, Button, Stack } from "grommet";
+import { Box, Text, Button } from "grommet";
 import type { NextRouter } from "next/router";
 import { QVoteLogo } from "../QVoteLogo";
 import { MenuButton } from "./MenuButton";
@@ -23,8 +23,9 @@ import {
   Cubes,
 } from "grommet-icons";
 import { ScrollBox } from "../ScrollBox";
-import { MainFrameContext } from "./MainFrameContext";
 import { onCopy } from "../../scripts";
+import { useReponsiveContext } from "../../hooks/useReponsiveContext";
+import { useMainContext } from "../../hooks/useMainContext";
 
 const _COMPANY_SITE = "https://qvote.co.uk";
 
@@ -59,14 +60,18 @@ function MenuBarComponent(
   },
   ref: MutableRefObject<MenuHandle>
 ) {
-  const responsiveContext = useContext(ResponsiveContext);
-  const main = useContext(MainFrameContext);
+  const responsiveContext = useReponsiveContext();
+  const main = useMainContext();
   const [open, setOpen] = useState<OpenTypes>("none");
 
   useImperativeHandle(ref, () => ({
     setOpen,
     open,
   }));
+
+  useEffect(() => {
+    setOpen("none");
+  }, [router.pathname]);
 
   async function onGoTo(path: string) {
     await router.push(path);
@@ -140,16 +145,18 @@ function MenuBarComponent(
           gap="small"
         >
           <QVoteLogo color={_LOGO_STRONG} size={"5vh"} />
-          <Box margin={{ bottom: "0.2vh" }}>
-            <Text
-              color={_LOGO_STRONG}
-              size={responsiveContext == "small" ? "medium" : "large"}
-              //@ts-ignore
-              style={{ fontWeight: "500" }}
-            >
-              QVote
-            </Text>
-          </Box>
+          {responsiveContext != "small" && (
+            <Box margin={{ bottom: "0.2vh" }}>
+              <Text
+                color={_LOGO_STRONG}
+                size={responsiveContext == "small" ? "medium" : "large"}
+                //@ts-ignore
+                style={{ fontWeight: "500" }}
+              >
+                QVote
+              </Text>
+            </Box>
+          )}
         </Box>
         <MenuButton
           txt={"Create"}
