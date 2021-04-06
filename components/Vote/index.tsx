@@ -212,7 +212,11 @@ export function Vote({
               {curBlock != -1 &&
                 (decision.registration_end_time > curBlock
                   ? // if hasnt ended yet
-                    `Registration period for this hasn't ended yet`
+                    `Registration period for this hasn't ended yet, ends in: ${
+                      decision.registration_end_time - curBlock
+                    } blocks, ~${Math.round(
+                      (decision.registration_end_time - curBlock) / txRate / 60
+                    )} minutes.`
                   : // if the registration time has ended
                   decision.expiration_block > curBlock
                   ? `Voting ends in ${
