@@ -1,16 +1,18 @@
 import { MutableRefObject, useEffect, useState } from "react";
 import Cookie from "js-cookie";
 import type { BlockchainInfo } from "../config";
-import { retryLoop, isSuccess } from "../scripts";
+import { isSuccess } from "../scripts";
 import type { useContractAddresses } from "./useContractAddresses";
 import type { LongNotificationHandle } from "../components/MainFrame/LongNotification";
 import { BlockchainApi } from "../helpers/BlockchainApi";
+
+type JobTypes = "Deploy" | "Vote" | "Register";
 
 type Job = {
   id: string;
   name: string;
   status: "waiting" | "inProgress" | "done" | "error";
-  type: "Deploy" | "Vote" | "Register";
+  type: JobTypes;
   contractAddress: string;
 };
 
@@ -20,6 +22,27 @@ const init: JobsCookie = {
   jobs: [],
   someInProgress: false,
 };
+
+const _JOB_SUCCESS_EVENT: Partial<Record<JobTypes, string>> = {
+  Register: "owner_register_success",
+  Vote: "vote_success",
+};
+
+function logsHaveEvent(logs: { _eventname: string }[], eventName: string) {
+  const logsContain = logs.filter((l) => l._eventname == eventName).length != 0;
+  return logsContain;
+}
+
+function isContractCallReceiptSuccess(
+  receipt: { event_logs?: { _eventname: string }[] },
+  eventName: string
+) {
+  const success = isSuccess(receipt);
+  if (receipt.event_logs && success) {
+    return logsHaveEvent(receipt.event_logs, eventName);
+  }
+  return false;
+}
 
 export const useJobScheduler = (
   blockchainInfo: BlockchainInfo,
@@ -73,18 +96,16 @@ export const useJobScheduler = (
   ) {
     try {
       const receipt = await runJob(job);
-      if (isSuccess(receipt)) {
+      if (isContractCallReceiptSuccess(receipt, _JOB_SUCCESS_EVENT[job.type])) {
         longNotification.current.setSuccess();
         longNotification.current.onShowNotification(
-          "Decision contract call successful!"
+          `${job.type} call successful.`
         );
         await onSuccess();
         updateJob(job.id, { ...job, status: "done" });
       } else {
         longNotification.current.setError();
-        longNotification.current.onShowNotification(
-          "Failed to call decision contract!"
-        );
+        longNotification.current.onShowNotification(`${job.type} call failed!`);
         throw new Error("Failed to confirm transaction");
       }
     } catch (e) {
