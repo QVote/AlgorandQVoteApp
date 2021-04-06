@@ -24,7 +24,7 @@ import {
 } from "grommet-icons";
 import { ScrollBox } from "../ScrollBox";
 import { onCopy } from "../../scripts";
-import { useReponsiveContext } from "../../hooks/useReponsiveContext";
+import { useResponsiveContext } from "../../hooks/useResponsiveContext";
 import { useMainContext } from "../../hooks/useMainContext";
 
 const _COMPANY_SITE = "https://qvote.co.uk";
@@ -60,7 +60,7 @@ function MenuBarComponent(
   },
   ref: MutableRefObject<MenuHandle>
 ) {
-  const responsiveContext = useReponsiveContext();
+  const responsiveContext = useResponsiveContext();
   const main = useMainContext();
   const [open, setOpen] = useState<OpenTypes>("none");
 

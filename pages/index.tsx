@@ -16,12 +16,12 @@ import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
-import { useReponsiveContext } from "../hooks/useReponsiveContext";
+import { useResponsiveContext } from "../hooks/useResponsiveContext";
 import { scrollTo } from "../scripts";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 
 export default function DecisionCreator() {
-  const responsiveContext = useReponsiveContext();
+  const responsiveContext = useResponsiveContext();
   const main = useMainContext();
   const [decision, setDecision] = useState(getInitDecision());
   const [tempOption, setTempOption] = useState("");
