@@ -183,7 +183,7 @@ function Register({
         <TwoCards
           Card1={
             <Box fill>
-              <QHeading>{"Register users"}</QHeading>
+              <QHeading>{"Register voters"}</QHeading>
               <QParagraph>
                 As an owner of a decision contract you can register voters and
                 the number of credits they can vote with.
@@ -233,18 +233,6 @@ function Register({
                       )} minutes.`
                     : `Registration period ended.`)}
               </QParagraph>
-              <Box align="start" justify="center">
-                <Button
-                  label={"Show other decisions"}
-                  onClick={() =>
-                    main.menu.current.setOpen(
-                      main.menu.current.open != "contracts"
-                        ? "contracts"
-                        : "none"
-                    )
-                  }
-                />
-              </Box>
             </Box>
           }
           NextButton={
