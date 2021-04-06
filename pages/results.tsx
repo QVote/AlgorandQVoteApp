@@ -5,6 +5,7 @@ import { QHeading } from "../components/QHeading";
 import { TwoCards } from "../components/TwoCards";
 import { useResponsiveContext } from "../hooks/useResponsiveContext";
 import { useMainContext } from "../hooks/useMainContext";
+import { BarChart } from "../components/BarChart";
 
 export default function ResultsPage() {
   const main = useMainContext();
@@ -45,7 +46,7 @@ function Results({ main, curDecision, change }) {
             </QParagraph>
           </Box>
         }
-        Card2={<Box fill></Box>}
+        Card2={<BarChart decision={curDecision} />}
         NextButton={<Box fill></Box>}
       />
     </Box>

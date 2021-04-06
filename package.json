@@ -10,6 +10,7 @@
   "dependencies": {
     "@qvote/zilliqa-sdk": "^1.1.6",
     "@zilliqa-js/zilliqa": "^2.2.1",
+    "d3": "^6.6.2",
     "grommet": "^2.16.3",
     "js-cookie": "^2.2.1",
     "next": "10.1.2",
@@ -19,6 +20,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/d3": "^6.3.0",
     "@types/js-cookie": "^2.2.6",
     "@types/node": "^14.14.34",
     "@types/react": "^17.0.3",

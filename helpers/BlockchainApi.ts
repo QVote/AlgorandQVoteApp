@@ -158,12 +158,15 @@ export class BlockchainApi {
     const state = await qv.getContractState(curAccount);
     const registration_end_time = parseInt(state.registration_end_time);
     const expiration_block = parseInt(state.expiration_block);
-    const res = {
+    const res: QVote.ContractDecisionProcessed = {
       ...state,
       registration_end_time,
       expiration_block,
       owner: convertToHex(state.owner),
       _this_address: convertToHex(state._this_address),
+      option_to_votes: Object.entries(
+        state.options_to_votes_map
+      ).map(([k, v]) => ({ name: k, vote: v })),
     };
     return res;
   }

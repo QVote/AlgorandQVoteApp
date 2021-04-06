@@ -10,13 +10,14 @@ const init: ContractAddressesCookie = {
   addresses: [],
 };
 
-const curContractInit = {
+const curContractInit:QVote.ContractDecisionProcessed = {
   credit_to_token_ratio: "",
   description: "",
   expiration_block: -1,
   name: "",
   options: [],
   options_to_votes_map: {},
+  option_to_votes: [],
   owner: "",
   registered_voters: [],
   registration_end_time: -1,

@@ -65,6 +65,7 @@ export module QVote {
     name: string;
     options: string[];
     options_to_votes_map: { [key: string]: number };
+    option_to_votes: { name: string; vote: number }[];
     owner: string;
     registered_voters: string[];
     registration_end_time: number;
