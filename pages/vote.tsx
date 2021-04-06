@@ -20,6 +20,7 @@ export default function VotePage() {
             : "0"
         )
       }
+      change={main.contractAddressses.change}
       main={main}
     />
   ) : (

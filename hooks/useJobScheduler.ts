@@ -109,7 +109,12 @@ export const useJobScheduler = (
     const cookie = getCookie();
     const isAlreadyIn = cookie.jobs.filter((j) => add.id == j.id).length == 1;
     if (!isAlreadyIn) {
-      const next = [add, ...cookie.jobs];
+      const jobs = cookie.jobs;
+      //hold only most recent 9 transactions
+      if (jobs.length > 8) {
+        jobs.pop();
+      }
+      const next = [add, ...jobs];
       setCookie({ ...cookie, jobs: next });
     }
   }

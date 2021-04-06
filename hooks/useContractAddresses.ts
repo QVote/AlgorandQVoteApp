@@ -62,7 +62,12 @@ export const useContractAddresses = (
   }
 
   function pushAddress(add: string) {
-    const next = [add, ...getCookie().addresses];
+    const addresses = getCookie().addresses;
+    //hold only most recent 9 contract addresses
+    if (addresses.length > 8) {
+      addresses.pop();
+    }
+    const next = [add, ...addresses];
     setCookie({ addresses: next });
   }
 
