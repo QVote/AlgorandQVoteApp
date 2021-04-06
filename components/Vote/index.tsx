@@ -42,6 +42,23 @@ export function Vote({
   const [showSlider, setShowSlider] = useState(false);
   const [sliderState, setSliderState] = useState<QVote.SliderDs>(sliderInit);
   const [submitted, setSubmitted] = useState(false);
+  const [curBlock, setCurBlock] = useState(-1);
+  const [txRate, setTxRate] = useState(-1);
+
+  //Get and set the current block and tx rate.
+  useEffect(() => {
+    getCurBlock();
+  }, [change]);
+  async function getCurBlock() {
+    try {
+      const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
+      const rate = await BlockchainApi.getCurrentTxBlockRate();
+      setCurBlock(curBlockNumber);
+      setTxRate(rate);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   useEffect(() => {
     setCurCredDist(createSlidersState(decision, userAllowedCredits));
@@ -168,6 +185,43 @@ export function Vote({
             <QParagraph>
               {decision.description.replace(/\\n/g, "\n")}
             </QParagraph>
+            <QParagraph
+              size="small"
+              color={
+                Object.keys(decision.voter_balances).includes(main.curAcc)
+                  ? "status-ok"
+                  : "status-critical"
+              }
+            >
+              {Object.keys(decision.voter_balances).includes(main.curAcc)
+                ? "You are registered on this decision."
+                : "You are not registered on this decision!"}
+            </QParagraph>
+            <QParagraph
+              size="small"
+              color={
+                decision.registration_end_time > curBlock
+                  ? // if registration hasnt ended yet
+                    "status-critical"
+                  : // if the registration time has ended
+                  decision.expiration_block > curBlock
+                  ? "status-ok"
+                  : "status-critical"
+              }
+            >
+              {curBlock != -1 &&
+                (decision.registration_end_time > curBlock
+                  ? // if hasnt ended yet
+                    `Registration period for this hasn't ended yet`
+                  : // if the registration time has ended
+                  decision.expiration_block > curBlock
+                  ? `Voting ends in ${
+                      decision.expiration_block - curBlock
+                    } blocks, ~${Math.round(
+                      (decision.expiration_block - curBlock) / txRate / 60
+                    )} minutes.`
+                  : "The voting period of this decision has ended.")}
+            </QParagraph>
           </Box>
         }
         Card2={
@@ -227,24 +281,22 @@ export function Vote({
 
 function CreditsLeft({ left, max }: { left: number; max: number }) {
   return (
-    <>
-      <Box
-        round="xsmall"
-        height={{ min: "100px", max: "100px" }}
-        align="center"
-        justify="end"
-        background="white"
-        margin={{ left: "medium", right: "medium" }}
-        pad={{ horizontal: "large" }}
-      >
-        <Heading
-          responsive={false}
-          textAlign="center"
-          level="3"
-          size="small"
-        >{`Credits Left: ${left}`}</Heading>
-        <Meters credits={left} maxCredits={max} onlyPos />
-      </Box>
-    </>
+    <Box
+      round="xsmall"
+      height={{ min: "100px", max: "100px" }}
+      align="center"
+      justify="end"
+      background="white"
+      margin={{ left: "medium", right: "medium" }}
+      pad={{ horizontal: "large" }}
+    >
+      <Heading
+        responsive={false}
+        textAlign="center"
+        level="3"
+        size="small"
+      >{`Credits Left: ${left}`}</Heading>
+      <Meters credits={left} maxCredits={max} onlyPos />
+    </Box>
   );
 }
