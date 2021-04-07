@@ -10,11 +10,11 @@ import { BarChart } from "../../components/BarChart";
 export default function PreviewPage() {
   const main = useMainContext();
 
-  return main.contractAddressses.currentContract._this_address != "" ? (
+  return main.useContracts.contract.isDefined ? (
     <Preview
       {...{
         main,
-        curDecision: main.contractAddressses.currentContract,
+        curDecision: main.useContracts.contract.state,
       }}
     />
   ) : (
@@ -31,9 +31,7 @@ function Preview({ main, curDecision }) {
         Card1={
           <Box fill>
             <QHeading>{"Preview"}</QHeading>
-            <QParagraph>
-              Here you can preview the current decision.
-            </QParagraph>
+            <QParagraph>Here you can preview the current decision.</QParagraph>
             <Heading
               style={{ wordBreak: "break-word" }}
               level={responsiveContext == "small" ? "3" : "2"}

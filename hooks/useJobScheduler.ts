@@ -2,7 +2,7 @@ import { MutableRefObject, useEffect, useState } from "react";
 import Cookie from "js-cookie";
 import type { BlockchainInfo } from "../config";
 import { isSuccess } from "../scripts";
-import type { useContractAddresses } from "./useContractAddresses";
+import type { useContracts } from "./useContracts";
 import type { LongNotificationHandle } from "../components/MainFrame/LongNotification";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 
@@ -46,7 +46,7 @@ function isContractCallReceiptSuccess(
 
 export const useJobScheduler = (
   blockchainInfo: BlockchainInfo,
-  contractAddressses: ReturnType<typeof useContractAddresses>,
+  contractAddressses: ReturnType<typeof useContracts>,
   longNotification: MutableRefObject<LongNotificationHandle>,
   connected: boolean
 ) => {
@@ -71,7 +71,7 @@ export const useJobScheduler = (
     try {
       const receipt = await runJob(job);
       if (isSuccess(receipt)) {
-        contractAddressses.pushAddress(job.contractAddress);
+        contractAddressses.makeFirst(job.contractAddress);
         longNotification.current.setSuccess();
         longNotification.current.onShowNotification(
           "Success. QVote decision deployed!"

@@ -1,6 +1,5 @@
 import { Box, Text, Heading, Button, ResponsiveContext } from "grommet";
 import React, { useContext, useEffect } from "react";
-import { Send } from "grommet-icons";
 import { useState } from "react";
 import { intPls } from "../../scripts";
 import { createSlidersState } from "./utill";
@@ -27,12 +26,10 @@ export function Vote({
   decision,
   userAllowedCredits,
   main,
-  change,
 }: {
   decision: QVote.ContractDecisionProcessed;
   userAllowedCredits: number;
   main: ReturnType<typeof useMainContext>;
-  change: boolean;
 }) {
   const responsiveContext = useContext(ResponsiveContext);
   const [loading, setLoading] = useState(false);
@@ -42,23 +39,6 @@ export function Vote({
   const [showSlider, setShowSlider] = useState(false);
   const [sliderState, setSliderState] = useState<QVote.SliderDs>(sliderInit);
   const [submitted, setSubmitted] = useState(false);
-  const [curBlock, setCurBlock] = useState(-1);
-  const [txRate, setTxRate] = useState(-1);
-
-  //Get and set the current block and tx rate.
-  useEffect(() => {
-    getCurBlock();
-  }, [change]);
-  async function getCurBlock() {
-    try {
-      const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
-      const rate = await BlockchainApi.getCurrentTxBlockRate();
-      setCurBlock(curBlockNumber);
-      setTxRate(rate);
-    } catch (e) {
-      console.error(e);
-    }
-  }
 
   useEffect(() => {
     setCurCredDist(createSlidersState(decision, userAllowedCredits));
@@ -71,8 +51,6 @@ export function Vote({
     setLoading(false);
     setShowSlider(false);
   }
-
-  useEffect(() => {}, [change]);
 
   //update all except one option
   function updateByExcept(ds: QVote.CreditDist, curName: string, diff: number) {
@@ -198,31 +176,22 @@ export function Vote({
             <QParagraph
               size="small"
               color={
-                decision.registration_end_time > curBlock
-                  ? // if registration hasnt ended yet
-                    "status-critical"
-                  : // if the registration time has ended
-                  decision.expiration_block > curBlock
+                main.useContracts.contract.info.timeState ==
+                "REGISTRATION_IN_PROGRESS"
+                  ? "status-critical"
+                  : main.useContracts.contract.info.timeState ==
+                    "VOTING_IN_PROGRESS"
                   ? "status-ok"
                   : "status-critical"
               }
             >
-              {curBlock != -1 &&
-                (decision.registration_end_time > curBlock
-                  ? // if hasnt ended yet
-                    `Registration period for this hasn't ended yet, ends in: ${
-                      decision.registration_end_time - curBlock
-                    } blocks, ~${Math.round(
-                      (decision.registration_end_time - curBlock) / txRate / 60
-                    )} minutes.`
-                  : // if the registration time has ended
-                  decision.expiration_block > curBlock
-                  ? `Voting ends in ${
-                      decision.expiration_block - curBlock
-                    } blocks, ~${Math.round(
-                      (decision.expiration_block - curBlock) / txRate / 60
-                    )} minutes.`
-                  : "The voting period of this decision has ended.")}
+              {main.useContracts.contract.info.timeState ==
+              "REGISTRATION_IN_PROGRESS"
+                ? `Registration period for this hasn't ended yet, ends in: ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+                : main.useContracts.contract.info.timeState ==
+                  "VOTING_IN_PROGRESS"
+                ? `Voting ends in ${main.useContracts.contract.info.time.voteEnds.blocks} blocks, ~${main.useContracts.contract.info.time.voteEnds.minutes} minutes.`
+                : "The voting period of this decision has ended."}
             </QParagraph>
           </Box>
         }

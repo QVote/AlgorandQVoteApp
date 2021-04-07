@@ -6,21 +6,14 @@ import { Vote } from "../../components/Vote";
 export default function VotePage() {
   const main = useMainContext();
 
-  return main.contractAddressses.currentContract.owner != "" ? (
+  return main.useContracts.contract.isDefined ? (
     <Vote
-      decision={main.contractAddressses.currentContract}
+      decision={main.useContracts.contract.state}
       userAllowedCredits={
-        main.contractAddressses.currentContract.voter_balances &&
-        main.curAcc &&
-        parseInt(
-          main.contractAddressses.currentContract.voter_balances[main.curAcc]
-            ? main.contractAddressses.currentContract.voter_balances[
-                main.curAcc
-              ]
-            : "0"
-        )
+        main.useContracts.contract.info.userVoter != "NOT_REGISTERED"
+          ? main.useContracts.contract.state.voter_balances[main.curAcc]
+          : 0
       }
-      change={main.contractAddressses.change}
       main={main}
     />
   ) : (

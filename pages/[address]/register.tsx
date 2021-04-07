@@ -20,13 +20,11 @@ const initVoterToAdd = {
 export default function RegisterPage() {
   const main = useMainContext();
 
-  return formatAddress(main.contractAddressses.currentContract.owner) !=
-    formatAddress(main.curAcc) ? (
+  return main.useContracts.contract.info.userIsOwner ? (
     <Register
       {...{
         main,
-        curDecision: main.contractAddressses.currentContract,
-        change: main.contractAddressses.change,
+        curDecision: main.useContracts.contract.state,
       }}
     />
   ) : (
@@ -37,11 +35,9 @@ export default function RegisterPage() {
 function Register({
   curDecision,
   main,
-  change,
 }: {
   curDecision: QVote.ContractDecisionProcessed;
   main: ReturnType<typeof useMainContext>;
-  change: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
@@ -50,23 +46,6 @@ function Register({
   const lastVoterToAdd = useRef(null);
   const [nextCard, setNextCard] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [previousChange, setPreviousChange] = useState(change);
-  const [curBlock, setCurBlock] = useState(-1);
-  const [txRate, setTxRate] = useState(-1);
-
-  /**
-   * reset on change
-   */
-  useEffect(() => {
-    if (change != previousChange) {
-      reset();
-      setPreviousChange(change);
-    }
-  }, [change]);
-
-  useEffect(() => {
-    getCurBlock();
-  }, [change]);
 
   function reset() {
     setNextCard(false);
@@ -74,18 +53,6 @@ function Register({
     setVotersToAdd([]);
     setTempVoter(initVoterToAdd);
     setSubmitted(false);
-    setCurBlock(-1);
-  }
-
-  async function getCurBlock() {
-    try {
-      const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
-      const rate = await BlockchainApi.getCurrentTxBlockRate();
-      setCurBlock(curBlockNumber);
-      setTxRate(rate);
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   async function onOwnerRegister() {
@@ -215,21 +182,16 @@ function Register({
               <QParagraph
                 size="small"
                 color={
-                  curDecision.registration_end_time - curBlock > 0
+                  main.useContracts.contract.info.timeState ==
+                  "REGISTRATION_IN_PROGRESS"
                     ? "status-ok"
                     : "status-critical"
                 }
               >
-                {curBlock != -1 &&
-                  (curDecision.registration_end_time - curBlock > 0
-                    ? `Registration ends in ${
-                        curDecision.registration_end_time - curBlock
-                      } blocks, ~${Math.round(
-                        (curDecision.registration_end_time - curBlock) /
-                          txRate /
-                          60
-                      )} minutes.`
-                    : `Registration period ended.`)}
+                {main.useContracts.contract.info.timeState ==
+                "REGISTRATION_IN_PROGRESS"
+                  ? `Registration ends in ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+                  : `Registration period ended.`}
               </QParagraph>
             </Box>
           }
@@ -244,10 +206,8 @@ function Register({
               <Box align="center" justify="center" fill pad="small">
                 <Button
                   disabled={
-                    !(
-                      curDecision.owner == main.curAcc &&
-                      curDecision.registration_end_time - curBlock > 0
-                    )
+                    main.useContracts.contract.info.timeState !=
+                    "REGISTRATION_IN_PROGRESS"
                   }
                   label={"Next"}
                   onClick={() => setNextCard(true)}

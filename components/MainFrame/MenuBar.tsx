@@ -209,7 +209,7 @@ function MenuBarComponent(
                 elevation="small"
                 pad="medium"
               >
-                {main.contractAddressses.addresses.length == 0 ? (
+                {main.useContracts.addresses.length == 0 ? (
                   <ScrollBox
                     props={{
                       pad: {
@@ -242,34 +242,32 @@ function MenuBarComponent(
                   >
                     <Notice txt={"Your selected decision:"} />
                     <Address
-                      txt={main.contractAddressses.addresses[0]}
+                      txt={main.useContracts.addresses[0]}
                       bg={"status-ok"}
                       onClick={() =>
-                        main.contractAddressses.makeFirst(
-                          main.contractAddressses.addresses[0]
+                        main.useContracts.makeFirst(
+                          main.useContracts.addresses[0]
                         )
                       }
                       onViewBlock={() => {
-                        tryToViewBlockContract(
-                          main.contractAddressses.addresses[0]
-                        );
+                        tryToViewBlockContract(main.useContracts.addresses[0]);
                       }}
                       onCopyTxt={() =>
                         onCopyText(
-                          main.contractAddressses.addresses[0],
+                          main.useContracts.addresses[0],
                           "Address Copied!"
                         )
                       }
                     />
-                    {main.contractAddressses.addresses.length > 1 && (
+                    {main.useContracts.addresses.length > 1 && (
                       <Notice txt={"Your other decisions:"} />
                     )}
-                    {main.contractAddressses.addresses.length > 1 &&
-                      main.contractAddressses.addresses.slice(1).map((a) => (
+                    {main.useContracts.addresses.length > 1 &&
+                      main.useContracts.addresses.slice(1).map((a) => (
                         <Address
                           txt={a}
                           key={`contact${a}`}
-                          onClick={() => main.contractAddressses.makeFirst(a)}
+                          onClick={() => main.useContracts.makeFirst(a)}
                           onCopyTxt={() => onCopyText(a, "Address Copied!")}
                           onViewBlock={() => {
                             tryToViewBlockContract(a);

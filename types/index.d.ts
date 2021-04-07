@@ -70,7 +70,7 @@ export module QVote {
     registered_voters: string[];
     registration_end_time: number;
     token_id: string;
-    voter_balances: { [key: string]: string };
+    voter_balances: { [key: string]: number };
     _balance: string;
     _creation_block: string;
     _scilla_version: string;

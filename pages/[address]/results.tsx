@@ -10,12 +10,10 @@ import { BarChart } from "../../components/BarChart";
 export default function ResultsPage() {
   const main = useMainContext();
 
-  return main.contractAddressses.currentContract.owner != "" ? (
+  return main.useContracts.contract.info.userIsOwner ? (
     <Results
       {...{
-        main,
-        curDecision: main.contractAddressses.currentContract,
-        change: main.contractAddressses.change,
+        curDecision: main.useContracts.contract.state,
       }}
     />
   ) : (
@@ -23,7 +21,7 @@ export default function ResultsPage() {
   );
 }
 
-function Results({ main, curDecision, change }) {
+function Results({ curDecision }) {
   const responsiveContext = useResponsiveContext();
 
   return (

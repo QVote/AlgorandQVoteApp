@@ -169,6 +169,12 @@ export class BlockchainApi {
       option_to_votes: Object.entries(
         state.options_to_votes_map
       ).map(([k, v]) => ({ name: k, vote: v })),
+      voter_balances: Object.fromEntries(
+        Object.entries(state.voter_balances).map(([k, v]) => [
+          formatAddress(k),
+          parseInt(v),
+        ])
+      ),
     };
     return res;
   }

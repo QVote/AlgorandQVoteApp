@@ -1,5 +1,5 @@
 import { createContext, MutableRefObject } from "react";
-import { useContractAddresses } from "../../hooks/useContractAddresses";
+import { useContracts } from "../../hooks/useContracts";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { BlockchainInfo, BLOCKCHAINS } from "../../config";
 import type { NotificationHandle } from "./Notification";
@@ -10,7 +10,7 @@ export const MainFrameContext = createContext<{
   curAcc: string | undefined;
   connected: boolean;
   blockchainInfo: BlockchainInfo;
-  contractAddressses: ReturnType<typeof useContractAddresses>;
+  useContracts: ReturnType<typeof useContracts>;
   jobsScheduler: ReturnType<typeof useJobScheduler>;
   notification: MutableRefObject<NotificationHandle>;
   longNotification: MutableRefObject<LongNotificationHandle>;
@@ -19,7 +19,7 @@ export const MainFrameContext = createContext<{
   curAcc: undefined,
   connected: undefined,
   blockchainInfo: undefined,
-  contractAddressses: undefined,
+  useContracts: undefined,
   jobsScheduler: undefined,
   notification: undefined,
   longNotification: undefined,
