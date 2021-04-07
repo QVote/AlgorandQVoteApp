@@ -3,6 +3,9 @@ import Cookie from "js-cookie";
 import type { BlockchainInfo } from "../config";
 import type { QVote } from "../types";
 import { BlockchainApi } from "../helpers/BlockchainApi";
+import { useRouter } from "next/router";
+import { formatAddress, notArrPlz } from "../scripts";
+import { validation } from "@zilliqa-js/zilliqa";
 
 type ContractAddressesCookie = { addresses: string[] };
 
@@ -10,7 +13,7 @@ const init: ContractAddressesCookie = {
   addresses: [],
 };
 
-const curContractInit:QVote.ContractDecisionProcessed = {
+const curContractInit: QVote.ContractDecisionProcessed = {
   credit_to_token_ratio: "",
   description: "",
   expiration_block: -1,
@@ -38,23 +41,35 @@ export const useContractAddresses = (
     currentContract,
     setCurrentContract,
   ] = useState<QVote.ContractDecisionProcessed>(curContractInit);
+  const router = useRouter();
   //it toggles when the cur contract is updated
   const [change, setChange] = useState(false);
-  const [prevDecision, setPrevDecision] = useState(curContractInit);
   /**
    * If the contract changes toggle change
    */
   useEffect(() => {
-    if (currentContract._this_address != prevDecision._this_address) {
-      setChange(!change);
+    setChange(!change);
+  }, [currentContract._this_address]);
+
+  /**
+   * Check query
+   * if is address make it first in addresses
+   * if it is not address do nothing
+   */
+  useEffect(() => {
+    const { address } = router.query;
+    const add = formatAddress(notArrPlz(address));
+    if (validation.isAddress(add)) {
+      console.log("making first", add);
+      makeFirst(add);
     }
-    setPrevDecision(currentContract);
-  }, [currentContract]);
+  }, [router.query]);
 
   function makeFirst(toMakeFirst: string) {
     const cur = getCookie().addresses;
     if (!cur.includes(toMakeFirst)) {
-      return;
+      const next = [toMakeFirst, ...cur];
+      setCookie({ addresses: next });
     } else {
       const tail = cur.filter((a) => a != toMakeFirst);
       const next = [toMakeFirst, ...tail];
@@ -64,8 +79,12 @@ export const useContractAddresses = (
 
   function pushAddress(add: string) {
     const addresses = getCookie().addresses;
-    //hold only most recent 9 contract addresses
-    if (addresses.length > 8) {
+    const isAlreadyIn = addresses.filter((a) => add == a).length == 1;
+    if (isAlreadyIn) {
+      return;
+    }
+    //hold only most recent 8 contract addresses
+    if (addresses.length > 7) {
       addresses.pop();
     }
     const next = [add, ...addresses];

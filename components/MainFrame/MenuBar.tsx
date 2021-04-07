@@ -33,7 +33,7 @@ const _LOGO_STRONG = "#333333";
 const _LOGO_WEAK = "#666666";
 
 const PATHS = {
-  create: "/",
+  create: "/create",
   vote: "/vote",
   register: "/register",
   results: "/results",

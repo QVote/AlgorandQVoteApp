@@ -182,9 +182,7 @@ export function Vote({
             >
               {decision.name}
             </Heading>
-            <QParagraph>
-              {decision.description.replace(/\\n/g, "\n")}
-            </QParagraph>
+            <QParagraph>{decision.description}</QParagraph>
             <QParagraph
               size="small"
               color={

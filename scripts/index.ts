@@ -116,7 +116,7 @@ export function scrollTo(someRef: MutableRefObject<any>) {
   }
 }
 
-export function convertToHex(bench32OrHex: string) {
+export function formatAddress(bench32OrHex: string) {
   let a = bench32OrHex;
   try {
     a =
@@ -127,6 +127,16 @@ export function convertToHex(bench32OrHex: string) {
     console.error(e);
   }
   return a.toLocaleLowerCase();
+}
+
+export function notArrPlz(a: string | string[]): string {
+  if (typeof a == "object") {
+    return a.join();
+  } else if (typeof a == "string") {
+    return a;
+  } else {
+    return "";
+  }
 }
 
 export {

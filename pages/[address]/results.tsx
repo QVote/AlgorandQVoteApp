@@ -1,11 +1,11 @@
 import React from "react";
 import { Box, Heading, Text } from "grommet";
-import { QParagraph } from "../components/QParagraph";
-import { QHeading } from "../components/QHeading";
-import { TwoCards } from "../components/TwoCards";
-import { useResponsiveContext } from "../hooks/useResponsiveContext";
-import { useMainContext } from "../hooks/useMainContext";
-import { BarChart } from "../components/BarChart";
+import { QParagraph } from "../../components/QParagraph";
+import { QHeading } from "../../components/QHeading";
+import { TwoCards } from "../../components/TwoCards";
+import { useResponsiveContext } from "../../hooks/useResponsiveContext";
+import { useMainContext } from "../../hooks/useMainContext";
+import { BarChart } from "../../components/BarChart";
 
 export default function ResultsPage() {
   const main = useMainContext();
@@ -41,9 +41,7 @@ function Results({ main, curDecision, change }) {
             >
               {curDecision.name}
             </Heading>
-            <QParagraph>
-              {curDecision.description.replace(/\\n/g, "\n")}
-            </QParagraph>
+            <QParagraph>{curDecision.description}</QParagraph>
           </Box>
         }
         Card2={<BarChart decision={curDecision} />}

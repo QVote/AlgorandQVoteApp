@@ -2,7 +2,8 @@ import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
 import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
 import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
-import { retryLoop, convertToHex } from "../scripts";
+import { retryLoop, formatAddress } from "../scripts";
+import { stat } from "node:fs";
 
 type walletApi = "zilPay" | "moonlet";
 
@@ -149,21 +150,22 @@ export class BlockchainApi {
   }
 
   async getContractState(
-    curAccount: string
+    address: string
   ): Promise<QVote.ContractDecisionProcessed> {
     const qv = new QVoteZilliqa(
       new Zilliqa("", BlockchainApi.getZilPay().provider),
       this.protocol
     );
-    const state = await qv.getContractState(curAccount);
+    const state = await qv.getContractState(address);
     const registration_end_time = parseInt(state.registration_end_time);
     const expiration_block = parseInt(state.expiration_block);
     const res: QVote.ContractDecisionProcessed = {
       ...state,
+      description: state.description.replace(/\\n/g, "\n"),
       registration_end_time,
       expiration_block,
-      owner: convertToHex(state.owner),
-      _this_address: convertToHex(state._this_address),
+      owner: formatAddress(state.owner),
+      _this_address: formatAddress(state._this_address),
       option_to_votes: Object.entries(
         state.options_to_votes_map
       ).map(([k, v]) => ({ name: k, vote: v })),

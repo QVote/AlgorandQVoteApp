@@ -1,16 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Button, Text, Keyboard, TextInput, Heading } from "grommet";
-import { useMainContext } from "../hooks/useMainContext";
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
-import { TwoCards } from "../components/TwoCards";
-import { QHeading } from "../components/QHeading";
-import { ScrollBox } from "../components/ScrollBox";
+import { useMainContext } from "../../hooks/useMainContext";
+import { TwoCards } from "../../components/TwoCards";
+import { QHeading } from "../../components/QHeading";
+import { ScrollBox } from "../../components/ScrollBox";
 import { Trash, Add } from "grommet-icons";
-import { scrollTo, areUniqueOnKey, convertToHex } from "../scripts";
+import { scrollTo, areUniqueOnKey, formatAddress } from "../../scripts";
 import { validation } from "@zilliqa-js/util";
-import { QVote } from "../types";
-import { QParagraph } from "../components/QParagraph";
-import { BlockchainApi } from "../helpers/BlockchainApi";
+import { QVote } from "../../types";
+import { QParagraph } from "../../components/QParagraph";
+import { BlockchainApi } from "../../helpers/BlockchainApi";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -21,7 +20,8 @@ const initVoterToAdd = {
 export default function RegisterPage() {
   const main = useMainContext();
 
-  return main.contractAddressses.currentContract.owner != "" ? (
+  return formatAddress(main.contractAddressses.currentContract.owner) !=
+    formatAddress(main.curAcc) ? (
     <Register
       {...{
         main,
@@ -99,7 +99,7 @@ function Register({
         const tx = await blockchainApi.ownerRegister(
           curDecision._this_address,
           {
-            addresses: votersToAdd.map((v) => convertToHex(v.address)),
+            addresses: votersToAdd.map((v) => formatAddress(v.address)),
             creditsForAddresses: votersToAdd.map((v) => v.credits),
           }
         );
@@ -129,7 +129,7 @@ function Register({
 
   function isTempVoterValid(v: VoterToAdd) {
     return (
-      validation.isAddress(convertToHex(v.address)) &&
+      validation.isAddress(formatAddress(v.address)) &&
       areUniqueOnKey([v, ...votersToAdd], "address")
     );
   }
@@ -199,9 +199,7 @@ function Register({
               <Heading style={{ wordBreak: "break-word" }} level={"3"}>
                 {curDecision.name}
               </Heading>
-              <QParagraph size="small">
-                {curDecision.description.replace(/\\n/g, "\n")}
-              </QParagraph>
+              <QParagraph size="small">{curDecision.description}</QParagraph>
               <QParagraph
                 size="small"
                 color={

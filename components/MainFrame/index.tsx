@@ -9,7 +9,7 @@ import { MainFrameContext } from "./MainFrameContext";
 import { Notification, NotificationHandle } from "./Notification";
 import { LongNotification, LongNotificationHandle } from "./LongNotification";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
-import { convertToHex } from "../../scripts";
+import { formatAddress } from "../../scripts";
 
 export { MainFrameContext };
 
@@ -60,12 +60,12 @@ export function MainFrame({ children }: { children: JSX.Element }) {
       const isConnect = await connect();
       if (isConnect) {
         setCurAcc(
-          convertToHex(BlockchainApi.getZilPay().wallet.defaultAccount.base16)
+          formatAddress(BlockchainApi.getZilPay().wallet.defaultAccount.base16)
         );
         BlockchainApi.getZilPay()
           .wallet.observableAccount()
           .subscribe((account) => {
-            setCurAcc(convertToHex(account.base16));
+            setCurAcc(formatAddress(account.base16));
           });
         setNet(BlockchainApi.getZilPay().wallet.net);
         BlockchainApi.getZilPay()
