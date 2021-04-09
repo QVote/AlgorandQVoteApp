@@ -2,9 +2,6 @@ import React, { useContext } from "react";
 import { Box, Button, Text, ResponsiveContext } from "grommet";
 import { Icon } from "grommet-icons";
 
-const _LOGO_STRONG = "#333333";
-const _LOGO_WEAK = "#666666";
-
 export function MenuButton({
   txt,
   txtColor,
@@ -13,19 +10,23 @@ export function MenuButton({
   onClick,
   isCurrent,
   spin,
+  notResponsive,
 }: {
   txtColor?: string;
   txt: string;
   IconToDisp?: Icon;
   onClick: () => void | Promise<void>;
-  isCurrent: boolean;
+  isCurrent?: boolean;
   iconColor?: string;
   spin?: boolean;
+  notResponsive?: boolean;
 }) {
-  const responsiveContext = useContext(ResponsiveContext);
+  const responsiveContext = notResponsive
+    ? "not responsive"
+    : useContext(ResponsiveContext);
 
   return (
-    <Box height="7vh" width={IconToDisp ? "10vw" : "25vw"}>
+    <Box height="7vh" width={IconToDisp ? "11vw" : "25vw"}>
       <Button fill plain onClick={onClick}>
         <Box
           fill
@@ -34,15 +35,13 @@ export function MenuButton({
           border={"bottom"}
           style={{
             borderWidth: isCurrent ? "2px" : "0px",
-            borderColor: _LOGO_STRONG,
+            borderColor: "dark-1",
           }}
         >
           {IconToDisp && (
             <Box animation={spin ? "rotateRight" : null}>
               <IconToDisp
-                color={
-                  iconColor ? iconColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
-                }
+                color={iconColor ? iconColor : isCurrent ? "dark-1" : "dark-3"}
               />
             </Box>
           )}
@@ -50,9 +49,7 @@ export function MenuButton({
             <Text
               weight={IconToDisp ? "normal" : "bold"}
               size={IconToDisp ? "xsmall" : "small"}
-              color={
-                txtColor ? txtColor : isCurrent ? _LOGO_STRONG : _LOGO_WEAK
-              }
+              color={txtColor ? txtColor : isCurrent ? "dark-1" : "dark-3"}
             >
               {txt}
             </Text>

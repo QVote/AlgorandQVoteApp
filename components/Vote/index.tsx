@@ -149,104 +149,102 @@ export function Vote({
       <Box fill />
     </Box>
   ) : (
-    <Box fill align="center" justify="center" pad="large">
-      <TwoCards
-        Card1={
-          <Box fill>
-            <QHeading>{"Vote"}</QHeading>
-            <Heading
-              style={{ wordBreak: "break-word" }}
-              level={responsiveContext == "small" ? "3" : "2"}
-            >
-              {decision.name}
-            </Heading>
-            <QParagraph>{decision.description}</QParagraph>
-            <QParagraph
-              size="small"
-              color={
-                Object.keys(decision.voter_balances).includes(main.curAcc)
-                  ? "status-ok"
-                  : "status-critical"
-              }
-            >
-              {Object.keys(decision.voter_balances).includes(main.curAcc)
-                ? "You are registered on this decision."
-                : "You are not registered on this decision!"}
-            </QParagraph>
-            <QParagraph
-              size="small"
-              color={
-                main.useContracts.contract.info.timeState ==
-                "REGISTRATION_IN_PROGRESS"
-                  ? "status-critical"
-                  : main.useContracts.contract.info.timeState ==
-                    "VOTING_IN_PROGRESS"
-                  ? "status-ok"
-                  : "status-critical"
-              }
-            >
-              {main.useContracts.contract.info.timeState ==
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Vote"}</QHeading>
+          <Heading
+            style={{ wordBreak: "break-word" }}
+            level={responsiveContext == "small" ? "3" : "2"}
+          >
+            {decision.name}
+          </Heading>
+          <QParagraph>{decision.description}</QParagraph>
+          <QParagraph
+            size="small"
+            color={
+              Object.keys(decision.voter_balances).includes(main.curAcc)
+                ? "status-ok"
+                : "status-critical"
+            }
+          >
+            {Object.keys(decision.voter_balances).includes(main.curAcc)
+              ? "You are registered on this decision."
+              : "You are not registered on this decision!"}
+          </QParagraph>
+          <QParagraph
+            size="small"
+            color={
+              main.useContracts.contract.info.timeState ==
               "REGISTRATION_IN_PROGRESS"
-                ? `Registration period for this hasn't ended yet, ends in: ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+                ? "status-critical"
                 : main.useContracts.contract.info.timeState ==
                   "VOTING_IN_PROGRESS"
-                ? `Voting ends in ${main.useContracts.contract.info.time.voteEnds.blocks} blocks, ~${main.useContracts.contract.info.time.voteEnds.minutes} minutes.`
-                : "The voting period of this decision has ended."}
-            </QParagraph>
-          </Box>
-        }
-        Card2={
-          <Box fill={true} gap="small">
-            <CreditsLeft
-              left={curCredDist.creditsRemaining}
-              max={userAllowedCredits}
+                ? "status-ok"
+                : "status-critical"
+            }
+          >
+            {main.useContracts.contract.info.timeState ==
+            "REGISTRATION_IN_PROGRESS"
+              ? `Registration period for this hasn't ended yet, ends in: ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+              : main.useContracts.contract.info.timeState ==
+                "VOTING_IN_PROGRESS"
+              ? `Voting ends in ${main.useContracts.contract.info.time.voteEnds.blocks} blocks, ~${main.useContracts.contract.info.time.voteEnds.minutes} minutes.`
+              : "The voting period of this decision has ended."}
+          </QParagraph>
+        </Box>
+      }
+      Card2={
+        <Box fill={true} gap="small">
+          <CreditsLeft
+            left={curCredDist.creditsRemaining}
+            max={userAllowedCredits}
+          />
+          <ScrollBox props={{ gap: "small", pad: "medium" }}>
+            {curCredDist.options.map((o, index) => {
+              return (
+                <PosWithMeters
+                  {...{
+                    onClick: () => showGivenSlider(o.name),
+                    credits: intPls(curCredDist.options[index].cur),
+                    maxCredits: userAllowedCredits,
+                    optionName: o.name,
+                    key: `posWithMeters ${o.name}`,
+                  }}
+                />
+              );
+            })}
+          </ScrollBox>
+          {showSlider && (
+            <SliderModal
+              {...{
+                sliderState,
+                setSlider,
+                onClickOutside: () => setShowSlider(false),
+                globalMax: userAllowedCredits,
+              }}
             />
-            <ScrollBox props={{ gap: "small", pad: "medium" }}>
-              {curCredDist.options.map((o, index) => {
-                return (
-                  <PosWithMeters
-                    {...{
-                      onClick: () => showGivenSlider(o.name),
-                      credits: intPls(curCredDist.options[index].cur),
-                      maxCredits: userAllowedCredits,
-                      optionName: o.name,
-                      key: `posWithMeters ${o.name}`,
-                    }}
-                  />
-                );
-              })}
-            </ScrollBox>
-            {showSlider && (
-              <SliderModal
-                {...{
-                  sliderState,
-                  setSlider,
-                  onClickOutside: () => setShowSlider(false),
-                  globalMax: userAllowedCredits,
-                }}
-              />
-            )}
+          )}
+        </Box>
+      }
+      NextButton={
+        <Box fill direction="row">
+          <Box
+            justify="center"
+            align="center"
+            pad={{ left: "small" }}
+            fill
+          ></Box>
+          <Box align="center" justify="center" fill pad="small">
+            <Button
+              disabled={!canSubmit()}
+              onClick={() => onVoteSubmit()}
+              label={"Submit"}
+            />
           </Box>
-        }
-        NextButton={
-          <Box fill direction="row">
-            <Box
-              justify="center"
-              align="center"
-              pad={{ left: "small" }}
-              fill
-            ></Box>
-            <Box align="center" justify="center" fill pad="small">
-              <Button
-                disabled={!canSubmit()}
-                onClick={() => onVoteSubmit()}
-                label={"Submit"}
-              />
-            </Box>
-          </Box>
-        }
-      />
-    </Box>
+        </Box>
+      }
+    />
   );
 }
 

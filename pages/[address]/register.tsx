@@ -144,212 +144,204 @@ function Register({
       </Box>
       <Box fill />
     </Box>
-  ) : (
-    <Box fill align="center" justify="center" pad="large">
-      {!nextCard ? (
-        <TwoCards
-          Card1={
-            <Box fill>
-              <QHeading>{"Register voters"}</QHeading>
-              <QParagraph>
-                As an owner of a decision contract you can register voters and
-                the number of credits they can vote with.
-              </QParagraph>
-              <QParagraph>
-                If you call register multiple times only the last registration
-                will be valid!
-              </QParagraph>
-            </Box>
-          }
-          Card2={
-            <Box fill justify="start">
-              <Heading style={{ wordBreak: "break-word" }} level={"3"}>
-                {curDecision.name}
-              </Heading>
-              <QParagraph size="small">{curDecision.description}</QParagraph>
-              <QParagraph
-                size="small"
-                color={
-                  curDecision.owner == main.curAcc
-                    ? "status-ok"
-                    : "status-critical"
-                }
-              >
-                {curDecision.owner == main.curAcc
-                  ? "You are the owner of this decision."
-                  : `You are not the owner of this decision!`}
-              </QParagraph>
-              <QParagraph
-                size="small"
-                color={
-                  main.useContracts.contract.info.timeState ==
-                  "REGISTRATION_IN_PROGRESS"
-                    ? "status-ok"
-                    : "status-critical"
-                }
-              >
-                {main.useContracts.contract.info.timeState ==
+  ) : !nextCard ? (
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Register voters"}</QHeading>
+          <QParagraph>
+            As an owner of a decision contract you can register voters and the
+            number of credits they can vote with.
+          </QParagraph>
+          <QParagraph>
+            If you call register multiple times only the last registration will
+            be valid!
+          </QParagraph>
+        </Box>
+      }
+      Card2={
+        <Box fill justify="start">
+          <Heading style={{ wordBreak: "break-word" }} level={"3"}>
+            {curDecision.name}
+          </Heading>
+          <QParagraph size="small">{curDecision.description}</QParagraph>
+          <QParagraph
+            size="small"
+            color={
+              curDecision.owner == main.curAcc ? "status-ok" : "status-critical"
+            }
+          >
+            {curDecision.owner == main.curAcc
+              ? "You are the owner of this decision."
+              : `You are not the owner of this decision!`}
+          </QParagraph>
+          <QParagraph
+            size="small"
+            color={
+              main.useContracts.contract.info.timeState ==
+              "REGISTRATION_IN_PROGRESS"
+                ? "status-ok"
+                : "status-critical"
+            }
+          >
+            {main.useContracts.contract.info.timeState ==
+            "REGISTRATION_IN_PROGRESS"
+              ? `Registration ends in ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+              : `Registration period ended.`}
+          </QParagraph>
+        </Box>
+      }
+      NextButton={
+        <Box fill direction="row">
+          <Box
+            justify="center"
+            align="center"
+            pad={{ left: "small" }}
+            fill
+          ></Box>
+          <Box align="center" justify="center" fill pad="small">
+            <Button
+              disabled={
+                main.useContracts.contract.info.timeState !=
                 "REGISTRATION_IN_PROGRESS"
-                  ? `Registration ends in ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
-                  : `Registration period ended.`}
-              </QParagraph>
-            </Box>
-          }
-          NextButton={
-            <Box fill direction="row">
-              <Box
-                justify="center"
-                align="center"
-                pad={{ left: "small" }}
-                fill
-              ></Box>
-              <Box align="center" justify="center" fill pad="small">
-                <Button
-                  disabled={
-                    main.useContracts.contract.info.timeState !=
-                    "REGISTRATION_IN_PROGRESS"
-                  }
-                  label={"Next"}
-                  onClick={() => setNextCard(true)}
-                />
-              </Box>
-            </Box>
-          }
-        />
-      ) : (
-        <TwoCards
-          Card1={
-            <Box fill>
-              <QHeading>{"Already Registered:"}</QHeading>
-              {Object.entries(curDecision.voter_balances).length != 0 ? (
-                <ScrollBox props={{ gap: "small" }}>
-                  {Object.entries(curDecision.voter_balances).map(
-                    ([k, v], i) => {
-                      return (
-                        <Box
-                          height={{ min: "50px" }}
-                          justify="center"
-                          key={`option${k}`}
-                          margin={{ bottom: "small" }}
-                          pad={{ left: "small" }}
-                          background="white"
-                          round="xsmall"
-                          direction="row"
-                        >
-                          <Box fill justify="center">
-                            <Text truncate size="small">
-                              {`${i + 1}. ${k}`}
-                            </Text>
-                            <Text truncate size="small">
-                              {`Credits: ${v}`}
-                            </Text>
-                          </Box>
-                        </Box>
-                      );
-                    }
-                  )}
-                </ScrollBox>
-              ) : (
-                <QParagraph size="small">
-                  {"There are no registered voters on this decision."}
-                </QParagraph>
-              )}
-            </Box>
-          }
-          Card2={
-            <Box fill>
-              <QHeading>{"Voters"}</QHeading>
-              <Box
-                direction="row"
-                margin={{ bottom: "small" }}
-                height={{ min: "xxsmall" }}
-              >
-                <Keyboard onEnter={onAddTempVoter}>
-                  <Box fill direction="row" gap="small">
-                    <Box fill>
-                      <TextInput
-                        placeholder="Voter Address"
-                        size="small"
-                        value={tempVoter.address}
-                        onChange={(e) => onAddressChange(e.target.value)}
-                        maxLength={42}
-                      />
-                    </Box>
-                    <Box width="70%">
-                      <TextInput
-                        placeholder="Credit to token ratio"
-                        size="small"
-                        type="number"
-                        value={tempVoter.credits}
-                        maxLength={3}
-                        onChange={(e) => onChangeCredits(e.target.value)}
-                      />
-                    </Box>
-                    <Box align="center" justify="center" height="xxsmall">
-                      <Button
-                        icon={<Add />}
-                        disabled={!tempVoterValid}
-                        onClick={onAddTempVoter}
-                      />
+              }
+              label={"Next"}
+              onClick={() => setNextCard(true)}
+            />
+          </Box>
+        </Box>
+      }
+    />
+  ) : (
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Already Registered:"}</QHeading>
+          {Object.entries(curDecision.voter_balances).length != 0 ? (
+            <ScrollBox props={{ gap: "small" }}>
+              {Object.entries(curDecision.voter_balances).map(([k, v], i) => {
+                return (
+                  <Box
+                    height={{ min: "50px" }}
+                    justify="center"
+                    key={`option${k}`}
+                    margin={{ bottom: "small" }}
+                    pad={{ left: "small" }}
+                    background="white"
+                    round="xsmall"
+                    direction="row"
+                  >
+                    <Box fill justify="center">
+                      <Text truncate size="small">
+                        {`${i + 1}. ${k}`}
+                      </Text>
+                      <Text truncate size="small">
+                        {`Credits: ${v}`}
+                      </Text>
                     </Box>
                   </Box>
-                </Keyboard>
+                );
+              })}
+            </ScrollBox>
+          ) : (
+            <QParagraph size="small">
+              {"There are no registered voters on this decision."}
+            </QParagraph>
+          )}
+        </Box>
+      }
+      Card2={
+        <Box fill>
+          <QHeading>{"Voters"}</QHeading>
+          <Box
+            direction="row"
+            margin={{ bottom: "small" }}
+            height={{ min: "xxsmall" }}
+          >
+            <Keyboard onEnter={onAddTempVoter}>
+              <Box fill direction="row" gap="small">
+                <Box fill>
+                  <TextInput
+                    placeholder="Voter Address"
+                    size="small"
+                    value={tempVoter.address}
+                    onChange={(e) => onAddressChange(e.target.value)}
+                    maxLength={42}
+                  />
+                </Box>
+                <Box width="70%">
+                  <TextInput
+                    placeholder="Credit to token ratio"
+                    size="small"
+                    type="number"
+                    value={tempVoter.credits}
+                    maxLength={3}
+                    onChange={(e) => onChangeCredits(e.target.value)}
+                  />
+                </Box>
+                <Box align="center" justify="center" height="xxsmall">
+                  <Button
+                    icon={<Add />}
+                    disabled={!tempVoterValid}
+                    onClick={onAddTempVoter}
+                  />
+                </Box>
               </Box>
-              <ScrollBox props={{ gap: "small" }}>
-                {votersToAdd.map((v, i) => {
-                  return (
-                    <Box
-                      height={{ min: "50px" }}
-                      justify="center"
-                      key={`voter${v.address}`}
-                      ref={lastVoterToAdd}
-                      margin={{ bottom: "small" }}
-                      pad={{ left: "small" }}
-                      background="white"
-                      round="xsmall"
-                      direction="row"
-                    >
-                      <Box fill justify="center">
-                        <Text truncate size="small">
-                          {`${i + 1}. ${v.address}`}
-                        </Text>
-                        <Text truncate size="small">
-                          {`Credits: ${v.credits}`}
-                        </Text>
-                      </Box>
-                      <Box align="center" justify="center">
-                        <Button
-                          onClick={() => onDeleteVoter(v.address)}
-                          icon={<Trash />}
-                        />
-                      </Box>
-                    </Box>
-                  );
-                })}
-              </ScrollBox>
-            </Box>
-          }
-          NextButton={
-            <Box fill direction="row">
-              <Box justify="center" align="center" pad={{ left: "small" }} fill>
-                <Button
-                  disabled={false}
-                  secondary
-                  label={"Go Back"}
-                  onClick={() => setNextCard(false)}
-                />
-              </Box>
-              <Box align="center" justify="center" fill pad="small">
-                <Button
-                  disabled={loading || votersToAdd.length == 0}
-                  label={"Register Voters"}
-                  onClick={() => onOwnerRegister()}
-                />
-              </Box>
-            </Box>
-          }
-        />
-      )}
-    </Box>
+            </Keyboard>
+          </Box>
+          <ScrollBox props={{ gap: "small" }}>
+            {votersToAdd.map((v, i) => {
+              return (
+                <Box
+                  height={{ min: "50px" }}
+                  justify="center"
+                  key={`voter${v.address}`}
+                  ref={lastVoterToAdd}
+                  margin={{ bottom: "small" }}
+                  pad={{ left: "small" }}
+                  background="white"
+                  round="xsmall"
+                  direction="row"
+                >
+                  <Box fill justify="center">
+                    <Text truncate size="small">
+                      {`${i + 1}. ${v.address}`}
+                    </Text>
+                    <Text truncate size="small">
+                      {`Credits: ${v.credits}`}
+                    </Text>
+                  </Box>
+                  <Box align="center" justify="center">
+                    <Button
+                      onClick={() => onDeleteVoter(v.address)}
+                      icon={<Trash />}
+                    />
+                  </Box>
+                </Box>
+              );
+            })}
+          </ScrollBox>
+        </Box>
+      }
+      NextButton={
+        <Box fill direction="row">
+          <Box justify="center" align="center" pad={{ left: "small" }} fill>
+            <Button
+              disabled={false}
+              secondary
+              label={"Go Back"}
+              onClick={() => setNextCard(false)}
+            />
+          </Box>
+          <Box align="center" justify="center" fill pad="small">
+            <Button
+              disabled={loading || votersToAdd.length == 0}
+              label={"Register Voters"}
+              onClick={() => onOwnerRegister()}
+            />
+          </Box>
+        </Box>
+      }
+    />
   );
 }

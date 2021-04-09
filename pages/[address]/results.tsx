@@ -25,26 +25,24 @@ function Results({ curDecision }) {
   const responsiveContext = useResponsiveContext();
 
   return (
-    <Box fill align="center" justify="center" pad="large">
-      <TwoCards
-        Card1={
-          <Box fill>
-            <QHeading>{"Results"}</QHeading>
-            <QParagraph>
-              Here you can view the current state of the contract results.
-            </QParagraph>
-            <Heading
-              style={{ wordBreak: "break-word" }}
-              level={responsiveContext == "small" ? "3" : "2"}
-            >
-              {curDecision.name}
-            </Heading>
-            <QParagraph>{curDecision.description}</QParagraph>
-          </Box>
-        }
-        Card2={<BarChart decision={curDecision} />}
-        NextButton={<Box fill></Box>}
-      />
-    </Box>
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Results"}</QHeading>
+          <QParagraph>
+            Here you can view the current state of the contract results.
+          </QParagraph>
+          <Heading
+            style={{ wordBreak: "break-word" }}
+            level={responsiveContext == "small" ? "3" : "2"}
+          >
+            {curDecision.name}
+          </Heading>
+          <QParagraph>{curDecision.description}</QParagraph>
+        </Box>
+      }
+      Card2={<BarChart decision={curDecision} />}
+      NextButton={<Box fill></Box>}
+    />
   );
 }

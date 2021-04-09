@@ -92,7 +92,6 @@ export const useContracts = (
     const { address } = router.query;
     const add = formatAddress(notArrPlz(address));
     if (validation.isAddress(add)) {
-      console.log("making first", add);
       makeFirst(add);
     }
   }, [router.query]);

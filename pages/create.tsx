@@ -14,11 +14,12 @@ import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { useMainContext } from "../hooks/useMainContext";
-import { TwoCards } from "../components/TwoCards";
+import { TwoCards, TwoCardsContainerWrapper } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { useResponsiveContext } from "../hooks/useResponsiveContext";
 import { scrollTo } from "../scripts";
 import { BlockchainApi } from "../helpers/BlockchainApi";
+import { TransactionSubmitted } from "../components/TransactionSubmitted";
 
 export default function DecisionCreator() {
   const responsiveContext = useResponsiveContext();
@@ -136,225 +137,199 @@ export default function DecisionCreator() {
   }
 
   return submitted ? (
-    <Box fill align="center" justify="center" pad="large">
-      <Box height="small" />
-      <Heading
-        textAlign="center"
-        level={responsiveContext == "small" ? "2" : "1"}
-      >
-        {"Transaction submitted!"}
-      </Heading>
-      <Box height="20%" justify="center" align="center">
-        <Text truncate>{"Create another decision?"}</Text>
-      </Box>
-      <Box align="center" justify="center" gap="medium">
-        <Button
-          label={"Go to create"}
-          onClick={() => {
-            updateDecision(getInitDecision());
-            setNextCard(false);
-            setSubmitted(false);
-          }}
-        />
-      </Box>
-      <Box fill />
-    </Box>
-  ) : (
-    <Box fill align="center" justify="center" pad="large">
-      {!nextCard ? (
-        <TwoCards
-          Card1={
-            <Box fill>
-              <QHeading>{"Details"}</QHeading>
-              <Box fill gap="small">
-                <TextInput
-                  placeholder="Name"
-                  size="small"
-                  value={decision.name}
-                  maxLength={100}
-                  onChange={(e) => onChangeName(e.target.value)}
-                />
-                <TextArea
-                  resize={false}
-                  fill
-                  placeholder="Details"
-                  size="small"
-                  value={decision.description}
-                  maxLength={100}
-                  onChange={(e) => onChangeDescription(e.target.value)}
-                />
+    <TransactionSubmitted />
+  ) : !nextCard ? (
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Details"}</QHeading>
+          <Box fill gap="small">
+            <TextInput
+              placeholder="Name"
+              size="small"
+              value={decision.name}
+              maxLength={100}
+              onChange={(e) => onChangeName(e.target.value)}
+            />
+            <TextArea
+              resize={false}
+              fill
+              placeholder="Details"
+              size="small"
+              value={decision.description}
+              maxLength={100}
+              onChange={(e) => onChangeDescription(e.target.value)}
+            />
+          </Box>
+        </Box>
+      }
+      Card2={
+        <Box fill>
+          <QHeading>{"Options"}</QHeading>
+          <Box
+            direction="row"
+            margin={{ bottom: "small" }}
+            height={{ min: "xxsmall" }}
+          >
+            <Keyboard onEnter={onAddNewOption}>
+              <Box fill direction="row" gap="small">
+                <Box fill>
+                  <TextInput
+                    placeholder="Option Name"
+                    size="small"
+                    value={tempOption}
+                    onChange={(e) => {
+                      setTempOption(e.target.value);
+                      setIsTempOptionValid(
+                        areUniqueOnKey(
+                          [
+                            ...decision.options,
+                            { optName: e.target.value, uid: "tempOP" },
+                          ],
+                          "optName"
+                        )
+                      );
+                    }}
+                    maxLength={26}
+                  />
+                </Box>
+                <Box align="center" justify="center" height="xxsmall">
+                  <Button
+                    icon={<Add />}
+                    disabled={!isTempOptionValid}
+                    onClick={onAddNewOption}
+                  />
+                </Box>
               </Box>
-            </Box>
-          }
-          Card2={
-            <Box fill>
-              <QHeading>{"Options"}</QHeading>
-              <Box
-                direction="row"
-                margin={{ bottom: "small" }}
-                height={{ min: "xxsmall" }}
-              >
-                <Keyboard onEnter={onAddNewOption}>
-                  <Box fill direction="row" gap="small">
-                    <Box fill>
-                      <TextInput
-                        placeholder="Option Name"
-                        size="small"
-                        value={tempOption}
-                        onChange={(e) => {
-                          setTempOption(e.target.value);
-                          setIsTempOptionValid(
-                            areUniqueOnKey(
-                              [
-                                ...decision.options,
-                                { optName: e.target.value, uid: "tempOP" },
-                              ],
-                              "optName"
-                            )
-                          );
-                        }}
-                        maxLength={26}
-                      />
-                    </Box>
-                    <Box align="center" justify="center" height="xxsmall">
-                      <Button
-                        icon={<Add />}
-                        disabled={!isTempOptionValid}
-                        onClick={onAddNewOption}
-                      />
-                    </Box>
+            </Keyboard>
+          </Box>
+          <ScrollBox props={{ gap: "small" }}>
+            {decision.options.map((o, i) => {
+              return (
+                <Box
+                  height={{ min: "50px" }}
+                  justify="center"
+                  key={`option${o.optName}`}
+                  ref={lastOption}
+                  margin={{ bottom: "small" }}
+                  pad={{ left: "small" }}
+                  background="white"
+                  round="xsmall"
+                  direction="row"
+                >
+                  <Box fill justify="center">
+                    <Text truncate size="small">
+                      {`${i + 1}. ${o.optName}`}
+                    </Text>
                   </Box>
-                </Keyboard>
-              </Box>
-              <ScrollBox props={{ gap: "small" }}>
-                {decision.options.map((o, i) => {
-                  return (
-                    <Box
-                      height={{ min: "50px" }}
-                      justify="center"
-                      key={`option${o.optName}`}
-                      ref={lastOption}
-                      margin={{ bottom: "small" }}
-                      pad={{ left: "small" }}
-                      background="white"
-                      round="xsmall"
-                      direction="row"
-                    >
-                      <Box fill justify="center">
-                        <Text truncate size="small">
-                          {`${i + 1}. ${o.optName}`}
-                        </Text>
-                      </Box>
-                      <Box align="center" justify="center">
-                        <Button
-                          onClick={() => onDeleteOption(o)}
-                          icon={<Trash />}
-                        />
-                      </Box>
-                    </Box>
-                  );
-                })}
-              </ScrollBox>
-            </Box>
-          }
-          NextButton={
-            <Box fill direction="row">
-              <Box
-                justify="center"
-                align="center"
-                pad={{ left: "small" }}
-                fill
-              ></Box>
-              <Box align="center" justify="center" fill pad="small">
-                <Button
-                  disabled={
-                    !(
-                      decisionValid.nameValid &&
-                      decisionValid.descriptionValid &&
-                      decisionValid.optionsValid
-                    )
-                  }
-                  label={"Next"}
-                  onClick={() => setNextCard(true)}
-                />
-              </Box>
-            </Box>
-          }
-        />
-      ) : (
-        <TwoCards
-          Card1={
-            <Box fill>
-              <QHeading>{"Time"}</QHeading>
-              <Box fill gap="small">
-                <Text>Registration open:</Text>
-                <TextInput
-                  icon={<Clock />}
-                  placeholder="Minutes for registration"
-                  size="small"
-                  type="number"
-                  value={decision.registerEndTime}
-                  onChange={(e) => onChangeRegisterEndTime(e.target.value)}
-                />
-                <Text>Voting open after registration:</Text>
-                <TextInput
-                  icon={<InProgress />}
-                  placeholder="Minutes voting is open after registration"
-                  size="small"
-                  type="number"
-                  value={decision.endTime}
-                  onChange={(e) => onChangeEndTime(e.target.value)}
-                />
-              </Box>
-            </Box>
-          }
-          Card2={
-            <Box fill>
-              <QHeading>{"Tokens"}</QHeading>
-              <Box fill gap="small">
-                <Text>Credit to token ratio</Text>
-                <TextInput
-                  icon={<Scorecard />}
-                  placeholder="Credit to token ratio"
-                  size="small"
-                  type="number"
-                  value={decision.creditToTokenRatio}
-                  maxLength={3}
-                  onChange={(e) => onChangeCreditToTokenRatio(e.target.value)}
-                />
-                <Text>Token ID</Text>
-                <TextInput
-                  icon={<Money />}
-                  placeholder="Token ID"
-                  size="small"
-                  value={decision.tokenId}
-                  maxLength={100}
-                  onChange={(e) => onChangeTokenId(e.target.value)}
-                />
-              </Box>
-            </Box>
-          }
-          NextButton={
-            <Box fill direction="row">
-              <Box justify="center" align="center" pad={{ left: "small" }} fill>
-                <Button
-                  disabled={false}
-                  secondary
-                  label={"Go Back"}
-                  onClick={() => setNextCard(false)}
-                />
-              </Box>
-              <Box align="center" justify="center" fill pad="small">
-                <Button
-                  disabled={loading || !decisionValid.isValid}
-                  label={"Deploy to zilliqa"}
-                  onClick={() => onDeploy()}
-                />
-              </Box>
-            </Box>
-          }
-        />
-      )}
-    </Box>
+                  <Box align="center" justify="center">
+                    <Button
+                      onClick={() => onDeleteOption(o)}
+                      icon={<Trash />}
+                    />
+                  </Box>
+                </Box>
+              );
+            })}
+          </ScrollBox>
+        </Box>
+      }
+      NextButton={
+        <Box fill direction="row">
+          <Box
+            justify="center"
+            align="center"
+            pad={{ left: "small" }}
+            fill
+          ></Box>
+          <Box align="center" justify="center" fill pad="small">
+            <Button
+              disabled={
+                !(
+                  decisionValid.nameValid &&
+                  decisionValid.descriptionValid &&
+                  decisionValid.optionsValid
+                )
+              }
+              label={"Next"}
+              onClick={() => setNextCard(true)}
+            />
+          </Box>
+        </Box>
+      }
+    />
+  ) : (
+    <TwoCards
+      Card1={
+        <Box fill>
+          <QHeading>{"Time"}</QHeading>
+          <Box fill gap="small">
+            <Text>Registration open:</Text>
+            <TextInput
+              icon={<Clock />}
+              placeholder="Minutes for registration"
+              size="small"
+              type="number"
+              value={decision.registerEndTime}
+              onChange={(e) => onChangeRegisterEndTime(e.target.value)}
+            />
+            <Text>Voting open after registration:</Text>
+            <TextInput
+              icon={<InProgress />}
+              placeholder="Minutes voting is open after registration"
+              size="small"
+              type="number"
+              value={decision.endTime}
+              onChange={(e) => onChangeEndTime(e.target.value)}
+            />
+          </Box>
+        </Box>
+      }
+      Card2={
+        <Box fill>
+          <QHeading>{"Tokens"}</QHeading>
+          <Box fill gap="small">
+            <Text>Credit to token ratio</Text>
+            <TextInput
+              icon={<Scorecard />}
+              placeholder="Credit to token ratio"
+              size="small"
+              type="number"
+              value={decision.creditToTokenRatio}
+              maxLength={3}
+              onChange={(e) => onChangeCreditToTokenRatio(e.target.value)}
+            />
+            <Text>Token ID</Text>
+            <TextInput
+              icon={<Money />}
+              placeholder="Token ID"
+              size="small"
+              value={decision.tokenId}
+              maxLength={100}
+              onChange={(e) => onChangeTokenId(e.target.value)}
+            />
+          </Box>
+        </Box>
+      }
+      NextButton={
+        <Box fill direction="row">
+          <Box justify="center" align="center" pad={{ left: "small" }} fill>
+            <Button
+              disabled={false}
+              secondary
+              label={"Go Back"}
+              onClick={() => setNextCard(false)}
+            />
+          </Box>
+          <Box align="center" justify="center" fill pad="small">
+            <Button
+              disabled={loading || !decisionValid.isValid}
+              label={"Deploy to zilliqa"}
+              onClick={() => onDeploy()}
+            />
+          </Box>
+        </Box>
+      }
+    />
   );
 }
