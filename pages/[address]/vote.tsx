@@ -6,7 +6,7 @@ import { Vote } from "../../components/Vote";
 export default function VotePage() {
   const main = useMainContext();
 
-  return main.useContracts.contract.isDefined ? (
+  return main.useContracts.contract.isDefined && !main.useContracts.loading ? (
     <Vote
       decision={main.useContracts.contract.state}
       userAllowedCredits={
@@ -17,6 +17,6 @@ export default function VotePage() {
       main={main}
     />
   ) : (
-    <Text>{"no decision"}</Text>
+    <Text>{"Loading..."}</Text>
   );
 }

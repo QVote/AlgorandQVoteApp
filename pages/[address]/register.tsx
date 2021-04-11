@@ -20,15 +20,19 @@ const initVoterToAdd = {
 export default function RegisterPage() {
   const main = useMainContext();
 
-  return main.useContracts.contract.info.userIsOwner ? (
-    <Register
-      {...{
-        main,
-        curDecision: main.useContracts.contract.state,
-      }}
-    />
+  return main.useContracts.contract.isDefined && !main.useContracts.loading ? (
+    main.useContracts.contract.info.userIsOwner ? (
+      <Register
+        {...{
+          main,
+          curDecision: main.useContracts.contract.state,
+        }}
+      />
+    ) : (
+      <Text>Choose a decision contract you own to register voters.</Text>
+    )
   ) : (
-    <Text>Choose a decision contract you own to register voters.</Text>
+    <Text>Loading...</Text>
   );
 }
 

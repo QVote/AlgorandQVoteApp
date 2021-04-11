@@ -82,6 +82,7 @@ export const useContracts = (
   ] = useState<QVote.ContractDecisionProcessed>(contractInit);
   const router = useRouter();
   const [currentInfo, setCurrentInfo] = useState<ContractInfo>(infoInit);
+  const [loading, setLoading] = useState(false);
 
   /**
    * Check query
@@ -99,6 +100,10 @@ export const useContracts = (
   function makeFirst(toMakeFirstIn: string) {
     const toMakeFirst = formatAddress(toMakeFirstIn);
     const cur = getCookie().addresses;
+    if (cur.length > 0 && toMakeFirst == cur[0]) {
+      //alredy first
+      return;
+    }
     if (!cur.includes(toMakeFirst)) {
       //hold only most recent 9 contract addresses
       if (cur.length > 8) {
@@ -138,26 +143,30 @@ export const useContracts = (
    * - current block number
    */
   async function getCurrentContract() {
-    const curAddress = cookieState.addresses[0];
-    try {
-      const blockchainApi = new BlockchainApi({
-        wallet: "zilPay",
-        protocol: blockchainInfo.protocol,
-      });
-      const state = await blockchainApi.getContractState(curAddress);
-      const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
-      const rate = await BlockchainApi.getCurrentTxBlockRate();
-      setCurrentContract(state);
-      setCurrentInfo(
-        updateCurrentContractStateMessages(
-          state,
-          rate,
-          curBlockNumber,
-          userAccount
-        )
-      );
-    } catch (e) {
-      console.error(e);
+    if (!loading) {
+      setLoading(true);
+      const curAddress = cookieState.addresses[0];
+      try {
+        const blockchainApi = new BlockchainApi({
+          wallet: "zilPay",
+          protocol: blockchainInfo.protocol,
+        });
+        const state = await blockchainApi.getContractState(curAddress);
+        const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
+        const rate = await BlockchainApi.getCurrentTxBlockRate();
+        setCurrentContract(state);
+        setCurrentInfo(
+          updateCurrentContractStateMessages(
+            state,
+            rate,
+            curBlockNumber,
+            userAccount
+          )
+        );
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
     }
   }
 
@@ -218,6 +227,7 @@ export const useContracts = (
 
   return {
     ...cookieState,
+    loading,
     makeFirst,
     contract: {
       state: currentContract,

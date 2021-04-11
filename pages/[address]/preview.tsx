@@ -20,7 +20,7 @@ const PATHS = {
 export default function PreviewPage() {
   const main = useMainContext();
 
-  return main.useContracts.contract.isDefined ? (
+  return main.useContracts.contract.isDefined && !main.useContracts.loading ? (
     <Preview
       {...{
         main,
@@ -28,7 +28,7 @@ export default function PreviewPage() {
       }}
     />
   ) : (
-    <Text>Loading.</Text>
+    <Text>Loading...</Text>
   );
 }
 
