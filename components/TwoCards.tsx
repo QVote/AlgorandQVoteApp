@@ -14,17 +14,11 @@ export function TwoCardsContainerWrapper({
   );
 }
 
-export function TwoCardsContainer({
-  children,
-  ...rest
-}: {
-  children: JSX.Element;
-  rest?: BoxExtendedProps;
-}) {
+export function TwoCardsContainer(props: BoxExtendedProps) {
   return (
     <TwoCardsContainerWrapper>
-      <Box fill background="white" round="xsmall" overflow="hidden" {...rest}>
-        {children}
+      <Box fill background="white" round="xsmall" overflow="hidden" {...props}>
+        {props.children}
       </Box>
     </TwoCardsContainerWrapper>
   );

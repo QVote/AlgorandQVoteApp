@@ -10,6 +10,7 @@ import { validation } from "@zilliqa-js/util";
 import { QVote } from "../../types";
 import { QParagraph } from "../../components/QParagraph";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
+import { Loader } from "../../components/Loader";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -32,7 +33,7 @@ export default function RegisterPage() {
       <Text>Choose a decision contract you own to register voters.</Text>
     )
   ) : (
-    <Text>Loading...</Text>
+    <Loader />
   );
 }
 

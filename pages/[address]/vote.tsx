@@ -2,6 +2,7 @@ import React from "react";
 import { Text } from "grommet";
 import { useMainContext } from "../../hooks/useMainContext";
 import { Vote } from "../../components/Vote";
+import {Loader} from '../../components/Loader'
 
 export default function VotePage() {
   const main = useMainContext();
@@ -17,6 +18,6 @@ export default function VotePage() {
       main={main}
     />
   ) : (
-    <Text>{"Loading..."}</Text>
+    <Loader />
   );
 }

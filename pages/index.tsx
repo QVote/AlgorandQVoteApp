@@ -42,14 +42,16 @@ export default function Index() {
             <QParagraph>You have no recent decisions.</QParagraph>
           )}
           {main.useContracts.addresses.length > 0 &&
-            main.useContracts.addresses.map((a) => (
-              <Address
-                txt={a}
-                key={`contractdecision${a}`}
-                onClick={() => onClickAddress(a)}
-                onCopyTxt={() => onCopyText(a, "Address Copied!", main)}
-              />
-            ))}
+            main.useContracts.addresses
+              .sort((a, b) => a.localeCompare(b))
+              .map((a) => (
+                <Address
+                  txt={a}
+                  key={`contractdecision${a}`}
+                  onClick={() => onClickAddress(a)}
+                  onCopyTxt={() => onCopyText(a, "Address Copied!", main)}
+                />
+              ))}
         </ScrollBox>
       }
       NextButton={<Box fill />}

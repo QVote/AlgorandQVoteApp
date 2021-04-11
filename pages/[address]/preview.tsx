@@ -10,6 +10,7 @@ import { Address } from "../../components/Address";
 import { onCopyText } from "../../components/utill";
 import { useRouter } from "next/router";
 import { onGoToAs } from "../../components/utill";
+import { Loader } from "../../components/Loader";
 
 const PATHS = {
   vote: { path: "/[address]/vote", as: "/vote" },
@@ -28,7 +29,7 @@ export default function PreviewPage() {
       }}
     />
   ) : (
-    <Text>Loading...</Text>
+    <Loader />
   );
 }
 

@@ -6,6 +6,7 @@ import { TwoCards } from "../../components/TwoCards";
 import { useResponsiveContext } from "../../hooks/useResponsiveContext";
 import { useMainContext } from "../../hooks/useMainContext";
 import { BarChart } from "../../components/BarChart";
+import { Loader } from "../../components/Loader";
 
 export default function ResultsPage() {
   const main = useMainContext();
@@ -17,7 +18,7 @@ export default function ResultsPage() {
       }}
     />
   ) : (
-    <Text>Loading...</Text>
+    <Loader />
   );
 }
 
