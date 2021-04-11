@@ -43,7 +43,6 @@ export default function Index() {
           )}
           {main.useContracts.addresses.length > 0 &&
             main.useContracts.addresses
-              .sort((a, b) => a.localeCompare(b))
               .map((a) => (
                 <Address
                   txt={a}
