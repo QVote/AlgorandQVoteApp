@@ -168,16 +168,6 @@ function Register({
           <QParagraph
             size="small"
             color={
-              curDecision.owner == main.curAcc ? "status-ok" : "status-critical"
-            }
-          >
-            {curDecision.owner == main.curAcc
-              ? "You are the owner of this decision."
-              : `You are not the owner of this decision!`}
-          </QParagraph>
-          <QParagraph
-            size="small"
-            color={
               main.useContracts.contract.info.timeState ==
               "REGISTRATION_IN_PROGRESS"
                 ? "status-ok"

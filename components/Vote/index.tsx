@@ -163,18 +163,6 @@ export function Vote({
           <QParagraph
             size="small"
             color={
-              Object.keys(decision.voter_balances).includes(main.curAcc)
-                ? "status-ok"
-                : "status-critical"
-            }
-          >
-            {Object.keys(decision.voter_balances).includes(main.curAcc)
-              ? "You are registered on this decision."
-              : "You are not registered on this decision!"}
-          </QParagraph>
-          <QParagraph
-            size="small"
-            color={
               main.useContracts.contract.info.timeState ==
               "REGISTRATION_IN_PROGRESS"
                 ? "status-critical"
