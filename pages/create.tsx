@@ -1,28 +1,18 @@
 import { QVote } from "../types";
 import { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  TextInput,
-  TextArea,
-  Button,
-  Heading,
-  Keyboard,
-  Text,
-} from "grommet";
+import { Box, TextInput, TextArea, Button, Keyboard, Text } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
 import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
 import { useMainContext } from "../hooks/useMainContext";
-import { TwoCards, TwoCardsContainerWrapper } from "../components/TwoCards";
+import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
-import { useResponsiveContext } from "../hooks/useResponsiveContext";
 import { scrollTo } from "../scripts";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
 
 export default function DecisionCreator() {
-  const responsiveContext = useResponsiveContext();
   const main = useMainContext();
   const [decision, setDecision] = useState(getInitDecision());
   const [tempOption, setTempOption] = useState("");
@@ -34,6 +24,16 @@ export default function DecisionCreator() {
   const lastOption = useRef(null);
   const [nextCard, setNextCard] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  function reset() {
+    setLoading(false);
+    setNextCard(false);
+    setSubmitted(false);
+    setDecisionValid(decisionValidate(getInitDecision()));
+    setDecision(getInitDecision());
+    setTempOption("");
+    setIsTempOptionValid(false);
+  }
 
   const canAddOption = () =>
     tempOption != "" && areUniqueOnKey(decision.options, "optName");
@@ -137,7 +137,11 @@ export default function DecisionCreator() {
   }
 
   return submitted ? (
-    <TransactionSubmitted />
+    <TransactionSubmitted
+      onClick={() => reset()}
+      txt="Create another?"
+      buttonLabel="Go to create"
+    />
   ) : !nextCard ? (
     <TwoCards
       Card1={

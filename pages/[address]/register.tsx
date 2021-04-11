@@ -11,6 +11,8 @@ import { QVote } from "../../types";
 import { QParagraph } from "../../components/QParagraph";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
 import { Loader } from "../../components/Loader";
+import { TransactionSubmitted } from "../../components/TransactionSubmitted";
+import { useRouter } from "next/router";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -44,6 +46,7 @@ function Register({
   curDecision: QVote.ContractDecisionProcessed;
   main: ReturnType<typeof useMainContext>;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
   const [tempVoterValid, setTempVoterValid] = useState(false);
@@ -138,17 +141,11 @@ function Register({
   }
 
   return submitted ? (
-    <Box fill align="center" justify="center" pad="large">
-      <Box height="small" />
-      <QHeading>{"Transaction submitted!"}</QHeading>
-      <Box height="20%" justify="center" align="center">
-        <Text truncate>{"Register more voters?"}</Text>
-      </Box>
-      <Box align="center" justify="center" gap="medium">
-        <Button label={"Go to register"} onClick={() => reset()} />
-      </Box>
-      <Box fill />
-    </Box>
+    <TransactionSubmitted
+      onClick={() => router.push("/")}
+      txt=""
+      buttonLabel="Go to preview"
+    />
   ) : !nextCard ? (
     <TwoCards
       Card1={

@@ -3,7 +3,11 @@ import { TwoCardsContainer } from "./TwoCards";
 import { Box, Heading, Text, Button } from "grommet";
 import { useResponsiveContext } from "../hooks/useResponsiveContext";
 
-export function TransactionSubmitted() {
+export function TransactionSubmitted(props: {
+  txt:string;
+  onClick: () => void;
+  buttonLabel: string;
+}) {
   const responsiveContext = useResponsiveContext();
   return (
     <TwoCardsContainer>
@@ -15,10 +19,10 @@ export function TransactionSubmitted() {
           {"Transaction submitted!"}
         </Heading>
         <Box height="20%" justify="center" align="center">
-          <Text truncate>{"Create another decision?"}</Text>
+          <Text truncate>{props.txt}</Text>
         </Box>
         <Box align="center" justify="center" gap="medium">
-          <Button label={"Go to create"} onClick={() => {}} />
+          <Button label={props.buttonLabel} onClick={props.onClick} />
         </Box>
       </Box>
     </TwoCardsContainer>

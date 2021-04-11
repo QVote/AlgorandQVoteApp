@@ -14,6 +14,8 @@ import { QHeading } from "../QHeading";
 import { TwoCards } from "../TwoCards";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
 import type { useMainContext } from "../../hooks/useMainContext";
+import { TransactionSubmitted } from "../TransactionSubmitted";
+import { useRouter } from "next/router";
 
 const sliderInit = {
   max: 0,
@@ -31,6 +33,7 @@ export function Vote({
   userAllowedCredits: number;
   main: ReturnType<typeof useMainContext>;
 }) {
+  const router = useRouter();
   const responsiveContext = useContext(ResponsiveContext);
   const [loading, setLoading] = useState(false);
   const [curCredDist, setCurCredDist] = useState(
@@ -137,17 +140,11 @@ export function Vote({
   }
 
   return submitted ? (
-    <Box fill align="center" justify="center" pad="large">
-      <Box height="small" />
-      <QHeading>{"Transaction submitted!"}</QHeading>
-      <Box height="20%" justify="center" align="center">
-        <Text truncate>{"Vote again?"}</Text>
-      </Box>
-      <Box align="center" justify="center" gap="medium">
-        <Button label={"Go to vote"} onClick={() => reset()} />
-      </Box>
-      <Box fill />
-    </Box>
+    <TransactionSubmitted
+      onClick={() => router.push("/")}
+      txt=""
+      buttonLabel="Go to preview"
+    />
   ) : (
     <TwoCards
       Card1={
