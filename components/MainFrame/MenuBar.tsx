@@ -24,6 +24,7 @@ import { useMainContext } from "../../hooks/useMainContext";
 import { networkNotSupported, onCopyText, onGoToAs } from "../utill";
 import { Address } from "../Address";
 import { Notice } from "../Notice";
+import { MenuModal } from "./MenuModal";
 
 const _COMPANY_SITE = "https://qvote.co.uk";
 
@@ -152,19 +153,11 @@ function MenuBarComponent(
               spin={main.jobsScheduler.someInProgress}
             />
             {open == "transactions" && (
-              <Box
-                style={{
-                  position: "absolute",
-                  zIndex: 19,
-                  top: "8vh",
-                  right: "26vw",
-                }}
-                height={{ min: "38vh", max: "38vh" }}
-                width={{ max: "71vw" }}
-                background="light-1"
-                round="xsmall"
-                elevation="small"
-                pad="medium"
+              <MenuModal
+                top={"8vh"}
+                right={"12.5vw"}
+                modalHeight="38vh"
+                modalWidth="71vw"
               >
                 {main.jobsScheduler.jobs.length == 0 ? (
                   <ScrollBox
@@ -214,7 +207,7 @@ function MenuBarComponent(
                     ))}
                   </ScrollBox>
                 )}
-              </Box>
+              </MenuModal>
             )}
           </Box>
         )}
