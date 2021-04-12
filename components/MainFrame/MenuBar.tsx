@@ -25,6 +25,7 @@ import { networkNotSupported, onCopyText, onGoToAs } from "../utill";
 import { Address } from "../Address";
 import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
+import Image from "next/image";
 
 const _COMPANY_SITE = "https://qvote.co.uk";
 
@@ -157,6 +158,7 @@ function MenuBarComponent(
                 top={"8vh"}
                 right={"12.5vw"}
                 modalHeight="38vh"
+                modalMinHeight="38vh"
                 modalWidth="71vw"
               >
                 {main.jobsScheduler.jobs.length == 0 ? (
@@ -209,6 +211,17 @@ function MenuBarComponent(
                 )}
               </MenuModal>
             )}
+            <MenuModal
+              top={"8vh"}
+              right={"2.5vw"}
+              modalHeight="38vh"
+              modalWidth="71vw"
+              gap="small"
+              modalMinHeight="small"
+            >
+              <SVGButton svgPath={"/zilpay.svg"} onClick={() => {}} />
+              <SVGButton svgPath={"/moonlet.svg"} onClick={() => {}} />
+            </MenuModal>
           </Box>
         )}
         <MenuButton
@@ -223,4 +236,24 @@ function MenuBarComponent(
     </Box>
   );
 }
+
+function SVGButton(props: { onClick: () => void; svgPath: string }) {
+  return (
+    <Button onClick={props.onClick}>
+      <Box
+        width={{ min: "small" }}
+        height="xsmall"
+        align="center"
+        justify="center"
+        background="dark-1"
+        round="xsmall"
+        pad="small"
+      >
+        <Text>{"Connect"}</Text>
+        <Image src={props.svgPath} height={"xxsmall"} width={"small"} />
+      </Box>
+    </Button>
+  );
+}
+
 export const MenuBar = forwardRef(MenuBarComponent);

@@ -6,6 +6,7 @@ export function MenuModal(
     top: string;
     right: string;
     modalHeight: string;
+    modalMinHeight: string;
     modalWidth: string;
   }
 ) {
@@ -17,12 +18,13 @@ export function MenuModal(
         top: props.top,
         right: props.right,
       }}
-      height={{ min: props.modalHeight, max: props.modalHeight }}
+      height={{ min: props.modalMinHeight, max: props.modalHeight }}
       width={{ max: props.modalWidth }}
       background="light-1"
       round="xsmall"
       elevation="small"
       pad="medium"
+      {...props}
     >
       {props.children}
     </Box>
