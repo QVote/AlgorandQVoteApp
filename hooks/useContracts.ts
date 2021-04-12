@@ -94,6 +94,9 @@ export const useContracts = (
     const add = formatAddress(notArrPlz(address));
     if (validation.isAddress(add)) {
       makeFirst(add);
+      if (currentContract._this_address != add) {
+        getCurrentContract();
+      }
     }
   }, [router.query]);
 
