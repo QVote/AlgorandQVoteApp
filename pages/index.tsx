@@ -2,14 +2,14 @@ import React from "react";
 import { TwoCards } from "../components/TwoCards";
 import { Address } from "../components/Address";
 import { useMainContext } from "../hooks/useMainContext";
-import { Notice } from "../components/Notice";
 import { ScrollBox } from "../components/ScrollBox";
 import { onGoToAs } from "../components/utill";
 import { useRouter } from "next/router";
 import { onCopyText } from "../components/utill";
-import { Box } from "grommet";
+import { Box, Button, Text } from "grommet";
 import { QHeading } from "../components/QHeading";
 import { QParagraph } from "../components/QParagraph";
+import { Add } from "grommet-icons";
 
 const PATHS = {
   preview: { path: "/[address]/preview", as: "/preview" },
@@ -41,16 +41,32 @@ export default function Index() {
           {main.useContracts.addresses.length == 0 && (
             <QParagraph>You have no recent decisions.</QParagraph>
           )}
+
+          <Button onClick={() => router.push("/create")}>
+            <Box
+              fill="horizontal"
+              height={{ min: "xxsmall" }}
+              background="dark-1"
+              round="xsmall"
+              align="center"
+              justify="center"
+              direction="row"
+              gap="small"
+            >
+              <Add />
+              <Text>{"Create"}</Text>
+            </Box>
+          </Button>
+
           {main.useContracts.addresses.length > 0 &&
-            main.useContracts.addresses
-              .map((a) => (
-                <Address
-                  txt={a}
-                  key={`contractdecision${a}`}
-                  onClick={() => onClickAddress(a)}
-                  onCopyTxt={() => onCopyText(a, "Address Copied!", main)}
-                />
-              ))}
+            main.useContracts.addresses.map((a) => (
+              <Address
+                txt={a}
+                key={`contractdecision${a}`}
+                onClick={() => onClickAddress(a)}
+                onCopyTxt={() => onCopyText(a, "Address Copied!", main)}
+              />
+            ))}
         </ScrollBox>
       }
       NextButton={<Box fill />}

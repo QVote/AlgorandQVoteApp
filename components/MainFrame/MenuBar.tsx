@@ -122,19 +122,11 @@ function MenuBarComponent(
             </Text>
           </Box>
         </Box>
-        {connected && (
-          <MenuButton
-            txt={"Decisions"}
-            IconToDisp={MoreVertical}
-            onClick={() => onGoTo(PATHS.decisions)}
-            isCurrent={router.pathname == PATHS.decisions}
-          />
-        )}
         <MenuButton
-          txt={"Create"}
-          IconToDisp={Add}
-          onClick={() => onGoTo(PATHS.create)}
-          isCurrent={router.pathname == PATHS.create}
+          txt={"Decisions"}
+          IconToDisp={MoreVertical}
+          onClick={() => onGoTo(PATHS.decisions)}
+          isCurrent={router.pathname == PATHS.decisions}
         />
         <MenuButton
           txt={"About"}
