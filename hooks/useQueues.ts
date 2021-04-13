@@ -40,7 +40,7 @@ export const useQueues = (
     const add = formatAddress(notArrPlz(queueAddress));
     if (validation.isAddress(add)) {
       if (currentContract._this_address != add) {
-        getCurrentContract();
+        getCurrentContract(add);
       }
     }
   }, [router.query]);
@@ -90,10 +90,10 @@ export const useQueues = (
    * - current tx block rate
    * - current block number
    */
-  async function getCurrentContract() {
+  async function getCurrentContract(add?: string) {
     if (!loading) {
       setLoading(true);
-      const curAddress = cookieState.addresses[0];
+      const curAddress = add ? add : cookieState.addresses[0];
       try {
         const blockchainApi = new BlockchainApi({
           wallet: "zilPay",
