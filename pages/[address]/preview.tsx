@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, Heading, Text, Button } from "grommet";
+import { ShareOption } from "grommet-icons";
 import { QParagraph } from "../../components/QParagraph";
 import { QHeading } from "../../components/QHeading";
 import { TwoCards } from "../../components/TwoCards";
@@ -102,7 +103,7 @@ function Preview({
     <TwoCards
       Card1={
         <Box fill>
-          <QHeading>{"Preview"}</QHeading>
+          <QHeading>{"Decision"}</QHeading>
           <QParagraph>{`Here is the preview of the decision with the address:`}</QParagraph>
           <Address
             txt={contract.state._this_address}
@@ -110,6 +111,15 @@ function Preview({
               onCopyText(contract.state._this_address, "Address Copied!", main)
             }
           />
+          <Box justify="center" align="start">
+            <Button
+              label="Share"
+              icon={<ShareOption color="brand" />}
+              onClick={() =>
+                onCopyText(window.location.href, "URL copied!", main)
+              }
+            />
+          </Box>
           <QParagraph
             size="small"
             color={
@@ -164,6 +174,7 @@ function Preview({
             {curDecision.name}
           </Heading>
           <QParagraph>{curDecision.description}</QParagraph>
+          <QParagraph>{`Token: ${curDecision.token_id}, Credit to token ratio: ${curDecision.credit_to_token_ratio}`}</QParagraph>
           <Box fill="horizontal" align="start" justify="start" gap="small">
             {main.useQueues.addresses.length > 0 && (
               <Box align="center">
