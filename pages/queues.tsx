@@ -8,10 +8,25 @@ import { QParagraph } from "../components/QParagraph";
 import { ScrollBox } from "../components/ScrollBox";
 import { Address } from "../components/Address";
 import { useRouter } from "next/router";
+import { onCopyText } from "../components/utill";
+import { notArrPlz } from "../scripts";
+
+const PATHS = {
+  queue: { path: "/q/[queueAddress]", as: "/q" },
+};
 
 export default function Queues() {
   const main = useMainContext();
   const router = useRouter();
+
+  /**
+   * This is not ideal but this starts to fetch before going so that
+   * loading is set on initial paint of the next page
+   */
+  function onClickAddress(a: string) {
+    main.useQueues.makeFirst(a);
+    router.push(PATHS.queue.path, `${PATHS.queue.as}/${notArrPlz(a)}`);
+  }
 
   return (
     <TwoCards
@@ -19,7 +34,7 @@ export default function Queues() {
         <Box fill>
           <QHeading>{"Recent queues"}</QHeading>
           <QParagraph>
-            Here you can view recent queues that hold references to decisions.
+            Here you can view your queues that hold references to decisions.
           </QParagraph>
         </Box>
       }
@@ -45,7 +60,12 @@ export default function Queues() {
           )}
           {main.useQueues.addresses.length > 0 &&
             main.useQueues.addresses.map((a) => (
-              <Address txt={a} key={`contractqueue${a}`} onClick={() => {}} />
+              <Address
+                txt={a}
+                key={`contractqueue${a}`}
+                onClick={() => onClickAddress(a)}
+                onCopyTxt={() => onCopyText(a, "Address Copied!", main)}
+              />
             ))}
         </ScrollBox>
       }

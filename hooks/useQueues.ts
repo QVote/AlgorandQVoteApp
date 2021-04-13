@@ -9,16 +9,8 @@ import { validation } from "@zilliqa-js/zilliqa";
 
 type ContractAddressesCookie = { addresses: string[] };
 
-type ContractInfo = {
-  userIsOwner: boolean;
-};
-
 const init: ContractAddressesCookie = {
   addresses: [],
-};
-
-const infoInit: ContractInfo = {
-  userIsOwner: false,
 };
 
 const contractInit: QVote.Queue = {
@@ -37,19 +29,16 @@ export const useQueues = (
     contractInit
   );
   const router = useRouter();
-  const [currentInfo, setCurrentInfo] = useState<ContractInfo>(infoInit);
   const [loading, setLoading] = useState(false);
 
   /**
    * Check query
-   * if is address make it first in addresses
    * if it is not address do nothing
    */
   useEffect(() => {
     const { queueAddress } = router.query;
     const add = formatAddress(notArrPlz(queueAddress));
     if (validation.isAddress(add)) {
-      makeFirst(add);
       if (currentContract._this_address != add) {
         getCurrentContract();
       }
@@ -60,7 +49,7 @@ export const useQueues = (
     const toMakeFirst = formatAddress(toMakeFirstIn);
     const cur = getCookie().addresses;
     if (cur.length > 0 && toMakeFirst == cur[0]) {
-      //alredy first
+      //already first
       return;
     }
     if (!cur.includes(toMakeFirst)) {
@@ -112,25 +101,11 @@ export const useQueues = (
         });
         const state = await blockchainApi.getQueueState(curAddress);
         setCurrentContract(state);
-        setCurrentInfo(updateCurrentContractStateMessages(state, userAccount));
       } catch (e) {
         console.error(e);
       }
       setLoading(false);
     }
-  }
-
-  /**
-   * So this will update all of the messages
-   * and state that is relevant to current user and contract
-   */
-  function updateCurrentContractStateMessages(
-    c: QVote.Queue,
-    uAddress: string
-  ): ContractInfo {
-    return {
-      userIsOwner: true,
-    };
   }
 
   /**
@@ -157,7 +132,6 @@ export const useQueues = (
     contract: {
       state: currentContract,
       isDefined: currentContract._this_address != "",
-      info: currentInfo,
     },
   };
 };

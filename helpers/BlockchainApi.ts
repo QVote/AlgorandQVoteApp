@@ -1,7 +1,7 @@
 import { QVoteZilliqa, QueueZilliqa } from "@qvote/zilliqa-sdk";
 import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
-import { BN } from "@zilliqa-js/zilliqa";
+import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../scripts";
 
 type walletApi = "zilPay" | "moonlet";
@@ -161,7 +161,10 @@ export class BlockchainApi {
   async getContractState(
     address: string
   ): Promise<QVote.ContractDecisionProcessed> {
-    const [qv] = await this.getSDKInitialized<QVoteZilliqa>(QVoteZilliqa);
+    const qv = new QVoteZilliqa(
+      new Zilliqa("", BlockchainApi.getZilPay().provider),
+      this.protocol
+    );
     const state = await qv.getContractState(address);
     const registration_end_time = parseInt(state.registration_end_time);
     const expiration_block = parseInt(state.expiration_block);
@@ -186,7 +189,10 @@ export class BlockchainApi {
   }
 
   async getQueueState(address: string): Promise<QVote.Queue> {
-    const [queue] = await this.getSDKInitialized<QueueZilliqa>(QueueZilliqa);
+    const queue = new QueueZilliqa(
+      new Zilliqa("", BlockchainApi.getZilPay().provider),
+      this.protocol
+    );
     const state = await queue.getContractState(address);
     return {
       _balance: state._balance,
@@ -198,7 +204,7 @@ export class BlockchainApi {
   async deployQueue(maxQueueSize: string, curAccount: string) {
     const zilPayContractApi = BlockchainApi.getZilPay().contracts;
     const [queue, gasPrice] = await this.getSDKInitialized<QueueZilliqa>(
-      QueueZilliqa,
+      QueueZilliqa
     );
     const contract = zilPayContractApi.new(
       ...queue.payloadQueue({
