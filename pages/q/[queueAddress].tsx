@@ -3,13 +3,14 @@ import { useMainContext } from "../../hooks/useMainContext";
 import { Loader } from "../../components/Loader";
 import { QVote } from "../../types";
 import { TwoCards } from "../../components/TwoCards";
-import { Box } from "grommet";
+import { Box, Button } from "grommet";
 import { QHeading } from "../../components/QHeading";
 import { QParagraph } from "../../components/QParagraph";
 import { Address } from "../../components/Address";
 import { ScrollBox } from "../../components/ScrollBox";
 import { onGoToAs, onCopyText } from "../../components/utill";
 import { useRouter } from "next/router";
+import { ShareOption } from "grommet-icons";
 
 const PATHS = {
   preview: { path: "/[address]/preview", as: "/preview" },
@@ -56,6 +57,15 @@ function Preview({
           <QHeading>{"Queue"}</QHeading>
           <QParagraph>{`Here are the contents of the queue with the address:`}</QParagraph>
           <Address txt={curQueue._this_address} />
+          <Box justify="center" align="start">
+            <Button
+              label="Share"
+              icon={<ShareOption color="brand" />}
+              onClick={() =>
+                onCopyText(window.location.href, "URL copied!", main)
+              }
+            />
+          </Box>
         </Box>
       }
       Card2={
