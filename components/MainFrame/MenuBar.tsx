@@ -38,7 +38,7 @@ const PATHS = {
   preview: { path: "/[address]/preview", as: "/preview" },
 };
 
-type OpenTypes = "none" | "contracts" | "transactions";
+type OpenTypes = "none" | "connect" | "transactions";
 
 export type MenuHandle = {
   setOpen: (t: OpenTypes) => void;
@@ -55,7 +55,7 @@ function MenuBarComponent(
     router: NextRouter;
     connected: boolean;
     loading: boolean;
-    onStart: () => Promise<void>;
+    onStart: (arg: () => void) => Promise<void>;
   },
   ref: MutableRefObject<MenuHandle>
 ) {
@@ -211,25 +211,38 @@ function MenuBarComponent(
                 )}
               </MenuModal>
             )}
-            <MenuModal
-              top={"8vh"}
-              right={"2.5vw"}
-              modalHeight="38vh"
-              modalWidth="71vw"
-              gap="small"
-              modalMinHeight="small"
-            >
-              <SVGButton svgPath={"/zilpay.svg"} onClick={() => {}} />
-              <SVGButton svgPath={"/moonlet.svg"} onClick={() => {}} />
-            </MenuModal>
           </Box>
+        )}
+        {open == "connect" && (
+          <MenuModal
+            top={"8vh"}
+            right={"2.5vw"}
+            modalHeight="38vh"
+            modalWidth="71vw"
+            gap="small"
+            modalMinHeight="small"
+          >
+            <SVGButton
+              svgPath={"/zilpay.svg"}
+              onClick={() => onStart(() => setOpen("none"))}
+            />
+            <SVGButton
+              svgPath={"/moonlet.svg"}
+              onClick={() => {}}
+              notSupported
+            />
+          </MenuModal>
         )}
         <MenuButton
           IconToDisp={connected ? Integration : Connect}
           iconColor={connected ? "status-ok" : undefined}
           txtColor={connected ? "status-ok" : undefined}
           txt={loading ? "" : connected ? "Connected" : "Connect"}
-          onClick={() => onStart()}
+          onClick={() => {
+            if (!main.connected) {
+              setOpen(open == "connect" ? "none" : "connect");
+            }
+          }}
           isCurrent={false}
         />
       </Box>
@@ -237,7 +250,11 @@ function MenuBarComponent(
   );
 }
 
-function SVGButton(props: { onClick: () => void; svgPath: string }) {
+function SVGButton(props: {
+  onClick: () => void;
+  svgPath: string;
+  notSupported?: boolean;
+}) {
   return (
     <Button onClick={props.onClick}>
       <Box
@@ -249,7 +266,11 @@ function SVGButton(props: { onClick: () => void; svgPath: string }) {
         round="xsmall"
         pad="small"
       >
-        <Text>{"Connect"}</Text>
+        <Text>
+          {typeof props.notSupported != "undefined"
+            ? "Not supported yet"
+            : "Connect"}
+        </Text>
         <Image src={props.svgPath} height={"xxsmall"} width={"small"} />
       </Box>
     </Button>

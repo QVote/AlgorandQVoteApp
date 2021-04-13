@@ -55,7 +55,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
     return BlockchainApi.getZilPay().wallet.connect();
   }
 
-  async function onStart() {
+  async function onStart(callback?: () => void) {
     if (BlockchainApi.thereIsZilPay()) {
       const isConnect = await connect();
       if (isConnect) {
@@ -71,6 +71,8 @@ export function MainFrame({ children }: { children: JSX.Element }) {
         BlockchainApi.getZilPay()
           .wallet.observableNetwork()
           .subscribe((net: "mainnet" | "testnet" | "private") => setNet(net));
+        setConnected(true);
+        callback && callback();
       } else {
         setConnected(false);
       }
@@ -94,7 +96,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
           connected,
           curAcc,
           blockchainInfo,
-          useContracts:useContractsHook,
+          useContracts: useContractsHook,
           notification: notificationRef,
           jobsScheduler,
           longNotification: longNotificationRef,
@@ -107,7 +109,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
             router,
             connected,
             loading,
-            onStart: () => onStart(),
+            onStart,
           }}
         />
         {children}
