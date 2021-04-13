@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Heading, Text, Button } from "grommet";
 import { QParagraph } from "../../components/QParagraph";
 import { QHeading } from "../../components/QHeading";
@@ -11,6 +11,10 @@ import { onCopyText } from "../../components/utill";
 import { useRouter } from "next/router";
 import { onGoToAs } from "../../components/utill";
 import { Loader } from "../../components/Loader";
+import { BlockchainApi } from "../../helpers/BlockchainApi";
+import { MenuModal } from "../../components/MainFrame/MenuModal";
+import { ScrollBox } from "../../components/ScrollBox";
+import { formatAddress } from "../../scripts";
 
 const PATHS = {
   vote: { path: "/[address]/vote", as: "/vote" },
@@ -44,6 +48,55 @@ function Preview({
   const contract = main.useContracts.contract;
   const router = useRouter();
   const { address } = router.query;
+  const [loading, setLoading] = useState(false);
+  const [showQueues, setShowQueues] = useState(false);
+
+  function addressIn(a: string, arr: string[]) {
+    return arr.map((adr) => formatAddress(adr)).includes(formatAddress(a));
+  }
+
+  async function onAddToQueue(queueAddress: string) {
+    if (!loading) {
+      try {
+        setLoading(true);
+        const blockchainApi = new BlockchainApi({
+          wallet: "zilPay",
+          protocol: main.blockchainInfo.protocol,
+        });
+        const state = await blockchainApi.getQueueState(queueAddress);
+        if (addressIn(curDecision._this_address, state.queue)) {
+          main.longNotification.current.setError();
+          main.longNotification.current.onShowNotification(
+            "This decision is already in the queue!"
+          );
+        } else {
+          const tx = await blockchainApi.onlyOwnerPushQueue(
+            curDecision._this_address,
+            queueAddress
+          );
+          main.jobsScheduler.checkContractCall(
+            {
+              id: tx.ID,
+              name: `Push Queue Transaction: ${tx.ID}`,
+              status: "waiting",
+              contractAddress: curDecision._this_address,
+              type: "Push",
+            },
+            async () => {},
+            async () => {}
+          );
+          main.longNotification.current.setLoading();
+          main.longNotification.current.onShowNotification(
+            "Waiting for transaction confirmation..."
+          );
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+      setShowQueues(false);
+    }
+  }
 
   return (
     <TwoCards
@@ -111,7 +164,32 @@ function Preview({
             {curDecision.name}
           </Heading>
           <QParagraph>{curDecision.description}</QParagraph>
-          <Box fill="horizontal" direction="row" align="center" justify="start">
+          <Box fill="horizontal" align="start" justify="start" gap="small">
+            {main.useQueues.addresses.length > 0 && (
+              <Box align="center">
+                <Button
+                  label={"Add to Queue"}
+                  onClick={() => setShowQueues(true)}
+                />
+                {showQueues && (
+                  <MenuModal modalHeight="38vh" modalWidth="35vw" gap="small">
+                    <ScrollBox props={{ gap: "medium" }}>
+                      {main.useQueues.addresses.map((a) => (
+                        <Address
+                          txt={a}
+                          key={`queue to choose${a}`}
+                          onClick={() => onAddToQueue(a)}
+                        />
+                      ))}
+                    </ScrollBox>
+                    <Button
+                      label={"Close"}
+                      onClick={() => setShowQueues(false)}
+                    />
+                  </MenuModal>
+                )}
+              </Box>
+            )}
             {contract.info.userIsOwner &&
               contract.info.timeState == "REGISTRATION_IN_PROGRESS" && (
                 <Box align="center">

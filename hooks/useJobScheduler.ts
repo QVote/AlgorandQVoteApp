@@ -7,7 +7,7 @@ import type { LongNotificationHandle } from "../components/MainFrame/LongNotific
 import { BlockchainApi } from "../helpers/BlockchainApi";
 import { useQueues } from "./useQueues";
 
-type JobTypes = "Deploy" | "Vote" | "Register" | "DeployQueue";
+type JobTypes = "Deploy" | "Vote" | "Register" | "DeployQueue" | "Push";
 
 type Job = {
   id: string;
@@ -27,6 +27,7 @@ const init: JobsCookie = {
 const _JOB_SUCCESS_EVENT: Partial<Record<JobTypes, string>> = {
   Register: "owner_register_success",
   Vote: "vote_success",
+  Push: "push_success",
 };
 
 function logsHaveEvent(logs: { _eventname: string }[], eventName: string) {
@@ -193,7 +194,11 @@ export const useJobScheduler = (
               async () => {},
               async () => {}
             );
-          } else if (j.type == "Register" || j.type == "Vote") {
+          } else if (
+            j.type == "Register" ||
+            j.type == "Vote" ||
+            j.type == "Push"
+          ) {
             checkContractCall(
               j,
               async () => {},

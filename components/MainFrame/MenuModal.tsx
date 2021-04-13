@@ -3,10 +3,10 @@ import { Box, BoxExtendedProps } from "grommet";
 
 export function MenuModal(
   props: BoxExtendedProps & {
-    top: string;
-    right: string;
+    top?: string;
+    right?: string;
     modalHeight: string;
-    modalMinHeight: string;
+    modalMinHeight?: string;
     modalWidth: string;
   }
 ) {
