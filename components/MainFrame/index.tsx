@@ -56,7 +56,15 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   }
 
   async function onStart(callback?: () => void) {
-    if (BlockchainApi.thereIsZilPay()) {
+    if (!(await onInitial(callback))) {
+      //open extension window
+      window.open("https://zilpay.io/");
+    }
+  }
+
+  async function onInitial(callback?: () => void) {
+    const thereIsZilPay = BlockchainApi.thereIsZilPay();
+    if (thereIsZilPay) {
       const isConnect = await connect();
       if (isConnect) {
         setCurAcc(
@@ -77,10 +85,11 @@ export function MainFrame({ children }: { children: JSX.Element }) {
         setConnected(false);
       }
     }
+    return thereIsZilPay;
   }
 
   useEffect(() => {
-    onStart();
+    onInitial();
   }, []);
 
   return (
