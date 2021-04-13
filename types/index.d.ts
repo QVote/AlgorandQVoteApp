@@ -29,6 +29,12 @@ export module QVote {
     tokenId: string;
   };
 
+  export type Queue = {
+    _balance: string;
+    queue: string[];
+    _this_address: string;
+  };
+
   export type ResultOption = {
     optName: string;
     votes: number;

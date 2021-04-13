@@ -5,8 +5,9 @@ import { isSuccess } from "../scripts";
 import type { useContracts } from "./useContracts";
 import type { LongNotificationHandle } from "../components/MainFrame/LongNotification";
 import { BlockchainApi } from "../helpers/BlockchainApi";
+import { useQueues } from "./useQueues";
 
-type JobTypes = "Deploy" | "Vote" | "Register";
+type JobTypes = "Deploy" | "Vote" | "Register" | "DeployQueue";
 
 type Job = {
   id: string;
@@ -47,6 +48,7 @@ function isContractCallReceiptSuccess(
 export const useJobScheduler = (
   blockchainInfo: BlockchainInfo,
   contractAddressses: ReturnType<typeof useContracts>,
+  queueAddresses: ReturnType<typeof useQueues>,
   longNotification: MutableRefObject<LongNotificationHandle>,
   connected: boolean
 ) => {
@@ -81,6 +83,33 @@ export const useJobScheduler = (
       } else {
         longNotification.current.setError();
         longNotification.current.onShowNotification("Failed to deploy!");
+        throw new Error("Failed to confirm transaction");
+      }
+    } catch (e) {
+      updateJob(job.id, { ...job, status: "error" });
+      await onError(e);
+    }
+  }
+
+  /**
+   * those should be templated
+   */
+  async function checkDeployQueueCall(
+    job: Job,
+    onSuccess: () => Promise<void>,
+    onError: (e: any) => Promise<void>
+  ) {
+    try {
+      const receipt = await runJob(job);
+      if (isSuccess(receipt)) {
+        queueAddresses.makeFirst(job.contractAddress);
+        longNotification.current.setSuccess();
+        longNotification.current.onShowNotification("Success. Queue deployed!");
+        await onSuccess();
+        updateJob(job.id, { ...job, status: "done" });
+      } else {
+        longNotification.current.setError();
+        longNotification.current.onShowNotification("Failed to deploy queue!");
         throw new Error("Failed to confirm transaction");
       }
     } catch (e) {
@@ -158,6 +187,12 @@ export const useJobScheduler = (
               async () => {},
               async () => {}
             );
+          } else if (j.type == "DeployQueue") {
+            checkDeployQueueCall(
+              j,
+              async () => {},
+              async () => {}
+            );
           } else if (j.type == "Register" || j.type == "Vote") {
             checkContractCall(
               j,
@@ -192,5 +227,10 @@ export const useJobScheduler = (
     return Cookie.getJSON(getCookieName()) || init;
   }
 
-  return { ...cookieState, checkDeployCall, checkContractCall };
+  return {
+    ...cookieState,
+    checkDeployCall,
+    checkContractCall,
+    checkDeployQueueCall,
+  };
 };

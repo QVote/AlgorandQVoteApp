@@ -38,10 +38,6 @@ export default function Index() {
       }
       Card2={
         <ScrollBox props={{ gap: "medium" }}>
-          {main.useContracts.addresses.length == 0 && (
-            <QParagraph>You have no recent decisions.</QParagraph>
-          )}
-
           <Button onClick={() => router.push("/create")}>
             <Box
               fill="horizontal"
@@ -57,7 +53,9 @@ export default function Index() {
               <Text>{"Create"}</Text>
             </Box>
           </Button>
-
+          {main.useContracts.addresses.length == 0 && (
+            <QParagraph>You have no recent decisions.</QParagraph>
+          )}
           {main.useContracts.addresses.length > 0 &&
             main.useContracts.addresses.map((a) => (
               <Address

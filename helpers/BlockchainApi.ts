@@ -1,9 +1,8 @@
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
+import { QVoteZilliqa, QueueZilliqa } from "@qvote/zilliqa-sdk";
 import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
-import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
+import { BN } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../scripts";
-import { stat } from "node:fs";
 
 type walletApi = "zilPay" | "moonlet";
 
@@ -63,12 +62,15 @@ export class BlockchainApi {
     return parseFloat(info.result!.TxBlockRate);
   }
 
-  private async getQV(includeRate?: boolean): Promise<[QVoteZilliqa, BN]> {
-    let rate;
+  private async getSDKInitialized<T extends QVoteZilliqa | QueueZilliqa>(
+    ClassToInit: typeof QVoteZilliqa | typeof QueueZilliqa,
+    includeRate?: boolean
+  ): Promise<[T, BN]> {
+    let rate: number;
     if (includeRate) {
       rate = await BlockchainApi.getCurrentTxBlockRate();
     }
-    const qv = new QVoteZilliqa(
+    const qv = new ClassToInit(
       null,
       this.protocol,
       rate ? Math.round(1 / rate) : undefined
@@ -76,7 +78,7 @@ export class BlockchainApi {
     const gasPrice = await qv.handleMinGas(
       BlockchainApi.getZilPay().blockchain.getMinimumGasPrice()
     );
-    return [qv, gasPrice];
+    return [qv as T, gasPrice];
   }
 
   private getContract(address: string) {
@@ -86,7 +88,10 @@ export class BlockchainApi {
   async deploy(decision: QVote.Decision, curAccount: string) {
     const zilPayContractApi = BlockchainApi.getZilPay().contracts;
     const curBlockNumber = await BlockchainApi.getCurrentBlockNumber();
-    const [qv, gasPrice] = await this.getQV(true);
+    const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
+      QVoteZilliqa,
+      true
+    );
     const contract = zilPayContractApi.new(
       ...qv.payloadQv({
         payload: {
@@ -123,7 +128,9 @@ export class BlockchainApi {
       creditsForAddresses: number[];
     }
   ) {
-    const [qv, gasPrice] = await this.getQV();
+    const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
+      QVoteZilliqa
+    );
     const contract = this.getContract(contractAddress);
     const [transition, args, params] = qv.payloadOwnerRegister({
       payload: payload,
@@ -139,7 +146,9 @@ export class BlockchainApi {
       creditsToOption: string[];
     }
   ) {
-    const [qv, gasPrice] = await this.getQV();
+    const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
+      QVoteZilliqa
+    );
     const contract = this.getContract(contractAddress);
     const [transition, args, params] = qv.payloadVote({
       payload: payload,
@@ -152,10 +161,7 @@ export class BlockchainApi {
   async getContractState(
     address: string
   ): Promise<QVote.ContractDecisionProcessed> {
-    const qv = new QVoteZilliqa(
-      new Zilliqa("", BlockchainApi.getZilPay().provider),
-      this.protocol
-    );
+    const [qv] = await this.getSDKInitialized<QVoteZilliqa>(QVoteZilliqa);
     const state = await qv.getContractState(address);
     const registration_end_time = parseInt(state.registration_end_time);
     const expiration_block = parseInt(state.expiration_block);
@@ -177,5 +183,50 @@ export class BlockchainApi {
       ),
     };
     return res;
+  }
+
+  async getQueueState(address: string): Promise<QVote.Queue> {
+    const [queue] = await this.getSDKInitialized<QueueZilliqa>(QueueZilliqa);
+    const state = await queue.getContractState(address);
+    return {
+      _balance: state._balance,
+      queue: state.queue.map((a) => formatAddress(a)),
+      _this_address: address,
+    };
+  }
+
+  async deployQueue(maxQueueSize: string, curAccount: string) {
+    const zilPayContractApi = BlockchainApi.getZilPay().contracts;
+    const [queue, gasPrice] = await this.getSDKInitialized<QueueZilliqa>(
+      QueueZilliqa,
+    );
+    const contract = zilPayContractApi.new(
+      ...queue.payloadQueue({
+        payload: {
+          maxQueueSize,
+        },
+        ownerAddress: curAccount,
+      })
+    );
+    const [params, attempts, interval] = queue.payloadDeploy({ gasPrice });
+    const [tx, contractInstance] = await contract.deploy(
+      params,
+      attempts,
+      interval
+    );
+    return [tx, contractInstance];
+  }
+
+  async onlyOwnerPushQueue(addressToPush: string, contractAddress: string) {
+    const [queue, gasPrice] = await this.getSDKInitialized<QueueZilliqa>(
+      QueueZilliqa
+    );
+    const contract = this.getContract(contractAddress);
+    const [transition, args, params] = queue.payloadPushQueue({
+      payload: { addressToPush },
+      gasPrice,
+    });
+    const tx = await contract.call(transition, args, params, true);
+    return tx;
   }
 }

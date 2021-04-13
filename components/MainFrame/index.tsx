@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { BlockchainInfo, BLOCKCHAINS } from "../../config";
 import { MenuBar, MenuHandle } from "./MenuBar";
 import { useContracts } from "../../hooks/useContracts";
+import { useQueues } from "../../hooks/useQueues";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
 import { Notification, NotificationHandle } from "./Notification";
@@ -24,12 +25,14 @@ export function MainFrame({ children }: { children: JSX.Element }) {
   const [connected, setConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const useContractsHook = useContracts(blockchainInfo, connected, curAcc);
+  const useQueuesHook = useQueues(blockchainInfo, connected, curAcc);
   const notificationRef = useRef<NotificationHandle>();
   const longNotificationRef = useRef<LongNotificationHandle>();
   const menuRef = useRef<MenuHandle>();
   const jobsScheduler = useJobScheduler(
     blockchainInfo,
     useContractsHook,
+    useQueuesHook,
     longNotificationRef,
     connected
   );
@@ -106,6 +109,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
           curAcc,
           blockchainInfo,
           useContracts: useContractsHook,
+          useQueues: useQueuesHook,
           notification: notificationRef,
           jobsScheduler,
           longNotification: longNotificationRef,

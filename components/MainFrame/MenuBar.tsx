@@ -10,7 +10,7 @@ import type { NextRouter } from "next/router";
 import { QVoteLogo } from "../QVoteLogo";
 import { MenuButton } from "./MenuButton";
 import {
-  Add,
+  Capacity,
   MoreVertical,
   Connect,
   Integration,
@@ -27,11 +27,12 @@ import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
 import Image from "next/image";
 
-const _COMPANY_SITE = "https://qvote.co.uk";
+const _COMPANY_SITE = "https://github.com/QVote";
 
 const PATHS = {
   decisions: "/",
   create: "/create",
+  queues: "/queues",
   vote: "/vote",
   register: "/register",
   results: "/results",
@@ -129,6 +130,12 @@ function MenuBarComponent(
           IconToDisp={MoreVertical}
           onClick={() => onGoTo(PATHS.decisions)}
           isCurrent={router.pathname == PATHS.decisions}
+        />
+        <MenuButton
+          txt={"Queues"}
+          IconToDisp={Capacity}
+          onClick={() => onGoTo(PATHS.queues)}
+          isCurrent={router.pathname == PATHS.queues}
         />
         <MenuButton
           txt={"About"}
