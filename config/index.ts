@@ -3,7 +3,7 @@ export type Protocol = { chainId: number; msgVersion: number };
 export type BlockchainInfo = {
   url: string;
   protocol: Protocol;
-  name: "private" | "testnet" | "mainnet";
+  name: "private" | "testnet" | "mainnet" | string;
 };
 
 const privateConf: BlockchainInfo = {
