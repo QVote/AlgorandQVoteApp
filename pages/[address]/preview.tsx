@@ -128,7 +128,7 @@ function Preview({
           >
             {curDecision.owner == main.curAcc
               ? "You are the owner of this decision."
-              : `You are not the owner of this decision!`}
+              : `You are not the owner of this decision.`}
           </QParagraph>
           {contract.info.timeState == "REGISTRATION_IN_PROGRESS" ? (
             <QParagraph

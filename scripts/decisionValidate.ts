@@ -59,7 +59,7 @@ export function getInitDecision(): QVote.Decision {
     options: [],
     registerEndTime: 5,
     endTime: 60,
-    tokenId: "GZIL",
+    tokenId: "REDC",
     creditToTokenRatio: "1",
   };
 }

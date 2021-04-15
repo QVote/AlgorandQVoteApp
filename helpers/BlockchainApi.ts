@@ -3,6 +3,7 @@ import { Protocol } from "../config";
 import type { QVote, ZilPay } from "../types";
 import { BN, Zilliqa } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../scripts";
+import { BLOCKCHAINS } from "../config";
 
 type walletApi = "zilPay" | "moonlet";
 
@@ -11,6 +12,20 @@ declare global {
     zilPay?: ZilPay;
   }
 }
+
+export const TOKENS: {
+  [key in keyof typeof BLOCKCHAINS]: {
+    [key in "REDC" | "GZIL"]?: { addr: string; decimals: number };
+  };
+} = {
+  testnet: {
+    REDC: { addr: "zil14jmjrkvfcz2uvj3y69kl6gas34ecuf2j5ggmye", decimals: 9 },
+  },
+  mainnet: {
+    GZIL: { addr: "zil14pzuzq6v6pmmmrfjhczywguu0e97djepxt8g3e", decimals: 15 },
+  },
+  private: {},
+};
 
 export class BlockchainApi {
   public wallet: walletApi;
@@ -234,5 +249,45 @@ export class BlockchainApi {
     });
     const tx = await contract.call(transition, args, params, true);
     return tx;
+  }
+
+  async getTokenContractCreditBalances(
+    tokensContracts: string,
+    decimals: number,
+    credit_to_token_ratio: string
+  ) {
+    const tokensContract = this.getContract(formatAddress(tokensContracts));
+    const balances = BlockchainApi.processZrc2Balances(
+      await tokensContract.getSubState("balances"),
+      decimals,
+      credit_to_token_ratio
+    );
+    return balances;
+  }
+
+  static balanceToCredits(
+    decimals: number,
+    credit_to_token_ratio: string,
+    balanceFromContract: string
+  ): number {
+    return new BN(balanceFromContract)
+      .mul(new BN(credit_to_token_ratio))
+      .div(new BN(10 ** decimals))
+      .toNumber();
+  }
+
+  static processZrc2Balances(
+    state: { balances: { [key: string]: string } },
+    dec: number,
+    credit_to_token_ratio: string
+  ) {
+    return Object.fromEntries(
+      Object.entries(state.balances)
+        .filter((b) => parseInt(b[1]) != 0)
+        .map((b) => [
+          b[0],
+          BlockchainApi.balanceToCredits(dec, credit_to_token_ratio, b[1]),
+        ])
+    );
   }
 }

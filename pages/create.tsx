@@ -1,6 +1,15 @@
 import { QVote } from "../types";
 import { useState, useRef, useEffect } from "react";
-import { Box, TextInput, TextArea, Button, Keyboard, Text } from "grommet";
+import {
+  Box,
+  TextInput,
+  TextArea,
+  Button,
+  Keyboard,
+  Text,
+  CheckBox,
+  Select,
+} from "grommet";
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
@@ -9,8 +18,13 @@ import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { scrollTo } from "../scripts";
-import { BlockchainApi } from "../helpers/BlockchainApi";
+import { BlockchainApi, TOKENS } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
+import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
+import {
+  SnapshotDeployRequest,
+  SnapshotDeployResponse,
+} from "./api/deployWithSnapshot";
 
 export default function DecisionCreator() {
   const main = useMainContext();
@@ -24,8 +38,12 @@ export default function DecisionCreator() {
   const lastOption = useRef(null);
   const [nextCard, setNextCard] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [useTokenOwnershipSnapshot, setUseTokenOwnershipSnapshot] = useState(
+    false
+  );
 
   function reset() {
+    setUseTokenOwnershipSnapshot(false);
     setLoading(false);
     setNextCard(false);
     setSubmitted(false);
@@ -100,39 +118,110 @@ export default function DecisionCreator() {
     updateDecision({ ...decision, options: newOptions });
   }
 
-  async function onDeploy() {
+  async function onTryToDeploy() {
     if (!loading && decisionValid.isValid) {
+      setLoading(true);
       try {
-        setLoading(true);
-        const blockchain = new BlockchainApi({
-          wallet: "zilPay",
-          protocol: main.blockchainInfo.protocol,
-        });
-        const [tx, contractInstance] = await blockchain.deploy(
-          decision,
-          main.curAcc
-        );
-        setSubmitted(true);
-        main.jobsScheduler.checkDeployCall(
-          {
-            id: tx.ID,
-            name: `Deploy Transaction: ${tx.ID}`,
-            status: "waiting",
-            contractAddress: contractInstance.address,
-            type: "Deploy",
-          },
-          async () => {},
-          async () => {}
-        );
-        main.longNotification.current.setLoading();
-        main.longNotification.current.onShowNotification(
-          "Waiting for transaction confirmation..."
-        );
-        setLoading(false);
+        if (useTokenOwnershipSnapshot) {
+          await callApi();
+        } else {
+          await onDeploy();
+        }
       } catch (e) {
-        console.error(e);
-        setLoading(false);
+        main.longNotification.current.setError();
+        main.longNotification.current.onShowNotification(
+          "Something went wrong!"
+        );
       }
+      setLoading(false);
+    }
+  }
+
+  async function onDeploy() {
+    const blockchain = new BlockchainApi({
+      wallet: "zilPay",
+      protocol: main.blockchainInfo.protocol,
+    });
+    const [tx, contractInstance] = await blockchain.deploy(
+      decision,
+      main.curAcc
+    );
+    setSubmitted(true);
+    main.jobsScheduler.checkDeployCall(
+      {
+        id: tx.ID,
+        name: `Deploy Transaction: ${tx.ID}`,
+        status: "waiting",
+        contractAddress: contractInstance.address,
+        type: "Deploy",
+      },
+      async () => {},
+      async () => {}
+    );
+    main.longNotification.current.setLoading();
+    main.longNotification.current.onShowNotification(
+      "Waiting for transaction confirmation..."
+    );
+  }
+
+  async function callApi() {
+    const rate = await BlockchainApi.getCurrentTxBlockRate();
+    const secRate = Math.round(1 / rate);
+    const curBlock = await BlockchainApi.getCurrentBlockNumber();
+    const qv = new QVoteZilliqa(null, main.blockchainInfo.protocol, secRate);
+    const body: SnapshotDeployRequest = {
+      net: main.blockchainInfo.name,
+      name: decision.name,
+      description: decision.description,
+      options: decision.options.map((o) => o.optName),
+      creditToTokenRatio: decision.creditToTokenRatio,
+      registrationEndTime: qv.futureTxBlockNumber(curBlock, 60 * 7),
+      expirationBlock: qv.futureTxBlockNumber(curBlock, 60 * 100),
+      tokenId: decision.tokenId,
+    };
+    const response = await fetch("/api/deployWithSnapshot", {
+      method: "POST",
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      referrerPolicy: "no-referrer",
+      body: JSON.stringify(body),
+    });
+    if (response.ok) {
+      const resBody = (await response.json()) as SnapshotDeployResponse;
+      console.log(resBody);
+      setSubmitted(true);
+      main.jobsScheduler.checkDeployCall(
+        {
+          id: resBody.deployID,
+          name: `Deploy Transaction: ${resBody.deployID}`,
+          status: "waiting",
+          contractAddress: resBody.contractAddress,
+          type: "Deploy",
+        },
+        async () => {},
+        async () => {}
+      );
+      main.jobsScheduler.checkContractCall(
+        {
+          id: resBody.registerID,
+          name: `Register Transaction: ${resBody.registerID}`,
+          status: "waiting",
+          contractAddress: resBody.contractAddress,
+          type: "Register",
+        },
+        async () => {},
+        async () => {}
+      );
+      main.longNotification.current.setLoading();
+      main.longNotification.current.onShowNotification(
+        "Waiting for deploy and register confirmation..."
+      );
+    } else {
+      throw new Error("Failed");
     }
   }
 
@@ -290,29 +379,40 @@ export default function DecisionCreator() {
         </Box>
       }
       Card2={
-        <Box fill>
+        <Box fill gap="small">
           <QHeading>{"Tokens"}</QHeading>
-          <Box fill gap="small">
-            <Text>Credit to token ratio</Text>
-            <TextInput
-              icon={<Scorecard />}
-              placeholder="Credit to token ratio"
-              size="small"
-              type="number"
-              value={decision.creditToTokenRatio}
-              maxLength={3}
-              onChange={(e) => onChangeCreditToTokenRatio(e.target.value)}
-            />
-            <Text>Token ID</Text>
-            <TextInput
-              icon={<Money />}
-              placeholder="Token ID"
-              size="small"
-              value={decision.tokenId}
-              maxLength={100}
-              onChange={(e) => onChangeTokenId(e.target.value)}
-            />
-          </Box>
+          <CheckBox
+            checked={useTokenOwnershipSnapshot}
+            label="Use token ownership snapshot?"
+            onChange={() =>
+              setUseTokenOwnershipSnapshot(!useTokenOwnershipSnapshot)
+            }
+          />
+          {useTokenOwnershipSnapshot && (
+            <Box fill gap="small">
+              <Text>Credit to token ratio</Text>
+              <TextInput
+                icon={<Scorecard />}
+                placeholder="Credit to token ratio"
+                size="small"
+                type="number"
+                value={decision.creditToTokenRatio}
+                maxLength={3}
+                onChange={(e) => onChangeCreditToTokenRatio(e.target.value)}
+              />
+              <Text>Token ID</Text>
+              <Select
+                icon={<Money />}
+                options={Object.entries(TOKENS[main.blockchainInfo.name]).map(
+                  (e) => e[0]
+                )}
+                value={decision.tokenId}
+                onChange={({ option }) =>
+                  updateDecision({ ...decision, tokenId: option })
+                }
+              />
+            </Box>
+          )}
         </Box>
       }
       NextButton={
@@ -328,8 +428,8 @@ export default function DecisionCreator() {
           <Box align="center" justify="center" fill pad="small">
             <Button
               disabled={loading || !decisionValid.isValid}
-              label={"Deploy to zilliqa"}
-              onClick={() => onDeploy()}
+              label={loading ? "Waiting for confirmation" : "Deploy to zilliqa"}
+              onClick={() => onTryToDeploy()}
             />
           </Box>
         </Box>

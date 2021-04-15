@@ -8,6 +8,7 @@ import {
   getInitDecision,
 } from "./decisionValidate";
 import { fromBech32Address } from "@zilliqa-js/crypto";
+import { validation } from "@zilliqa-js/util";
 
 function concatStrings(name: string, desc: string) {
   const mark = uuidv4().substr(0, 6);
@@ -137,6 +138,20 @@ export function notArrPlz(a: string | string[]): string {
   } else {
     return "";
   }
+}
+
+export function getPrivateKey() {
+  const key = process.env.PRIVATE_KEY;
+  if (typeof window != "undefined") {
+    throw new Error("only server side");
+  }
+  if (key) {
+    if (validation.isPrivateKey(key)) {
+      return key;
+    }
+    throw new Error("PRIVATE_KEY in env is not a private key");
+  }
+  throw new Error("No private key in env.");
 }
 
 export {
