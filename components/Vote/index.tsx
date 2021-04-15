@@ -117,17 +117,13 @@ export function Vote({
           creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
         });
         setSubmitted(true);
-        main.jobsScheduler.checkContractCall(
-          {
-            id: tx.ID,
-            name: `Vote Transaction: ${tx.ID}`,
-            status: "waiting",
-            contractAddress: decision._this_address,
-            type: "Vote",
-          },
-          async () => {},
-          async () => {}
-        );
+        main.jobsScheduler.checkContractCall({
+          id: tx.ID,
+          name: `Vote Transaction: ${tx.ID}`,
+          status: "waiting",
+          contractAddress: decision._this_address,
+          type: "Vote",
+        });
         main.longNotification.current.setLoading();
         main.longNotification.current.onShowNotification(
           "Waiting for transaction confirmation..."

@@ -147,17 +147,13 @@ export default function DecisionCreator() {
       main.curAcc
     );
     setSubmitted(true);
-    main.jobsScheduler.checkDeployCall(
-      {
-        id: tx.ID,
-        name: `Deploy Transaction: ${tx.ID}`,
-        status: "waiting",
-        contractAddress: contractInstance.address,
-        type: "Deploy",
-      },
-      async () => {},
-      async () => {}
-    );
+    main.jobsScheduler.checkDeployCall({
+      id: tx.ID,
+      name: `Deploy Transaction: ${tx.ID}`,
+      status: "waiting",
+      contractAddress: contractInstance.address,
+      type: "Deploy",
+    });
     main.longNotification.current.setLoading();
     main.longNotification.current.onShowNotification(
       "Waiting for transaction confirmation..."
@@ -194,28 +190,20 @@ export default function DecisionCreator() {
       const resBody = (await response.json()) as SnapshotDeployResponse;
       console.log(resBody);
       setSubmitted(true);
-      main.jobsScheduler.checkDeployCall(
-        {
-          id: resBody.deployID,
-          name: `Deploy Transaction: ${resBody.deployID}`,
-          status: "waiting",
-          contractAddress: resBody.contractAddress,
-          type: "Deploy",
-        },
-        async () => {},
-        async () => {}
-      );
-      main.jobsScheduler.checkContractCall(
-        {
-          id: resBody.registerID,
-          name: `Register Transaction: ${resBody.registerID}`,
-          status: "waiting",
-          contractAddress: resBody.contractAddress,
-          type: "Register",
-        },
-        async () => {},
-        async () => {}
-      );
+      main.jobsScheduler.checkDeployCall({
+        id: resBody.deployID,
+        name: `Deploy Transaction: ${resBody.deployID}`,
+        status: "waiting",
+        contractAddress: resBody.contractAddress,
+        type: "Deploy",
+      });
+      main.jobsScheduler.checkContractCall({
+        id: resBody.registerID,
+        name: `Register Transaction: ${resBody.registerID}`,
+        status: "waiting",
+        contractAddress: resBody.contractAddress,
+        type: "Register",
+      });
       main.longNotification.current.setLoading();
       main.longNotification.current.onShowNotification(
         "Waiting for deploy and register confirmation..."

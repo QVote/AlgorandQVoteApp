@@ -68,8 +68,8 @@ export const useJobScheduler = (
    */
   async function checkDeployCall(
     job: Job,
-    onSuccess: () => Promise<void>,
-    onError: (e: any) => Promise<void>
+    onSuccess?: () => Promise<void>,
+    onError?: (e: any) => Promise<void>
   ) {
     try {
       const receipt = await runJob(job);
@@ -79,7 +79,7 @@ export const useJobScheduler = (
         longNotification.current.onShowNotification(
           "Success. QVote decision deployed!"
         );
-        await onSuccess();
+        onSuccess && (await onSuccess());
         updateJob(job.id, { ...job, status: "done" });
       } else {
         longNotification.current.setError();
@@ -88,7 +88,7 @@ export const useJobScheduler = (
       }
     } catch (e) {
       updateJob(job.id, { ...job, status: "error" });
-      await onError(e);
+      onError && (await onError(e));
     }
   }
 
@@ -97,8 +97,8 @@ export const useJobScheduler = (
    */
   async function checkDeployQueueCall(
     job: Job,
-    onSuccess: () => Promise<void>,
-    onError: (e: any) => Promise<void>
+    onSuccess?: () => Promise<void>,
+    onError?: (e: any) => Promise<void>
   ) {
     try {
       const receipt = await runJob(job);
@@ -106,7 +106,7 @@ export const useJobScheduler = (
         queueAddresses.makeFirst(job.contractAddress);
         longNotification.current.setSuccess();
         longNotification.current.onShowNotification("Success. Queue deployed!");
-        await onSuccess();
+        onSuccess && (await onSuccess());
         updateJob(job.id, { ...job, status: "done" });
       } else {
         longNotification.current.setError();
@@ -115,14 +115,14 @@ export const useJobScheduler = (
       }
     } catch (e) {
       updateJob(job.id, { ...job, status: "error" });
-      await onError(e);
+      onError && (await onError(e));
     }
   }
 
   async function checkContractCall(
     job: Job,
-    onSuccess: () => Promise<void>,
-    onError: (e: any) => Promise<void>
+    onSuccess?: () => Promise<void>,
+    onError?: (e: any) => Promise<void>
   ) {
     try {
       const receipt = await runJob(job);
@@ -131,7 +131,7 @@ export const useJobScheduler = (
         longNotification.current.onShowNotification(
           `${job.type} call successful.`
         );
-        await onSuccess();
+        onSuccess && (await onSuccess());
         updateJob(job.id, { ...job, status: "done" });
       } else {
         longNotification.current.setError();
@@ -140,7 +140,7 @@ export const useJobScheduler = (
       }
     } catch (e) {
       updateJob(job.id, { ...job, status: "error" });
-      await onError(e);
+      onError && (await onError(e));
     }
   }
 
@@ -183,27 +183,15 @@ export const useJobScheduler = (
       getCookie().jobs.map((j) => {
         if (j.status == "waiting" || j.status == "inProgress") {
           if (j.type == "Deploy") {
-            checkDeployCall(
-              j,
-              async () => {},
-              async () => {}
-            );
+            checkDeployCall(j);
           } else if (j.type == "DeployQueue") {
-            checkDeployQueueCall(
-              j,
-              async () => {},
-              async () => {}
-            );
+            checkDeployQueueCall(j);
           } else if (
             j.type == "Register" ||
             j.type == "Vote" ||
             j.type == "Push"
           ) {
-            checkContractCall(
-              j,
-              async () => {},
-              async () => {}
-            );
+            checkContractCall(j);
           }
         }
       });

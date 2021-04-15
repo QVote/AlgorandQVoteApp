@@ -79,17 +79,13 @@ function Register({
           }
         );
         setSubmitted(true);
-        main.jobsScheduler.checkContractCall(
-          {
-            id: tx.ID,
-            name: `Register Transaction: ${tx.ID}`,
-            status: "waiting",
-            contractAddress: curDecision._this_address,
-            type: "Register",
-          },
-          async () => {},
-          async () => {}
-        );
+        main.jobsScheduler.checkContractCall({
+          id: tx.ID,
+          name: `Register Transaction: ${tx.ID}`,
+          status: "waiting",
+          contractAddress: curDecision._this_address,
+          type: "Register",
+        });
         main.longNotification.current.setLoading();
         main.longNotification.current.onShowNotification(
           "Waiting for transaction confirmation..."

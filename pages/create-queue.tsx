@@ -30,17 +30,13 @@ export default function DecisionCreator() {
           main.curAcc
         );
         setSubmitted(true);
-        main.jobsScheduler.checkDeployQueueCall(
-          {
-            id: tx.ID,
-            name: `Deploy Queue Transaction: ${tx.ID}`,
-            status: "waiting",
-            contractAddress: contractInstance.address,
-            type: "DeployQueue",
-          },
-          async () => {},
-          async () => {}
-        );
+        main.jobsScheduler.checkDeployQueueCall({
+          id: tx.ID,
+          name: `Deploy Queue Transaction: ${tx.ID}`,
+          status: "waiting",
+          contractAddress: contractInstance.address,
+          type: "DeployQueue",
+        });
         main.longNotification.current.setLoading();
         main.longNotification.current.onShowNotification(
           "Waiting for transaction confirmation..."

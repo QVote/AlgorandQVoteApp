@@ -75,17 +75,13 @@ function Preview({
             curDecision._this_address,
             queueAddress
           );
-          main.jobsScheduler.checkContractCall(
-            {
-              id: tx.ID,
-              name: `Push Queue Transaction: ${tx.ID}`,
-              status: "waiting",
-              contractAddress: curDecision._this_address,
-              type: "Push",
-            },
-            async () => {},
-            async () => {}
-          );
+          main.jobsScheduler.checkContractCall({
+            id: tx.ID,
+            name: `Push Queue Transaction: ${tx.ID}`,
+            status: "waiting",
+            contractAddress: curDecision._this_address,
+            type: "Push",
+          });
           main.longNotification.current.setLoading();
           main.longNotification.current.onShowNotification(
             "Waiting for transaction confirmation..."
