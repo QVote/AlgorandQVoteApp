@@ -1,4 +1,5 @@
 # Zilliqa QVote Web App :fire:
+### [Join our discord!](https://discord.gg/AWt6k9XhpT)
 
 Quadratic Voting dApp for Zilliqa
 
