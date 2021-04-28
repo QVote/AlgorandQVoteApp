@@ -48,20 +48,12 @@ export const useQueues = (
   function makeFirst(toMakeFirstIn: string) {
     const toMakeFirst = formatAddress(toMakeFirstIn);
     const cur = getCookie().addresses;
-    if (cur.length > 0 && toMakeFirst == cur[0]) {
-      //already first
-      return;
-    }
     if (!cur.includes(toMakeFirst)) {
       //hold only most recent 9 contract addresses
       if (cur.length > 8) {
         cur.pop();
       }
       const next = [toMakeFirst, ...cur];
-      setCookie({ addresses: next });
-    } else {
-      const tail = cur.filter((a) => a != toMakeFirst);
-      const next = [toMakeFirst, ...tail];
       setCookie({ addresses: next });
     }
   }
