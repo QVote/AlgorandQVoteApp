@@ -258,4 +258,4 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
     );
 }
 
-export default AddressGet(Preview);
+export default AddressGet(Preview, "useContracts");

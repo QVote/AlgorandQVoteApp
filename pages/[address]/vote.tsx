@@ -19,4 +19,4 @@ function VotePage({ main }: { main: ReturnType<typeof useMainContext> }) {
     );
 }
 
-export default AddressGet(VotePage);
+export default AddressGet(VotePage, "useContracts");

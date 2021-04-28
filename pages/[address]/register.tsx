@@ -330,4 +330,4 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
     );
 }
 
-export default AddressGet(Register);
+export default AddressGet(Register, "useContracts");

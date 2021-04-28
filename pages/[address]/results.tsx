@@ -37,4 +37,4 @@ function Results({ main }: { main: ReturnType<typeof useMainContext> }) {
     );
 }
 
-export default AddressGet(Results);
+export default AddressGet(Results, "useContracts");
