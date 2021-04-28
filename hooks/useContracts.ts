@@ -84,7 +84,8 @@ export const useContracts = (
     ] = useState<QVote.ContractDecisionProcessed>(contractInit);
     const router = useRouter();
     const [currentInfo, setCurrentInfo] = useState<ContractInfo>(infoInit);
-    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("def");
+    const [loading, setLoading] = useState(true);
 
     /**
      * Check query
@@ -96,6 +97,8 @@ export const useContracts = (
         const add = formatAddress(notArrPlz(address));
         if (validation.isAddress(add)) {
             onGetContract(add);
+        } else {
+            if (add != "") setMessage("Not an address!");
         }
     }, [router.query, userAccount]);
 
@@ -104,8 +107,12 @@ export const useContracts = (
             setLoading(true);
             await getContract(add);
             makeFirst(add);
+            setMessage("");
         } catch (e) {
             console.error(e);
+            if (e.message) {
+                setMessage(e.message);
+            }
         }
         setLoading(false);
     }
@@ -218,7 +225,9 @@ export const useContracts = (
         zeroState: () => {
             setCurrentContract(contractInit);
             setCurrentInfo(infoInit);
+            setLoading(true);
         },
+        message,
         contract: {
             state: currentContract,
             isDefined: currentContract._this_address != "",
