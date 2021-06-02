@@ -28,7 +28,7 @@ Quadratic Voting is a better way of voting. It allows you to express more than s
 
 # To run locally
 ```bash
-npm run install
+npm install
 ```
 
 ```bash
