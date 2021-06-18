@@ -13,7 +13,7 @@ import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react";
-import { longNotification } from "../components/MainFrame/LongNotification";
+import { longNotification } from "../components/Notifications/LongNotification";
 
 class Creator {
     target = getInitDecision();

@@ -63,7 +63,7 @@ export default function Index() {
                                 key={`contractdecision${a}`}
                                 onClick={() => onClickAddress(a)}
                                 onCopyTxt={() =>
-                                    onCopyText(a, "Address Copied!", main)
+                                    onCopyText(a, "Address Copied!")
                                 }
                             />
                         ))}

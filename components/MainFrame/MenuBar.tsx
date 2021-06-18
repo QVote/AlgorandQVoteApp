@@ -21,11 +21,10 @@ import {
 import { ScrollBox } from "../ScrollBox";
 import { useResponsiveContext } from "../../hooks/useResponsiveContext";
 import { useMainContext } from "../../hooks/useMainContext";
-import { networkNotSupported, onCopyText, onGoToAs } from "../utill";
+import { networkNotSupported, onCopyText } from "../utill";
 import { Address } from "../Address";
 import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
-import Image from "next/image";
 
 const _COMPANY_SITE = "https://github.com/QVote";
 
@@ -229,8 +228,7 @@ function MenuBarComponent(
                                                 onCopyTxt={() =>
                                                     onCopyText(
                                                         `0x${a.id}`,
-                                                        "Transaction hash copied!",
-                                                        main
+                                                        "Transaction hash copied!"
                                                     )
                                                 }
                                                 onViewBlock={() =>

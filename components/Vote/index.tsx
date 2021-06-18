@@ -16,7 +16,7 @@ import { BlockchainApi } from "../../helpers/BlockchainApi";
 import type { useMainContext } from "../../hooks/useMainContext";
 import { TransactionSubmitted } from "../TransactionSubmitted";
 import { useRouter } from "next/router";
-import { longNotification } from "../MainFrame/LongNotification";
+import { longNotification } from "../Notifications/LongNotification";
 
 const sliderInit = {
     max: 0,

@@ -15,7 +15,7 @@ import { MenuModal } from "../../components/MainFrame/MenuModal";
 import { ScrollBox } from "../../components/ScrollBox";
 import { formatAddress } from "../../scripts";
 import { AddressGet } from "../../components/AddressGet";
-import { longNotification } from "../../components/MainFrame/LongNotification";
+import { longNotification } from "../../components/Notifications/LongNotification";
 
 const PATHS = {
     vote: { path: "/[address]/vote", as: "/vote" },
@@ -86,8 +86,7 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                         onCopyTxt={() =>
                             onCopyText(
                                 contract.state._this_address,
-                                "Address Copied!",
-                                main
+                                "Address Copied!"
                             )
                         }
                     />
@@ -96,11 +95,7 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                             label="Share"
                             icon={<ShareOption color="brand" />}
                             onClick={() =>
-                                onCopyText(
-                                    window.location.href,
-                                    "URL copied!",
-                                    main
-                                )
+                                onCopyText(window.location.href, "URL copied!")
                             }
                         />
                     </Box>

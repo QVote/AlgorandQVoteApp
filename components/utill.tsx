@@ -1,7 +1,6 @@
-import type { useMainContext } from "../hooks/useMainContext";
 import { onCopy, notArrPlz } from "../scripts";
 import type { NextRouter } from "next/router";
-import { longNotification } from "./MainFrame/LongNotification";
+import { longNotification, notification } from "./Notifications";
 
 export function networkNotSupported() {
     try {
@@ -14,13 +13,9 @@ export function networkNotSupported() {
     }
 }
 
-export function onCopyText(
-    txt: string,
-    notification: string,
-    main: ReturnType<typeof useMainContext>
-) {
+export function onCopyText(txt: string, notificationTxt: string) {
     onCopy(txt);
-    main.notification.current.onShowNotification(notification);
+    notification.showNotification(notificationTxt);
 }
 
 export async function onGoToAs(

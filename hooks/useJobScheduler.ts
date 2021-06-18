@@ -5,7 +5,7 @@ import { isSuccess } from "../scripts";
 import type { useContracts } from "./useContracts";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 import { useQueues } from "./useQueues";
-import { longNotification } from "../components/MainFrame/LongNotification";
+import { longNotification } from "../components/Notifications/LongNotification";
 
 type JobTypes = "Deploy" | "Vote" | "Register" | "DeployQueue" | "Push";
 

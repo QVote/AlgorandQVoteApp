@@ -95,7 +95,7 @@ export const LongNotification = observer(() => {
                             color={longNotification.notificationType.txtColor}
                         />
                     }
-                    onClick={longNotification.close}
+                    onClick={() => longNotification.close()}
                     plain
                 />
             </Box>

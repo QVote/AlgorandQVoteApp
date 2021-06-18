@@ -66,7 +66,7 @@ export default function Queues() {
                                 key={`contractqueue${a}`}
                                 onClick={() => onClickAddress(a)}
                                 onCopyTxt={() =>
-                                    onCopyText(a, "Address Copied!", main)
+                                    onCopyText(a, "Address Copied!")
                                 }
                             />
                         ))}

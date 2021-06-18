@@ -7,8 +7,7 @@ import { useContracts } from "../../hooks/useContracts";
 import { useQueues } from "../../hooks/useQueues";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
-import { Notification, NotificationHandle } from "./Notification";
-import { LongNotification } from "./LongNotification";
+import { Notification, LongNotification } from "../Notifications";
 import { BlockchainApi } from "../../helpers/BlockchainApi";
 import { formatAddress } from "../../scripts";
 
@@ -26,7 +25,6 @@ export function MainFrame({ children }: { children: JSX.Element }) {
     const [loading, setLoading] = useState<boolean>(true);
     const useContractsHook = useContracts(blockchainInfo, connected, curAcc);
     const useQueuesHook = useQueues(blockchainInfo, connected, curAcc);
-    const notificationRef = useRef<NotificationHandle>();
     const menuRef = useRef<MenuHandle>();
     const jobsScheduler = useJobScheduler(
         blockchainInfo,
@@ -112,7 +110,6 @@ export function MainFrame({ children }: { children: JSX.Element }) {
                     blockchainInfo,
                     useContracts: useContractsHook,
                     useQueues: useQueuesHook,
-                    notification: notificationRef,
                     jobsScheduler,
                     menu: menuRef,
                 }}
@@ -127,7 +124,7 @@ export function MainFrame({ children }: { children: JSX.Element }) {
                     }}
                 />
                 {children}
-                <Notification ref={notificationRef} />
+                <Notification />
                 <LongNotification />
             </MainFrameContext.Provider>
         </Box>

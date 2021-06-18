@@ -1,7 +1,5 @@
 import React from "react";
 import { useMainContext } from "../../hooks/useMainContext";
-import { Loader } from "../../components/Loader";
-import { QVote } from "../../types";
 import { TwoCards } from "../../components/TwoCards";
 import { Box, Button } from "grommet";
 import { QHeading } from "../../components/QHeading";
@@ -43,11 +41,7 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                             label="Share"
                             icon={<ShareOption color="brand" />}
                             onClick={() =>
-                                onCopyText(
-                                    window.location.href,
-                                    "URL copied!",
-                                    main
-                                )
+                                onCopyText(window.location.href, "URL copied!")
                             }
                         />
                     </Box>
@@ -67,7 +61,7 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                                 key={`contractqueueDecision${a}`}
                                 onClick={() => onClickAddress(a)}
                                 onCopyTxt={() =>
-                                    onCopyText(a, "Address Copied!", main)
+                                    onCopyText(a, "Address Copied!")
                                 }
                             />
                         ))}

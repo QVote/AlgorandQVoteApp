@@ -6,7 +6,7 @@ import { QHeading } from "../components/QHeading";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
-import { longNotification } from "../components/MainFrame/LongNotification";
+import { longNotification } from "../components/Notifications/LongNotification";
 
 export default function DecisionCreator() {
     const main = useMainContext();

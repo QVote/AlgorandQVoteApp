@@ -12,7 +12,7 @@ import { BlockchainApi } from "../../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../../components/TransactionSubmitted";
 import { useRouter } from "next/router";
 import { AddressGet } from "../../components/AddressGet";
-import { longNotification } from "../../components/MainFrame/LongNotification";
+import { longNotification } from "../../components/Notifications/LongNotification";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
