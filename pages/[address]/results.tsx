@@ -6,7 +6,6 @@ import { TwoCards } from "../../components/TwoCards";
 import { useResponsiveContext } from "../../hooks/useResponsiveContext";
 import { useMainContext } from "../../hooks/useMainContext";
 import { BarChart } from "../../components/BarChart";
-import { Loader } from "../../components/Loader";
 import { AddressGet } from "../../components/AddressGet";
 
 function Results({ main }: { main: ReturnType<typeof useMainContext> }) {

@@ -12,6 +12,7 @@ import { BlockchainApi } from "../../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../../components/TransactionSubmitted";
 import { useRouter } from "next/router";
 import { AddressGet } from "../../components/AddressGet";
+import { longNotification } from "../../components/MainFrame/LongNotification";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -29,14 +30,6 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
     const lastVoterToAdd = useRef(null);
     const [nextCard, setNextCard] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
-    function reset() {
-        setNextCard(false);
-        setSubmitted(false);
-        setVotersToAdd([]);
-        setTempVoter(initVoterToAdd);
-        setSubmitted(false);
-    }
 
     async function onOwnerRegister() {
         if (!loading) {
@@ -63,9 +56,9 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
                     contractAddress: curDecision._this_address,
                     type: "Register",
                 });
-                main.longNotification.current.setLoading();
-                main.longNotification.current.onShowNotification(
-                    "Waiting for transaction confirmation..."
+                longNotification.showNotification(
+                    "Waiting for transaction confirmation...",
+                    "loading"
                 );
                 setLoading(false);
             } catch (e) {

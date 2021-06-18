@@ -4,7 +4,6 @@ import { useQueues } from "../../hooks/useQueues";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { BlockchainInfo } from "../../config";
 import type { NotificationHandle } from "./Notification";
-import type { LongNotificationHandle } from "./LongNotification";
 import type { MenuHandle } from "./MenuBar";
 
 export const MainFrameContext = createContext<{
@@ -15,7 +14,6 @@ export const MainFrameContext = createContext<{
   useQueues: ReturnType<typeof useQueues>;
   jobsScheduler: ReturnType<typeof useJobScheduler>;
   notification: MutableRefObject<NotificationHandle>;
-  longNotification: MutableRefObject<LongNotificationHandle>;
   menu: MutableRefObject<MenuHandle>;
 }>({
   curAcc: undefined,
@@ -25,6 +23,5 @@ export const MainFrameContext = createContext<{
   useQueues: undefined,
   jobsScheduler: undefined,
   notification: undefined,
-  longNotification: undefined,
   menu: undefined,
 });

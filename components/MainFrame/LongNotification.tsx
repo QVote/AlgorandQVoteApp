@@ -1,119 +1,106 @@
-import React, {
-  useState,
-  useImperativeHandle,
-  forwardRef,
-  useEffect,
-} from "react";
-import type { MutableRefObject } from "react";
+import React from "react";
 import { Layer, Box, Text, Button } from "grommet";
 import { StatusGood, Close, StatusCritical, StatusInfo } from "grommet-icons";
-
-export type LongNotificationHandle = {
-  onShowNotification: (txt: string) => void;
-  onCloseShowNotification: () => void;
-  setLoading: () => void;
-  setSuccess: () => void;
-  setError: () => void;
-};
+import { makeAutoObservable } from "mobx";
+import { observer } from "mobx-react";
+import { sleep } from "../../scripts";
 
 type NotificationTypes = {
-  bg: string;
-  txtColor: string;
-  type: "loading" | "success" | "error";
+    bg: string;
+    txtColor: string;
+    icon: JSX.Element;
 };
 
-const loading: NotificationTypes = {
-  bg: "status-unknown",
-  txtColor: null,
-  type: "loading",
+type NotificationKeys = "loading" | "success" | "error";
+
+const notificationTypes: {
+    [key in NotificationKeys]: NotificationTypes;
+} = {
+    error: {
+        bg: "status-error",
+        txtColor: "white",
+        icon: <StatusCritical color={"white"} />,
+    },
+    success: {
+        bg: "status-ok",
+        txtColor: "white",
+        icon: <StatusGood color={"white"} />,
+    },
+    loading: {
+        bg: "status-unknown",
+        txtColor: null,
+        icon: <StatusInfo />,
+    },
 };
 
-const success: NotificationTypes = {
-  bg: "status-ok",
-  txtColor: "white",
-  type: "success",
-};
+class LongNotificationState {
+    text = "";
+    notificationType = notificationTypes.loading;
+    show = false;
 
-const error: NotificationTypes = {
-  bg: "status-error",
-  txtColor: "white",
-  type: "error",
-};
-
-function LongNotificationComp(
-  props: {},
-  ref: MutableRefObject<LongNotificationHandle>
-) {
-  const [showNotification, setShowNotification] = useState(false);
-  const [txt, setTxt] = useState("");
-  const [custom, setCustom] = useState(loading);
-
-  useImperativeHandle(ref, () => ({
-    onShowNotification,
-    onCloseShowNotification,
-    setLoading,
-    setSuccess,
-    setError,
-  }));
-
-  const setLoading = () => {
-    setCustom(loading);
-  };
-  const setSuccess = () => {
-    setCustom(success);
-  };
-  const setError = () => {
-    setCustom(error);
-  };
-
-  const onShowNotification = (txt: string) => {
-    if (!showNotification) {
-      setShowNotification(true);
-      setTxt(txt);
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 3000);
+    constructor() {
+        makeAutoObservable(this);
     }
-  };
-  const onCloseShowNotification = () => setShowNotification(false);
 
-  return showNotification ? (
-    <Layer
-      position="bottom-right"
-      modal={false}
-      margin={{ vertical: "medium", horizontal: "small" }}
-      onEsc={onCloseShowNotification}
-      responsive={false}
-      plain
-    >
-      <Box
-        align="center"
-        direction="row"
-        gap="small"
-        justify="between"
-        round="medium"
-        elevation="medium"
-        pad={"medium"}
-        background={custom.bg}
-      >
-        {custom.type == "loading" && <StatusInfo color={custom.txtColor} />}
-        {custom.type == "success" && <StatusGood color={custom.txtColor} />}
-        {custom.type == "error" && <StatusCritical color={custom.txtColor} />}
-        <Box align="center" direction="row" gap="xsmall" width="100%">
-          <Text textAlign="center" size="small" color={custom.txtColor}>
-            {txt}
-          </Text>
-        </Box>
-        <Button
-          icon={<Close size="small" color={custom.txtColor} />}
-          onClick={onCloseShowNotification}
-          plain
-        />
-      </Box>
-    </Layer>
-  ) : (
-    <Box />
-  );
+    async showNotification(text: string, type: NotificationKeys) {
+        if (!this.show) {
+            this.show = true;
+            this.notificationType = notificationTypes[type];
+            this.text = text;
+            await sleep(3000);
+            this.close();
+        }
+    }
+    close() {
+        this.show = false;
+    }
 }
 
-export const LongNotification = forwardRef(LongNotificationComp);
+export const longNotification = new LongNotificationState();
+
+export const LongNotification = observer(() => {
+    return longNotification.show ? (
+        <Layer
+            position="bottom-right"
+            modal={false}
+            margin={{ vertical: "medium", horizontal: "small" }}
+            onEsc={longNotification.close}
+            responsive={false}
+            plain
+        >
+            <Box
+                align="center"
+                direction="row"
+                gap="small"
+                justify="between"
+                round="medium"
+                elevation="medium"
+                pad={"medium"}
+                background={longNotification.notificationType.bg}
+            >
+                {longNotification.notificationType.icon}
+                <Box align="center" direction="row" gap="xsmall" width="100%">
+                    <Text
+                        textAlign="center"
+                        size="small"
+                        color={longNotification.notificationType.txtColor}
+                    >
+                        {longNotification.text}
+                    </Text>
+                </Box>
+                <Button
+                    icon={
+                        <Close
+                            size="small"
+                            color={longNotification.notificationType.txtColor}
+                        />
+                    }
+                    onClick={longNotification.close}
+                    plain
+                />
+            </Box>
+        </Layer>
+    ) : (
+        <Box />
+    );
+});

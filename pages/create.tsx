@@ -13,6 +13,7 @@ import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react";
+import { longNotification } from "../components/MainFrame/LongNotification";
 
 class Creator {
     target = getInitDecision();
@@ -127,9 +128,9 @@ const DecisionCreator = observer(() => {
             try {
                 await onDeploy();
             } catch (e) {
-                main.longNotification.current.setError();
-                main.longNotification.current.onShowNotification(
-                    "Something went wrong!"
+                longNotification.showNotification(
+                    "Something went wrong!",
+                    "error"
                 );
             }
             creator.setLoading(false);
@@ -153,9 +154,9 @@ const DecisionCreator = observer(() => {
             contractAddress: contractInstance.address,
             type: "Deploy",
         });
-        main.longNotification.current.setLoading();
-        main.longNotification.current.onShowNotification(
-            "Waiting for transaction confirmation..."
+        longNotification.showNotification(
+            "Waiting for transaction confirmation...",
+            "loading"
         );
     }
 

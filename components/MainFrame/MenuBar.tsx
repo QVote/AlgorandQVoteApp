@@ -87,7 +87,7 @@ function MenuBarComponent(
                 `https://viewblock.io/zilliqa/tx/0x${id}?network=${main.blockchainInfo.name}`
             );
         } else {
-            networkNotSupported(main);
+            networkNotSupported();
         }
     }
     return (

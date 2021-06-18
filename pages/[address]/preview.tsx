@@ -15,6 +15,7 @@ import { MenuModal } from "../../components/MainFrame/MenuModal";
 import { ScrollBox } from "../../components/ScrollBox";
 import { formatAddress } from "../../scripts";
 import { AddressGet } from "../../components/AddressGet";
+import { longNotification } from "../../components/MainFrame/LongNotification";
 
 const PATHS = {
     vote: { path: "/[address]/vote", as: "/vote" },
@@ -45,9 +46,9 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                 });
                 const state = await blockchainApi.getQueueState(queueAddress);
                 if (addressIn(curDecision._this_address, state.queue)) {
-                    main.longNotification.current.setError();
-                    main.longNotification.current.onShowNotification(
-                        "This decision is already in the queue!"
+                    longNotification.showNotification(
+                        "This decision is already in the queue!",
+                        "error"
                     );
                 } else {
                     const tx = await blockchainApi.onlyOwnerPushQueue(
@@ -61,9 +62,9 @@ function Preview({ main }: { main: ReturnType<typeof useMainContext> }) {
                         contractAddress: curDecision._this_address,
                         type: "Push",
                     });
-                    main.longNotification.current.setLoading();
-                    main.longNotification.current.onShowNotification(
-                        "Waiting for transaction confirmation..."
+                    longNotification.showNotification(
+                        "Waiting for transaction confirmation...",
+                        "loading"
                     );
                 }
             } catch (e) {
