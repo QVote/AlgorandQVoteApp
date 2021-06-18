@@ -1,9 +1,9 @@
 import { QVoteZilliqa, QueueZilliqa } from "@qvote/zilliqa-sdk";
-import { Protocol } from "../config";
+import { Protocol } from "./Zilliqa";
 import type { QVote, ZilPay } from "../types";
 import { BN, Zilliqa, Long } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../scripts";
-import { BLOCKCHAINS } from "../config";
+import { BLOCKCHAINS } from "./Zilliqa";
 
 type walletApi = "zilPay" | "moonlet";
 

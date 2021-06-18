@@ -2,7 +2,7 @@ import { createContext, MutableRefObject } from "react";
 import { useContracts } from "../../hooks/useContracts";
 import { useQueues } from "../../hooks/useQueues";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
-import { BlockchainInfo } from "../../config";
+import { BlockchainInfo } from "../../helpers/Zilliqa";
 import type { MenuHandle } from "./MenuBar";
 
 export const MainFrameContext = createContext<{

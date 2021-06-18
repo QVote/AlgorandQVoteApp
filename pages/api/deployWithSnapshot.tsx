@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Zilliqa, BN } from "@zilliqa-js/zilliqa";
 import { getPrivateKey, formatAddress } from "../../scripts";
 import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
-import { BLOCKCHAINS } from "../../config";
+import { BLOCKCHAINS } from "../../helpers/Zilliqa";
 import { TOKENS, BlockchainApi } from "../../helpers/BlockchainApi";
 
 export type SnapshotDeployResponse = {

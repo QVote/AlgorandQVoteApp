@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Cookie from "js-cookie";
-import type { BlockchainInfo } from "../config";
+import type { BlockchainInfo } from "../helpers/Zilliqa";
 import { isSuccess } from "../scripts";
 import type { useContracts } from "./useContracts";
 import { BlockchainApi } from "../helpers/BlockchainApi";

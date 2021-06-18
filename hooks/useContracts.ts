@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Cookie from "js-cookie";
-import type { BlockchainInfo } from "../config";
+import type { BlockchainInfo } from "../helpers/Zilliqa";
 import type { QVote } from "../types";
 import { BlockchainApi } from "../helpers/BlockchainApi";
 import { useRouter } from "next/router";

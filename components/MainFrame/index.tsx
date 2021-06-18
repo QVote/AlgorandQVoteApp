@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box } from "grommet";
 import { useRouter } from "next/router";
-import { BlockchainInfo, BLOCKCHAINS } from "../../config";
+import { BlockchainInfo, BLOCKCHAINS } from "../../helpers/Zilliqa";
 import { MenuBar, MenuHandle } from "./MenuBar";
 import { useContracts } from "../../hooks/useContracts";
 import { useQueues } from "../../hooks/useQueues";
