@@ -1,5 +1,4 @@
-import { QVote } from "../types";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { Box, TextInput, TextArea, Button, Keyboard, Text } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
@@ -9,112 +8,131 @@ import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { scrollTo } from "../scripts";
-import { BlockchainApi, TOKENS } from "../helpers/BlockchainApi";
+import { BlockchainApi } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
-import { QVoteZilliqa } from "@qvote/zilliqa-sdk";
-import {
-    SnapshotDeployRequest,
-    SnapshotDeployResponse,
-} from "./api/deployWithSnapshot";
 import { QParagraph } from "../components/QParagraph";
+import { makeAutoObservable } from "mobx";
+import { observer } from "mobx-react";
 
-export default function DecisionCreator() {
+class Creator {
+    target = getInitDecision();
+    tempOption = "";
+    loading = false;
+    nextCard = false;
+    submitted = false;
+    constructor() {
+        makeAutoObservable(this);
+    }
+    setNextCard(b: boolean) {
+        this.nextCard = b;
+    }
+    reset() {
+        this.target = getInitDecision();
+        this.tempOption = "";
+        this.loading = false;
+        this.nextCard = false;
+        this.submitted = false;
+    }
+    get targetValid() {
+        return decisionValidate(this.target);
+    }
+    setLoading(b: boolean) {
+        this.loading = b;
+    }
+    get thereIsATempOptionAndRemainingValid() {
+        return (
+            this.tempOption != "" &&
+            areUniqueOnKey(this.target.options, "optName")
+        );
+    }
+    get isTempOptionValid() {
+        return areUniqueOnKey(
+            [
+                ...this.target.options,
+                {
+                    optName: this.tempOption,
+                    uid: "tempOP",
+                },
+            ],
+            "optName"
+        );
+    }
+    setTempOption(s: string) {
+        this.tempOption = s;
+    }
+
+    setName(s: string) {
+        this.target.name = s;
+    }
+
+    setDescription(s: string) {
+        this.target.description = s;
+    }
+    /**
+     * tries to add the temp option
+     * clears the temp option
+     */
+    tryAddOption(): boolean {
+        if (
+            creator.thereIsATempOptionAndRemainingValid &&
+            creator.isTempOptionValid
+        ) {
+            this.target.options.push({
+                optName: this.tempOption,
+                uid: uuidv4(),
+            });
+            this.setTempOption("");
+            return true;
+        }
+        return false;
+    }
+    trySetRegisterTime(time: string) {
+        const registerEndTime = parseInt(time);
+        if (Number.isInteger(registerEndTime)) {
+            if (registerEndTime >= 0) {
+                this.target.registerEndTime = registerEndTime;
+            }
+        }
+    }
+    trySetEndTime(time: string) {
+        const endTime = parseInt(time);
+        if (Number.isInteger(endTime)) {
+            if (endTime > 0) {
+                this.target.endTime = endTime;
+            }
+        }
+    }
+    deleteOption(uid: string) {
+        this.target.options = this.target.options.filter((x) => x.uid != uid);
+    }
+    setSubmitted(b: boolean) {
+        this.submitted = b;
+    }
+}
+const creator = new Creator();
+
+const DecisionCreator = observer(() => {
     const main = useMainContext();
-    const [decision, setDecision] = useState(getInitDecision());
-    const [tempOption, setTempOption] = useState("");
-    const [isTempOptionValid, setIsTempOptionValid] = useState(false);
-    const [decisionValid, setDecisionValid] = useState(
-        decisionValidate(getInitDecision())
-    );
-    const [loading, setLoading] = useState(false);
     const lastOption = useRef(null);
-    const [nextCard, setNextCard] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const [useTokenOwnershipSnapshot, setUseTokenOwnershipSnapshot] =
-        useState(false);
-
-    function reset() {
-        setUseTokenOwnershipSnapshot(false);
-        setLoading(false);
-        setNextCard(false);
-        setSubmitted(false);
-        setDecisionValid(decisionValidate(getInitDecision()));
-        setDecision(getInitDecision());
-        setTempOption("");
-        setIsTempOptionValid(false);
-    }
-
-    const canAddOption = () =>
-        tempOption != "" && areUniqueOnKey(decision.options, "optName");
-
-    function updateDecision(d: QVote.Decision) {
-        setDecision(d);
-        setDecisionValid(decisionValidate(d));
-    }
-
-    function onChangeName(n: string) {
-        updateDecision({ ...decision, name: n });
-    }
-
-    function onChangeDescription(d: string) {
-        updateDecision({ ...decision, description: d });
-    }
 
     function onAddNewOption() {
-        if (canAddOption() && isTempOptionValid) {
-            const toAdd: QVote.Option = {
-                optName: tempOption,
-                uid: uuidv4(),
-            };
-            updateDecision({
-                ...decision,
-                options: [...decision.options, toAdd],
-            });
-            setTempOption("");
-            setIsTempOptionValid(false);
+        if (creator.tryAddOption()) {
             scrollTo(lastOption);
         }
     }
 
-    function onChangeRegisterEndTime(time: string) {
-        const registerEndTime = parseInt(time);
-        if (Number.isInteger(registerEndTime)) {
-            if (registerEndTime >= 0) {
-                updateDecision({ ...decision, registerEndTime });
-            }
-        }
-    }
-
-    function onChangeEndTime(time: string) {
-        const endTime = parseInt(time);
-        if (Number.isInteger(endTime)) {
-            if (endTime > 0) {
-                updateDecision({ ...decision, endTime });
-            }
-        }
-    }
-
-    function onDeleteOption(o: QVote.Option) {
-        const newOptions = decision.options.filter((x) => x.uid != o.uid);
-        updateDecision({ ...decision, options: newOptions });
-    }
-
     async function onTryToDeploy() {
-        if (!loading && decisionValid.isValid) {
-            setLoading(true);
+        if (!creator.loading && creator.targetValid.isValid) {
+            creator.setLoading(true);
             try {
-                if (useTokenOwnershipSnapshot) {
-                    await callApi();
-                } else {
-                    await onDeploy();
-                }
+                await onDeploy();
             } catch (e) {
                 main.longNotification.current.setError();
                 main.longNotification.current.onShowNotification(
                     "Something went wrong!"
                 );
             }
-            setLoading(false);
+            creator.setLoading(false);
         }
     }
 
@@ -124,10 +142,10 @@ export default function DecisionCreator() {
             protocol: main.blockchainInfo.protocol,
         });
         const [tx, contractInstance] = await blockchain.deploy(
-            decision,
+            creator.target,
             main.curAcc
         );
-        setSubmitted(true);
+        creator.setSubmitted(true);
         main.jobsScheduler.checkDeployCall({
             id: tx.ID,
             name: `Deploy Transaction: ${tx.ID}`,
@@ -141,70 +159,13 @@ export default function DecisionCreator() {
         );
     }
 
-    async function callApi() {
-        const rate = await BlockchainApi.getCurrentTxBlockRate();
-        const secRate = Math.round(1 / rate);
-        const curBlock = await BlockchainApi.getCurrentBlockNumber();
-        const qv = new QVoteZilliqa(
-            null,
-            main.blockchainInfo.protocol,
-            secRate
-        );
-        const body: SnapshotDeployRequest = {
-            net: main.blockchainInfo.name,
-            name: decision.name,
-            description: decision.description,
-            options: decision.options.map((o) => o.optName),
-            creditToTokenRatio: decision.creditToTokenRatio,
-            registrationEndTime: qv.futureTxBlockNumber(curBlock, 60 * 7),
-            expirationBlock: qv.futureTxBlockNumber(curBlock, 60 * 100),
-            tokenId: decision.tokenId,
-        };
-        const response = await fetch("/api/deployWithSnapshot", {
-            method: "POST",
-            mode: "cors",
-            cache: "no-cache",
-            credentials: "same-origin",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            referrerPolicy: "no-referrer",
-            body: JSON.stringify(body),
-        });
-        if (response.ok) {
-            const resBody = (await response.json()) as SnapshotDeployResponse;
-            console.log(resBody);
-            setSubmitted(true);
-            main.jobsScheduler.checkDeployCall({
-                id: resBody.deployID,
-                name: `Deploy Transaction: ${resBody.deployID}`,
-                status: "waiting",
-                contractAddress: resBody.contractAddress,
-                type: "Deploy",
-            });
-            main.jobsScheduler.checkContractCall({
-                id: resBody.registerID,
-                name: `Register Transaction: ${resBody.registerID}`,
-                status: "waiting",
-                contractAddress: resBody.contractAddress,
-                type: "Register",
-            });
-            main.longNotification.current.setLoading();
-            main.longNotification.current.onShowNotification(
-                "Waiting for deploy and register confirmation..."
-            );
-        } else {
-            throw new Error("Failed");
-        }
-    }
-
-    return submitted ? (
+    return creator.submitted ? (
         <TransactionSubmitted
-            onClick={() => reset()}
+            onClick={() => creator.reset()}
             txt="Create another?"
             buttonLabel="Go to create"
         />
-    ) : !nextCard ? (
+    ) : !creator.nextCard ? (
         <TwoCards
             Card1={
                 <Box fill>
@@ -213,19 +174,19 @@ export default function DecisionCreator() {
                         <TextInput
                             placeholder="Name"
                             size="small"
-                            value={decision.name}
+                            value={creator.target.name}
                             maxLength={100}
-                            onChange={(e) => onChangeName(e.target.value)}
+                            onChange={(e) => creator.setName(e.target.value)}
                         />
                         <TextArea
                             resize={false}
                             fill
                             placeholder="Details"
                             size="small"
-                            value={decision.description}
+                            value={creator.target.description}
                             maxLength={100}
                             onChange={(e) =>
-                                onChangeDescription(e.target.value)
+                                creator.setDescription(e.target.value)
                             }
                         />
                     </Box>
@@ -245,21 +206,10 @@ export default function DecisionCreator() {
                                     <TextInput
                                         placeholder="Option Name"
                                         size="small"
-                                        value={tempOption}
+                                        value={creator.tempOption}
                                         onChange={(e) => {
-                                            setTempOption(e.target.value);
-                                            setIsTempOptionValid(
-                                                areUniqueOnKey(
-                                                    [
-                                                        ...decision.options,
-                                                        {
-                                                            optName:
-                                                                e.target.value,
-                                                            uid: "tempOP",
-                                                        },
-                                                    ],
-                                                    "optName"
-                                                )
+                                            creator.setTempOption(
+                                                e.target.value
                                             );
                                         }}
                                         maxLength={26}
@@ -272,7 +222,7 @@ export default function DecisionCreator() {
                                 >
                                     <Button
                                         icon={<Add />}
-                                        disabled={!isTempOptionValid}
+                                        disabled={!creator.isTempOptionValid}
                                         onClick={onAddNewOption}
                                     />
                                 </Box>
@@ -280,7 +230,7 @@ export default function DecisionCreator() {
                         </Keyboard>
                     </Box>
                     <ScrollBox props={{ gap: "small" }}>
-                        {decision.options.map((o, i) => {
+                        {creator.target.options.map((o, i) => {
                             return (
                                 <Box
                                     height={{ min: "50px" }}
@@ -300,7 +250,9 @@ export default function DecisionCreator() {
                                     </Box>
                                     <Box align="center" justify="center">
                                         <Button
-                                            onClick={() => onDeleteOption(o)}
+                                            onClick={() =>
+                                                creator.deleteOption(o.uid)
+                                            }
                                             icon={<Trash />}
                                         />
                                     </Box>
@@ -322,13 +274,13 @@ export default function DecisionCreator() {
                         <Button
                             disabled={
                                 !(
-                                    decisionValid.nameValid &&
-                                    decisionValid.descriptionValid &&
-                                    decisionValid.optionsValid
+                                    creator.targetValid.nameValid &&
+                                    creator.targetValid.descriptionValid &&
+                                    creator.targetValid.optionsValid
                                 )
                             }
                             label={"Next"}
-                            onClick={() => setNextCard(true)}
+                            onClick={() => creator.setNextCard(true)}
                         />
                     </Box>
                 </Box>
@@ -346,9 +298,9 @@ export default function DecisionCreator() {
                             placeholder="Minutes for registration"
                             size="small"
                             type="number"
-                            value={decision.registerEndTime}
+                            value={creator.target.registerEndTime}
                             onChange={(e) =>
-                                onChangeRegisterEndTime(e.target.value)
+                                creator.trySetRegisterTime(e.target.value)
                             }
                         />
                         <Text>Voting open after registration:</Text>
@@ -357,8 +309,10 @@ export default function DecisionCreator() {
                             placeholder="Minutes voting is open after registration"
                             size="small"
                             type="number"
-                            value={decision.endTime}
-                            onChange={(e) => onChangeEndTime(e.target.value)}
+                            value={creator.target.endTime}
+                            onChange={(e) =>
+                                creator.trySetEndTime(e.target.value)
+                            }
                         />
                     </Box>
                 </Box>
@@ -383,14 +337,16 @@ export default function DecisionCreator() {
                             disabled={false}
                             secondary
                             label={"Go Back"}
-                            onClick={() => setNextCard(false)}
+                            onClick={() => creator.setNextCard(false)}
                         />
                     </Box>
                     <Box align="center" justify="center" fill pad="small">
                         <Button
-                            disabled={loading || !decisionValid.isValid}
+                            disabled={
+                                creator.loading || !creator.targetValid.isValid
+                            }
                             label={
-                                loading
+                                creator.loading
                                     ? "Waiting for confirmation"
                                     : "Deploy to zilliqa"
                             }
@@ -401,4 +357,6 @@ export default function DecisionCreator() {
             }
         />
     );
-}
+});
+
+export default DecisionCreator;
