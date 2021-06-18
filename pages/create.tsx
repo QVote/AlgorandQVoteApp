@@ -1,19 +1,10 @@
 import { QVote } from "../types";
-import { useState, useRef, useEffect } from "react";
-import {
-    Box,
-    TextInput,
-    TextArea,
-    Button,
-    Keyboard,
-    Text,
-    CheckBox,
-    Select,
-} from "grommet";
+import { useState, useRef } from "react";
+import { Box, TextInput, TextArea, Button, Keyboard, Text } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
-import { Money, Clock, InProgress, Scorecard, Trash, Add } from "grommet-icons";
+import { Clock, InProgress, Trash, Add } from "grommet-icons";
 import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
@@ -39,9 +30,8 @@ export default function DecisionCreator() {
     const lastOption = useRef(null);
     const [nextCard, setNextCard] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [useTokenOwnershipSnapshot, setUseTokenOwnershipSnapshot] = useState(
-        false
-    );
+    const [useTokenOwnershipSnapshot, setUseTokenOwnershipSnapshot] =
+        useState(false);
 
     function reset() {
         setUseTokenOwnershipSnapshot(false);
@@ -100,19 +90,6 @@ export default function DecisionCreator() {
         if (Number.isInteger(endTime)) {
             if (endTime > 0) {
                 updateDecision({ ...decision, endTime });
-            }
-        }
-    }
-
-    function onChangeTokenId(tokenId: string) {
-        updateDecision({ ...decision, tokenId });
-    }
-
-    function onChangeCreditToTokenRatio(creditToTokenRatio: string) {
-        const ratio = parseInt(creditToTokenRatio);
-        if (Number.isInteger(ratio)) {
-            if (10000 > ratio && ratio > 0) {
-                updateDecision({ ...decision, creditToTokenRatio });
             }
         }
     }
@@ -389,46 +366,9 @@ export default function DecisionCreator() {
             Card2={
                 <Box fill gap="small">
                     <QHeading>{"Tokens"}</QHeading>
-                    {/* <CheckBox
-            checked={useTokenOwnershipSnapshot}
-            label="Use token ownership snapshot?"
-            onChange={() =>
-              setUseTokenOwnershipSnapshot(!useTokenOwnershipSnapshot)
-            }
-          /> */}
                     <QParagraph>
                         Token ownership snapshot (coming soon)
                     </QParagraph>
-                    {useTokenOwnershipSnapshot && (
-                        <Box fill gap="small">
-                            <Text>Credit to token ratio</Text>
-                            <TextInput
-                                icon={<Scorecard />}
-                                placeholder="Credit to token ratio"
-                                size="small"
-                                type="number"
-                                value={decision.creditToTokenRatio}
-                                maxLength={3}
-                                onChange={(e) =>
-                                    onChangeCreditToTokenRatio(e.target.value)
-                                }
-                            />
-                            <Text>Token ID</Text>
-                            <Select
-                                icon={<Money />}
-                                options={Object.entries(
-                                    TOKENS[main.blockchainInfo.name]
-                                ).map((e) => e[0])}
-                                value={decision.tokenId}
-                                onChange={({ option }) =>
-                                    updateDecision({
-                                        ...decision,
-                                        tokenId: option,
-                                    })
-                                }
-                            />
-                        </Box>
-                    )}
                 </Box>
             }
             NextButton={
