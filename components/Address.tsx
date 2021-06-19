@@ -1,8 +1,7 @@
 import React from "react";
-import { useMainContext } from "../hooks/useMainContext";
-import { networkNotSupported } from "./utill";
 import { Box, Text, Button } from "grommet";
 import { Cubes, Copy } from "grommet-icons";
+import { zilliqaApi } from "../helpers/Zilliqa";
 
 export function Address({
     txt,
@@ -17,21 +16,6 @@ export function Address({
     onCopyTxt?: () => void;
     onViewBlock?: () => void;
 }) {
-    const main = useMainContext();
-    function tryToViewBlockContract(address: string) {
-        //Try to open a viewblock
-        if (
-            main.blockchainInfo.name == "testnet" ||
-            main.blockchainInfo.name == "mainnet"
-        ) {
-            window.open(
-                `https://viewblock.io/zilliqa/address/${address}?network=${main.blockchainInfo.name}`
-            );
-        } else {
-            networkNotSupported();
-        }
-    }
-
     return (
         <Box
             height={{ min: "xxsmall" }}
@@ -63,7 +47,7 @@ export function Address({
                         onClick={
                             onViewBlock
                                 ? onViewBlock
-                                : () => tryToViewBlockContract(txt)
+                                : () => zilliqaApi.contractLink(txt)
                         }
                     />
                 </Box>

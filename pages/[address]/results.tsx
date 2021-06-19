@@ -1,18 +1,20 @@
 import React from "react";
-import { Box, Heading, Text } from "grommet";
+import { Box, Heading } from "grommet";
 import { QParagraph } from "../../components/QParagraph";
 import { QHeading } from "../../components/QHeading";
 import { TwoCards } from "../../components/TwoCards";
 import { useResponsiveContext } from "../../hooks/useResponsiveContext";
-import { useMainContext } from "../../hooks/useMainContext";
 import { BarChart } from "../../components/BarChart";
-import { AddressGet } from "../../components/AddressGet";
+import { observer } from "mobx-react";
+import { zilliqaApi } from "../../helpers/Zilliqa";
+import { Loader } from "../../components/Loader";
 
-function Results({ main }: { main: ReturnType<typeof useMainContext> }) {
+function Results() {
     const responsiveContext = useResponsiveContext();
-    const curDecision = main.useContracts.contract.state;
 
-    return (
+    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+        <Loader />
+    ) : (
         <TwoCards
             Card1={
                 <Box fill>
@@ -25,15 +27,17 @@ function Results({ main }: { main: ReturnType<typeof useMainContext> }) {
                         style={{ wordBreak: "break-word" }}
                         level={responsiveContext == "small" ? "3" : "2"}
                     >
-                        {curDecision.name}
+                        {zilliqaApi.contractState.name}
                     </Heading>
-                    <QParagraph>{curDecision.description}</QParagraph>
+                    <QParagraph>
+                        {zilliqaApi.contractState.description}
+                    </QParagraph>
                 </Box>
             }
-            Card2={<BarChart decision={curDecision} />}
+            Card2={<BarChart decision={zilliqaApi.contractState} />}
             NextButton={<Box fill></Box>}
         />
     );
 }
 
-export default AddressGet(Results, "useContracts");
+export default observer(Results);

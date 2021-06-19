@@ -1,7 +1,6 @@
 import React from "react";
 import { TwoCards } from "../components/TwoCards";
 import { Address } from "../components/Address";
-import { useMainContext } from "../hooks/useMainContext";
 import { ScrollBox } from "../components/ScrollBox";
 import { onGoToAs } from "../components/utill";
 import { useRouter } from "next/router";
@@ -10,13 +9,13 @@ import { Box, Button, Text } from "grommet";
 import { QHeading } from "../components/QHeading";
 import { QParagraph } from "../components/QParagraph";
 import { Add } from "grommet-icons";
+import { zilliqaApi } from "../helpers/Zilliqa";
 
 const PATHS = {
     preview: { path: "/[address]/preview", as: "/preview" },
 };
 
 export default function Index() {
-    const main = useMainContext();
     const router = useRouter();
 
     /**
@@ -24,7 +23,7 @@ export default function Index() {
      * loading is set on initial paint of the next page
      */
     function onClickAddress(a: string) {
-        main.useContracts.zeroState();
+        // main.useContracts.zeroState();
         onGoToAs(PATHS.preview.path, PATHS.preview.as, router, a);
     }
 
@@ -53,11 +52,11 @@ export default function Index() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {main.useContracts.addresses.length == 0 && (
+                    {zilliqaApi.cookies.value.arr.length == 0 && (
                         <QParagraph>You have no recent decisions.</QParagraph>
                     )}
-                    {main.useContracts.addresses.length > 0 &&
-                        main.useContracts.addresses.map((a) => (
+                    {zilliqaApi.cookies.value.arr.length > 0 &&
+                        zilliqaApi.cookies.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractdecision${a}`}

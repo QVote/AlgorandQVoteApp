@@ -1,5 +1,4 @@
 import React from "react";
-import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { Box, Button, Text } from "grommet";
 import { Add } from "grommet-icons";
@@ -10,13 +9,13 @@ import { Address } from "../components/Address";
 import { useRouter } from "next/router";
 import { onCopyText } from "../components/utill";
 import { notArrPlz } from "../scripts";
+import { zilliqaApi } from "../helpers/Zilliqa";
 
 const PATHS = {
     queue: { path: "/q/[queueAddress]", as: "/q" },
 };
 
 export default function Queues() {
-    const main = useMainContext();
     const router = useRouter();
 
     /**
@@ -24,7 +23,6 @@ export default function Queues() {
      * loading is set on initial paint of the next page
      */
     function onClickAddress(a: string) {
-        main.useQueues.zeroState();
         router.push(PATHS.queue.path, `${PATHS.queue.as}/${notArrPlz(a)}`);
     }
 
@@ -56,11 +54,11 @@ export default function Queues() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {main.useQueues.addresses.length == 0 && (
+                    {zilliqaApi.queues.value.arr.length == 0 && (
                         <QParagraph>You have no recent queues.</QParagraph>
                     )}
-                    {main.useQueues.addresses.length > 0 &&
-                        main.useQueues.addresses.map((a) => (
+                    {zilliqaApi.queues.value.arr.length > 0 &&
+                        zilliqaApi.queues.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractqueue${a}`}

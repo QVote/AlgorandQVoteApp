@@ -1,4 +1,4 @@
-export module QVote {
+export namespace QVote {
   export type Option = {
     optName: string;
     uid: string;

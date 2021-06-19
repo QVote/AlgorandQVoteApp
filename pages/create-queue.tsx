@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { Box, Button } from "grommet";
-import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
-import { BlockchainApi } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
-import { longNotification } from "../components/Notifications/LongNotification";
+import { zilliqaApi } from "../helpers/Zilliqa";
 
 export default function DecisionCreator() {
-    const main = useMainContext();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -22,31 +19,12 @@ export default function DecisionCreator() {
         if (!loading) {
             try {
                 setLoading(true);
-                const blockchain = new BlockchainApi({
-                    wallet: "zilPay",
-                    protocol: main.blockchainInfo.protocol,
-                });
-                const [tx, contractInstance] = await blockchain.deployQueue(
-                    "20",
-                    main.curAcc
-                );
+                await zilliqaApi.deployQueue("20");
                 setSubmitted(true);
-                main.jobsScheduler.checkDeployQueueCall({
-                    id: tx.ID,
-                    name: `Deploy Queue Transaction: ${tx.ID}`,
-                    status: "waiting",
-                    contractAddress: contractInstance.address,
-                    type: "DeployQueue",
-                });
-                longNotification.showNotification(
-                    "Waiting for transaction confirmation...",
-                    "loading"
-                );
-                setLoading(false);
             } catch (e) {
                 console.error(e);
-                setLoading(false);
             }
+            setLoading(false);
         }
     }
 

@@ -1,99 +1,46 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box } from "grommet";
 import { useRouter } from "next/router";
-import { BlockchainInfo, BLOCKCHAINS } from "../../helpers/Zilliqa";
 import { MenuBar, MenuHandle } from "./MenuBar";
 import { useContracts } from "../../hooks/useContracts";
 import { useQueues } from "../../hooks/useQueues";
 import { useJobScheduler } from "../../hooks/useJobScheduler";
 import { MainFrameContext } from "./MainFrameContext";
 import { Notification, LongNotification } from "../Notifications";
-import { BlockchainApi } from "../../helpers/BlockchainApi";
-import { formatAddress } from "../../scripts";
+import { zilliqaApi } from "../../helpers/Zilliqa";
+import { observer } from "mobx-react";
 
-export { MainFrameContext };
-
-export function MainFrame({ children }: { children: JSX.Element }) {
+export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
     const router = useRouter();
-    const [curAcc, setCurAcc] = useState<string | undefined>();
-    const [blockchainInfo, setBlockchainInfo] = useState<BlockchainInfo>({
-        name: "none__",
-        protocol: { chainId: 0, msgVersion: 1 },
-        url: "",
-    });
-    const [connected, setConnected] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true);
-    const useContractsHook = useContracts(blockchainInfo, connected, curAcc);
-    const useQueuesHook = useQueues(blockchainInfo, connected, curAcc);
+    // const useQueuesHook = useQueues(blockchainInfo, connected, curAcc);
     const menuRef = useRef<MenuHandle>();
-    const jobsScheduler = useJobScheduler(
-        blockchainInfo,
-        useContractsHook,
-        useQueuesHook,
-        connected
-    );
+    // const jobsScheduler = useJobScheduler(
+    //     blockchainInfo,
+    //     useQueuesHook,
+    //     connected
+    // );
 
     useEffect(() => {
-        if (curAcc) {
-            setConnected(true);
-        } else {
-            setConnected(false);
-        }
-        setLoading(false);
-    }, [curAcc]);
-
-    function setNet(net: string) {
-        if (Object.keys(BLOCKCHAINS).includes(net)) {
-            setBlockchainInfo(BLOCKCHAINS[net]);
-        } else {
-            setBlockchainInfo(BLOCKCHAINS.private);
-        }
-    }
-
-    async function connect(): Promise<boolean> {
-        return BlockchainApi.getZilPay().wallet.connect();
-    }
-
-    async function onStart(callback?: () => void) {
-        if (!(await onInitial(callback))) {
-            //open extension window
-            window.open("https://zilpay.io/");
-        }
-    }
-
-    async function onInitial(callback?: () => void) {
-        const thereIsZilPay = BlockchainApi.thereIsZilPay();
-        if (thereIsZilPay) {
-            const isConnect = await connect();
-            if (isConnect) {
-                setCurAcc(
-                    formatAddress(
-                        BlockchainApi.getZilPay().wallet.defaultAccount.base16
-                    )
-                );
-                BlockchainApi.getZilPay()
-                    .wallet.observableAccount()
-                    .subscribe((account) => {
-                        setCurAcc(formatAddress(account.base16));
-                    });
-                setNet(BlockchainApi.getZilPay().wallet.net);
-                BlockchainApi.getZilPay()
-                    .wallet.observableNetwork()
-                    .subscribe((net: "mainnet" | "testnet" | "private") =>
-                        setNet(net)
-                    );
-                setConnected(true);
-                callback && callback();
-            } else {
-                setConnected(false);
-            }
-        }
-        return thereIsZilPay;
-    }
-
-    useEffect(() => {
-        onInitial();
+        zilliqaApi.connect();
     }, []);
+
+    useEffect(() => {
+        if (zilliqaApi.connected) {
+            const { address, queueAddress } = router.query;
+            zilliqaApi.tryToGetContract(address);
+            zilliqaApi.tryToGetQueueState(queueAddress);
+        }
+    }, [router.query, zilliqaApi.currentAddress, zilliqaApi.connected]);
+
+    /**
+     * Essentially regenerate the jobs that were in progress but the site was
+     * refreshed
+     */
+    useEffect(() => {
+        if (zilliqaApi.connected) {
+            zilliqaApi.regenerateJobs();
+        }
+    }, [zilliqaApi.connected]);
 
     return (
         <Box
@@ -103,30 +50,18 @@ export function MainFrame({ children }: { children: JSX.Element }) {
             fill={true}
             background={"light-2"}
         >
-            <MainFrameContext.Provider
+            {/* <MainFrameContext.Provider
                 value={{
-                    connected,
-                    curAcc,
-                    blockchainInfo,
-                    useContracts: useContractsHook,
                     useQueues: useQueuesHook,
                     jobsScheduler,
                     menu: menuRef,
                 }}
-            >
-                <MenuBar
-                    ref={menuRef}
-                    {...{
-                        router,
-                        connected,
-                        loading,
-                        onStart,
-                    }}
-                />
-                {children}
-                <Notification />
-                <LongNotification />
-            </MainFrameContext.Provider>
+            > */}
+            <MenuBar ref={menuRef} />
+            {children}
+            <Notification />
+            <LongNotification />
+            {/* </MainFrameContext.Provider> */}
         </Box>
     );
-}
+});

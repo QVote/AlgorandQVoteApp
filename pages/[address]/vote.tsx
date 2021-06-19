@@ -1,22 +1,24 @@
 import React from "react";
-import { useMainContext } from "../../hooks/useMainContext";
 import { Vote } from "../../components/Vote";
-import { AddressGet } from "../../components/AddressGet";
+import { zilliqaApi } from "../../helpers/Zilliqa";
+import { observer } from "mobx-react";
+import { Loader } from "../../components/Loader";
 
-function VotePage({ main }: { main: ReturnType<typeof useMainContext> }) {
-    return (
+function VotePage() {
+    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+        <Loader />
+    ) : (
         <Vote
-            decision={main.useContracts.contract.state}
+            decision={zilliqaApi.contractState}
             userAllowedCredits={
-                main.useContracts.contract.info.userVoter != "NOT_REGISTERED"
-                    ? main.useContracts.contract.state.voter_balances[
-                          main.curAcc
+                zilliqaApi.contractInfo.userVoter != "NOT_REGISTERED"
+                    ? zilliqaApi.contractState.voter_balances[
+                          zilliqaApi.currentAddress
                       ]
                     : 0
             }
-            main={main}
         />
     );
 }
 
-export default AddressGet(VotePage, "useContracts");
+export default observer(VotePage);

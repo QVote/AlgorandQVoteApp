@@ -6,7 +6,7 @@ import React, {
     useEffect,
 } from "react";
 import { Box, Text, Button } from "grommet";
-import type { NextRouter } from "next/router";
+import { useRouter } from "next/router";
 import { QVoteLogo } from "../QVoteLogo";
 import { MenuButton } from "./MenuButton";
 import {
@@ -20,11 +20,12 @@ import {
 } from "grommet-icons";
 import { ScrollBox } from "../ScrollBox";
 import { useResponsiveContext } from "../../hooks/useResponsiveContext";
-import { useMainContext } from "../../hooks/useMainContext";
-import { networkNotSupported, onCopyText } from "../utill";
+import { onCopyText } from "../utill";
 import { Address } from "../Address";
 import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
+import { zilliqaApi } from "../../helpers/Zilliqa";
+import { observer } from "mobx-react";
 
 const _COMPANY_SITE = "https://github.com/QVote";
 
@@ -45,23 +46,10 @@ export type MenuHandle = {
     open: OpenTypes;
 };
 
-function MenuBarComponent(
-    {
-        router,
-        connected,
-        loading,
-        onStart,
-    }: {
-        router: NextRouter;
-        connected: boolean;
-        loading: boolean;
-        onStart: (arg: () => void) => Promise<void>;
-    },
-    ref: MutableRefObject<MenuHandle>
-) {
+function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
     const responsiveContext = useResponsiveContext();
-    const main = useMainContext();
     const [open, setOpen] = useState<OpenTypes>("none");
+    const router = useRouter();
 
     useImperativeHandle(ref, () => ({
         setOpen,
@@ -76,19 +64,6 @@ function MenuBarComponent(
         await router.push(path);
     }
 
-    function tryToViewBlock(id: string) {
-        //Try to open a viewblock
-        if (
-            main.blockchainInfo.name == "testnet" ||
-            main.blockchainInfo.name == "mainnet"
-        ) {
-            window.open(
-                `https://viewblock.io/zilliqa/tx/0x${id}?network=${main.blockchainInfo.name}`
-            );
-        } else {
-            networkNotSupported();
-        }
-    }
     return (
         <Box
             style={{ top: 0, left: 0 }}
@@ -156,12 +131,12 @@ function MenuBarComponent(
                 />
             </Box>
             <Box width="50%" direction="row" align="center" justify="end">
-                {connected && (
+                {zilliqaApi.connected && (
                     <Box height="7vh" width={"10vw"}>
                         <MenuButton
                             txt={"Transactions"}
                             IconToDisp={
-                                main.jobsScheduler.someInProgress
+                                zilliqaApi.someJobsInProgress
                                     ? Update
                                     : Transaction
                             }
@@ -173,7 +148,7 @@ function MenuBarComponent(
                                 )
                             }
                             isCurrent={false}
-                            spin={main.jobsScheduler.someInProgress}
+                            spin={zilliqaApi.someJobsInProgress}
                         />
                         {open == "transactions" && (
                             <MenuModal
@@ -183,7 +158,7 @@ function MenuBarComponent(
                                 modalMinHeight="38vh"
                                 modalWidth="71vw"
                             >
-                                {main.jobsScheduler.jobs.length == 0 ? (
+                                {zilliqaApi.jobs.value.arr.length == 0 ? (
                                     <ScrollBox
                                         props={{
                                             pad: {
@@ -214,7 +189,7 @@ function MenuBarComponent(
                                         <Notice
                                             txt={"Your recent transactions:"}
                                         />
-                                        {main.jobsScheduler.jobs.map((a) => (
+                                        {zilliqaApi.jobs.value.arr.map((a) => (
                                             <Address
                                                 txt={a.name}
                                                 bg={
@@ -232,7 +207,7 @@ function MenuBarComponent(
                                                     )
                                                 }
                                                 onViewBlock={() =>
-                                                    tryToViewBlock(a.id)
+                                                    zilliqaApi.txLink(a.id)
                                                 }
                                             />
                                         ))}
@@ -253,17 +228,26 @@ function MenuBarComponent(
                     >
                         <SVGButton
                             svgPath={"/zilpay.svg"}
-                            onClick={() => onStart(() => setOpen("none"))}
+                            onClick={() => {
+                                setOpen("none");
+                                zilliqaApi.connect();
+                            }}
                         />
                     </MenuModal>
                 )}
                 <MenuButton
-                    IconToDisp={connected ? Integration : Connect}
-                    iconColor={connected ? "status-ok" : undefined}
-                    txtColor={connected ? "status-ok" : undefined}
-                    txt={loading ? "" : connected ? "Connected" : "Connect"}
+                    IconToDisp={zilliqaApi.connected ? Integration : Connect}
+                    iconColor={zilliqaApi.connected ? "status-ok" : undefined}
+                    txtColor={zilliqaApi.connected ? "status-ok" : undefined}
+                    txt={
+                        zilliqaApi.loading
+                            ? ""
+                            : zilliqaApi.connected
+                            ? "Connected"
+                            : "Connect"
+                    }
                     onClick={() => {
-                        if (!main.connected) {
+                        if (!zilliqaApi.connected) {
                             setOpen(open == "connect" ? "none" : "connect");
                         }
                     }}
@@ -301,4 +285,4 @@ function SVGButton(props: {
     );
 }
 
-export const MenuBar = forwardRef(MenuBarComponent);
+export const MenuBar = observer(forwardRef(MenuBarComponent));

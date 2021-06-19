@@ -4,16 +4,15 @@ import { v4 as uuidv4 } from "uuid";
 import { decisionValidate, getInitDecision, areUniqueOnKey } from "../scripts";
 import { ScrollBox } from "../components/ScrollBox";
 import { Clock, InProgress, Trash, Add } from "grommet-icons";
-import { useMainContext } from "../hooks/useMainContext";
 import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { scrollTo } from "../scripts";
-import { BlockchainApi } from "../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react";
 import { longNotification } from "../components/Notifications/LongNotification";
+import { zilliqaApi } from "../helpers/Zilliqa";
 
 class Creator {
     target = getInitDecision();
@@ -113,7 +112,6 @@ class Creator {
 const creator = new Creator();
 
 const DecisionCreator = observer(() => {
-    const main = useMainContext();
     const lastOption = useRef(null);
 
     function onAddNewOption() {
@@ -138,26 +136,8 @@ const DecisionCreator = observer(() => {
     }
 
     async function onDeploy() {
-        const blockchain = new BlockchainApi({
-            wallet: "zilPay",
-            protocol: main.blockchainInfo.protocol,
-        });
-        const [tx, contractInstance] = await blockchain.deploy(
-            creator.target,
-            main.curAcc
-        );
+        await zilliqaApi.deploy(creator.target);
         creator.setSubmitted(true);
-        main.jobsScheduler.checkDeployCall({
-            id: tx.ID,
-            name: `Deploy Transaction: ${tx.ID}`,
-            status: "waiting",
-            contractAddress: contractInstance.address,
-            type: "Deploy",
-        });
-        longNotification.showNotification(
-            "Waiting for transaction confirmation...",
-            "loading"
-        );
     }
 
     return creator.submitted ? (

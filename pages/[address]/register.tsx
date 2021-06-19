@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Button, Text, Keyboard, TextInput, Heading } from "grommet";
-import { useMainContext } from "../../hooks/useMainContext";
 import { TwoCards } from "../../components/TwoCards";
 import { QHeading } from "../../components/QHeading";
 import { ScrollBox } from "../../components/ScrollBox";
@@ -8,11 +7,11 @@ import { Trash, Add } from "grommet-icons";
 import { scrollTo, areUniqueOnKey, formatAddress } from "../../scripts";
 import { validation } from "@zilliqa-js/util";
 import { QParagraph } from "../../components/QParagraph";
-import { BlockchainApi } from "../../helpers/BlockchainApi";
 import { TransactionSubmitted } from "../../components/TransactionSubmitted";
 import { useRouter } from "next/router";
-import { AddressGet } from "../../components/AddressGet";
-import { longNotification } from "../../components/Notifications/LongNotification";
+import { observer } from "mobx-react";
+import { zilliqaApi } from "../../helpers/Zilliqa";
+import { Loader } from "../../components/Loader";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -20,8 +19,7 @@ const initVoterToAdd = {
     credits: 100,
 };
 
-function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
-    const curDecision = main.useContracts.contract.state;
+function Register() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [votersToAdd, setVotersToAdd] = useState<VoterToAdd[]>([]);
@@ -35,36 +33,15 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
         if (!loading) {
             try {
                 setLoading(true);
-                const blockchainApi = new BlockchainApi({
-                    wallet: "zilPay",
-                    protocol: main.blockchainInfo.protocol,
+                await zilliqaApi.ownerRegister({
+                    addresses: votersToAdd.map((v) => formatAddress(v.address)),
+                    creditsForAddresses: votersToAdd.map((v) => v.credits),
                 });
-                const tx = await blockchainApi.ownerRegister(
-                    curDecision._this_address,
-                    {
-                        addresses: votersToAdd.map((v) =>
-                            formatAddress(v.address)
-                        ),
-                        creditsForAddresses: votersToAdd.map((v) => v.credits),
-                    }
-                );
                 setSubmitted(true);
-                main.jobsScheduler.checkContractCall({
-                    id: tx.ID,
-                    name: `Register Transaction: ${tx.ID}`,
-                    status: "waiting",
-                    contractAddress: curDecision._this_address,
-                    type: "Register",
-                });
-                longNotification.showNotification(
-                    "Waiting for transaction confirmation...",
-                    "loading"
-                );
-                setLoading(false);
             } catch (e) {
                 console.error(e);
-                setLoading(false);
             }
+            setLoading(false);
         }
     }
 
@@ -106,7 +83,9 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
         setTempVoterValid(isTempVoterValid(next));
     }
 
-    return submitted ? (
+    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+        <Loader />
+    ) : submitted ? (
         <TransactionSubmitted
             onClick={() => router.push("/")}
             txt=""
@@ -130,23 +109,23 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
             Card2={
                 <Box fill justify="start">
                     <Heading style={{ wordBreak: "break-word" }} level={"3"}>
-                        {curDecision.name}
+                        {zilliqaApi.contractState.name}
                     </Heading>
                     <QParagraph size="small">
-                        {curDecision.description}
+                        {zilliqaApi.contractState.description}
                     </QParagraph>
                     <QParagraph
                         size="small"
                         color={
-                            main.useContracts.contract.info.timeState ==
+                            zilliqaApi.contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {main.useContracts.contract.info.timeState ==
+                        {zilliqaApi.contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration ends in ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
+                            ? `Registration ends in ${zilliqaApi.contractInfo.time.registrationEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.registrationEnds.minutes} minutes.`
                             : `Registration period ended.`}
                     </QParagraph>
                 </Box>
@@ -162,7 +141,7 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
                     <Box align="center" justify="center" fill pad="small">
                         <Button
                             disabled={
-                                main.useContracts.contract.info.timeState !=
+                                zilliqaApi.contractInfo.timeState !=
                                 "REGISTRATION_IN_PROGRESS"
                             }
                             label={"Next"}
@@ -177,33 +156,34 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
             Card1={
                 <Box fill>
                     <QHeading>{"Already Registered:"}</QHeading>
-                    {Object.entries(curDecision.voter_balances).length != 0 ? (
+                    {Object.entries(zilliqaApi.contractState.voter_balances)
+                        .length != 0 ? (
                         <ScrollBox props={{ gap: "small" }}>
-                            {Object.entries(curDecision.voter_balances).map(
-                                ([k, v], i) => {
-                                    return (
-                                        <Box
-                                            height={{ min: "50px" }}
-                                            justify="center"
-                                            key={`option${k}`}
-                                            margin={{ bottom: "small" }}
-                                            pad={{ left: "small" }}
-                                            background="white"
-                                            round="xsmall"
-                                            direction="row"
-                                        >
-                                            <Box fill justify="center">
-                                                <Text truncate size="small">
-                                                    {`${i + 1}. ${k}`}
-                                                </Text>
-                                                <Text truncate size="small">
-                                                    {`Credits: ${v}`}
-                                                </Text>
-                                            </Box>
+                            {Object.entries(
+                                zilliqaApi.contractState.voter_balances
+                            ).map(([k, v], i) => {
+                                return (
+                                    <Box
+                                        height={{ min: "50px" }}
+                                        justify="center"
+                                        key={`option${k}`}
+                                        margin={{ bottom: "small" }}
+                                        pad={{ left: "small" }}
+                                        background="white"
+                                        round="xsmall"
+                                        direction="row"
+                                    >
+                                        <Box fill justify="center">
+                                            <Text truncate size="small">
+                                                {`${i + 1}. ${k}`}
+                                            </Text>
+                                            <Text truncate size="small">
+                                                {`Credits: ${v}`}
+                                            </Text>
                                         </Box>
-                                    );
-                                }
-                            )}
+                                    </Box>
+                                );
+                            })}
                         </ScrollBox>
                     ) : (
                         <QParagraph size="small">
@@ -323,4 +303,4 @@ function Register({ main }: { main: ReturnType<typeof useMainContext> }) {
     );
 }
 
-export default AddressGet(Register, "useContracts");
+export default observer(Register);

@@ -1,4 +1,4 @@
-import { Box, Text, Heading, Button, ResponsiveContext } from "grommet";
+import { Box, Heading, Button, ResponsiveContext } from "grommet";
 import React, { useContext, useEffect } from "react";
 import { useState } from "react";
 import { intPls } from "../../scripts";
@@ -12,11 +12,9 @@ import { ScrollBox } from "../ScrollBox";
 import { QParagraph } from "../QParagraph";
 import { QHeading } from "../QHeading";
 import { TwoCards } from "../TwoCards";
-import { BlockchainApi } from "../../helpers/BlockchainApi";
-import type { useMainContext } from "../../hooks/useMainContext";
 import { TransactionSubmitted } from "../TransactionSubmitted";
 import { useRouter } from "next/router";
-import { longNotification } from "../Notifications/LongNotification";
+import { zilliqaApi } from "../../helpers/Zilliqa";
 
 const sliderInit = {
     max: 0,
@@ -28,11 +26,9 @@ const sliderInit = {
 export function Vote({
     decision,
     userAllowedCredits,
-    main,
 }: {
     decision: QVote.ContractDecisionProcessed;
     userAllowedCredits: number;
-    main: ReturnType<typeof useMainContext>;
 }) {
     const router = useRouter();
     const responsiveContext = useContext(ResponsiveContext);
@@ -47,14 +43,6 @@ export function Vote({
     useEffect(() => {
         setCurCredDist(createSlidersState(decision, userAllowedCredits));
     }, [decision]);
-
-    function reset() {
-        setCurCredDist(createSlidersState(decision, userAllowedCredits));
-        setSubmitted(false);
-        setSliderState(sliderInit);
-        setLoading(false);
-        setShowSlider(false);
-    }
 
     //update all except one option
     function updateByExcept(
@@ -114,25 +102,10 @@ export function Vote({
         if (canSubmit()) {
             setLoading(true);
             try {
-                const blockchainApi = new BlockchainApi({
-                    wallet: "zilPay",
-                    protocol: main.blockchainInfo.protocol,
-                });
-                const tx = await blockchainApi.vote(decision._this_address, {
+                const tx = await zilliqaApi.vote({
                     creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
                 });
                 setSubmitted(true);
-                main.jobsScheduler.checkContractCall({
-                    id: tx.ID,
-                    name: `Vote Transaction: ${tx.ID}`,
-                    status: "waiting",
-                    contractAddress: decision._this_address,
-                    type: "Vote",
-                });
-                longNotification.showNotification(
-                    "Waiting for transaction confirmation...",
-                    "loading"
-                );
             } catch (e) {
                 console.error(e);
             }
@@ -161,21 +134,21 @@ export function Vote({
                     <QParagraph
                         size="small"
                         color={
-                            main.useContracts.contract.info.timeState ==
+                            zilliqaApi.contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
                                 ? "status-critical"
-                                : main.useContracts.contract.info.timeState ==
+                                : zilliqaApi.contractInfo.timeState ==
                                   "VOTING_IN_PROGRESS"
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {main.useContracts.contract.info.timeState ==
+                        {zilliqaApi.contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration period for this hasn't ended yet, ends in: ${main.useContracts.contract.info.time.registrationEnds.blocks} blocks, ~${main.useContracts.contract.info.time.registrationEnds.minutes} minutes.`
-                            : main.useContracts.contract.info.timeState ==
+                            ? `Registration period for this hasn't ended yet, ends in: ${zilliqaApi.contractInfo.time.registrationEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.registrationEnds.minutes} minutes.`
+                            : zilliqaApi.contractInfo.timeState ==
                               "VOTING_IN_PROGRESS"
-                            ? `Voting ends in ${main.useContracts.contract.info.time.voteEnds.blocks} blocks, ~${main.useContracts.contract.info.time.voteEnds.minutes} minutes.`
+                            ? `Voting ends in ${zilliqaApi.contractInfo.time.voteEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.voteEnds.minutes} minutes.`
                             : "The voting period of this decision has ended."}
                     </QParagraph>
                 </Box>
