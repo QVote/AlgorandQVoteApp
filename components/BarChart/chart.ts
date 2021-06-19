@@ -93,7 +93,7 @@ export function getChart({ options }: { options: Options }) {
         .attr("class", ".bars")
         .attr("fill", (d) => color(d.name))
         .attr("x", (d) => x(d.name) + dx)
-        .attr("y", (d) => y(0))
+        .attr("y", () => y(0))
         .attr("width", x.bandwidth() - 1)
         .attr("height", 0),
     (update) => update,

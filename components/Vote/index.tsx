@@ -102,7 +102,7 @@ export function Vote({
         if (canSubmit()) {
             setLoading(true);
             try {
-                const tx = await zilliqaApi.vote({
+                await zilliqaApi.vote({
                     creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
                 });
                 setSubmitted(true);
@@ -163,6 +163,7 @@ export function Vote({
                         {curCredDist.options.map((o, index) => {
                             return (
                                 <PosWithMeters
+                                    key={"poswithmeters" + o.name}
                                     {...{
                                         onClick: () => showGivenSlider(o.name),
                                         credits: intPls(

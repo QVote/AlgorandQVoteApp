@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, TextInput, Layer, RangeInput, Card } from "grommet";
+import { Box, Button, Layer, RangeInput, Card } from "grommet";
 import { Add, Subtract } from "grommet-icons";
 import { PosWithMeters } from "./PosWithMeters";
 import { intPls } from "../../scripts";

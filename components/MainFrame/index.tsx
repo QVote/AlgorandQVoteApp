@@ -1,25 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Box } from "grommet";
 import { useRouter } from "next/router";
-import { MenuBar, MenuHandle } from "./MenuBar";
-import { useContracts } from "../../hooks/useContracts";
-import { useQueues } from "../../hooks/useQueues";
-import { useJobScheduler } from "../../hooks/useJobScheduler";
-import { MainFrameContext } from "./MainFrameContext";
+import { MenuBar } from "./MenuBar";
 import { Notification, LongNotification } from "../Notifications";
 import { zilliqaApi } from "../../helpers/Zilliqa";
 import { observer } from "mobx-react";
 
 export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
     const router = useRouter();
-    // const useQueuesHook = useQueues(blockchainInfo, connected, curAcc);
-    const menuRef = useRef<MenuHandle>();
-    // const jobsScheduler = useJobScheduler(
-    //     blockchainInfo,
-    //     useQueuesHook,
-    //     connected
-    // );
-
     useEffect(() => {
         zilliqaApi.connect();
     }, []);
@@ -50,18 +38,10 @@ export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
             fill={true}
             background={"light-2"}
         >
-            {/* <MainFrameContext.Provider
-                value={{
-                    useQueues: useQueuesHook,
-                    jobsScheduler,
-                    menu: menuRef,
-                }}
-            > */}
-            <MenuBar ref={menuRef} />
+            <MenuBar />
             {children}
             <Notification />
             <LongNotification />
-            {/* </MainFrameContext.Provider> */}
         </Box>
     );
 });

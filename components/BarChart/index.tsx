@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, RefObject } from "react";
+import React, { useEffect, useRef } from "react";
 import { Box } from "grommet";
 import { appendChild } from "./utill";
 import { getChart } from "./chart";
