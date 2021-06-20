@@ -5,7 +5,7 @@ import React, {
     forwardRef,
     useEffect,
 } from "react";
-import { Box, Text, Button } from "grommet";
+import { Box, Text } from "grommet";
 import { useRouter } from "next/router";
 import { QVoteLogo } from "../QVoteLogo";
 import { MenuButton } from "./MenuButton";
@@ -217,24 +217,6 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                         )}
                     </Box>
                 )}
-                {open == "connect" && (
-                    <MenuModal
-                        top={"8vh"}
-                        right={"2.5vw"}
-                        modalHeight="38vh"
-                        modalWidth="71vw"
-                        gap="small"
-                        modalMinHeight="small"
-                    >
-                        <SVGButton
-                            svgPath={"/zilpay.svg"}
-                            onClick={() => {
-                                setOpen("none");
-                                blockchain.connect();
-                            }}
-                        />
-                    </MenuModal>
-                )}
                 <MenuButton
                     IconToDisp={blockchain.connected ? Integration : Connect}
                     iconColor={blockchain.connected ? "status-ok" : undefined}
@@ -248,40 +230,13 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                     }
                     onClick={() => {
                         if (!blockchain.connected) {
-                            setOpen(open == "connect" ? "none" : "connect");
+                            blockchain.connect();
                         }
                     }}
                     isCurrent={false}
                 />
             </Box>
         </Box>
-    );
-}
-
-function SVGButton(props: {
-    onClick: () => void;
-    svgPath: string;
-    notSupported?: boolean;
-}) {
-    return (
-        <Button onClick={props.onClick}>
-            <Box
-                width={{ min: "small" }}
-                height="xsmall"
-                align="center"
-                justify="center"
-                background="dark-1"
-                round="xsmall"
-                pad="small"
-            >
-                <Text>
-                    {typeof props.notSupported != "undefined"
-                        ? "Not supported yet"
-                        : "Connect"}
-                </Text>
-                <img src={props.svgPath} style={{ height: "40px" }} />
-            </Box>
-        </Button>
     );
 }
 
