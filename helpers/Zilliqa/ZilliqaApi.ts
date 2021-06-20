@@ -1,11 +1,11 @@
 import { makeAutoObservable } from "mobx";
-import type { ZilPay, QVote } from "../../types";
+import type { QVote, Job, JobTypes, BlockchainInterface } from "../../types";
 import { validation } from "@zilliqa-js/util";
 import { BN, Zilliqa, Long } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../../scripts";
 import { blockchains } from "./config";
 import { QVoteZilliqa, QueueZilliqa } from "@qvote/zilliqa-sdk";
-import { infoInit, contractInit } from "./init";
+import { infoInit } from "./init";
 import { getContractStateMessages } from "./utill";
 import { CookieObjectInterface } from "../Cookies";
 import { networkNotSupported } from "../../components/utill";
@@ -31,21 +31,14 @@ function addressIn(a: string, arr: string[]) {
 }
 
 const GAS_LIMIT = 20000;
-type JobTypes = "Deploy" | "Vote" | "Register" | "DeployQueue" | "Push";
-type Job = {
-    id: string;
-    name: string;
-    status: "waiting" | "inProgress" | "done" | "error";
-    type: JobTypes;
-    contractAddress: string;
-};
+
 const _JOB_SUCCESS_EVENT: Partial<Record<JobTypes, string>> = {
     Register: "owner_register_success",
     Vote: "vote_success",
     Push: "push_success",
 };
 
-class ZilliqaApi {
+class ZilliqaApi implements BlockchainInterface {
     private blockchainInfo = blockchains.testnet;
     connected = false;
     /**
@@ -68,13 +61,6 @@ class ZilliqaApi {
         "ZilliqaQvoteQueues",
         "testnet"
     );
-
-    get isOwnerOfCurrentContract() {
-        return (
-            this.contractState &&
-            this.contractState.owner == this.currentAddress
-        );
-    }
 
     constructor() {
         makeAutoObservable(this);
@@ -124,12 +110,23 @@ class ZilliqaApi {
 
     private async getCurrentBlockNumber() {
         const txblock = await this.getZilPay().blockchain.getLatestTxBlock();
-        return parseInt(txblock.result!.header!.BlockNum);
+        const r = txblock.result;
+        if (r) {
+            if (r.header) {
+                if (r.header.BlockNum) {
+                    return parseInt(r.header.BlockNum);
+                }
+            }
+        }
+        throw new Error("Couldn't get blocknumber");
     }
 
     private async getCurrentTxBlockRate() {
         const info = await this.getZilPay().blockchain.getBlockChainInfo();
-        return parseFloat(info.result!.TxBlockRate);
+        if (info.result) {
+            return parseFloat(info.result.TxBlockRate);
+        }
+        throw new Error("Couldn't get tx block rate");
     }
 
     private async getContractState(
@@ -182,58 +179,6 @@ class ZilliqaApi {
         return [qv as T, gasPrice];
     }
 
-    async connect() {
-        if (this.zilPayExists()) {
-            const zilPay = this.getZilPay();
-            const isConnected = await zilPay.wallet.connect();
-            if (isConnected) {
-                this.currentAddress = formatAddress(
-                    zilPay.wallet.defaultAccount.base16
-                );
-                const unsub1 = zilPay.wallet
-                    .observableAccount()
-                    .subscribe((account) => {
-                        this.currentAddress = formatAddress(account.base16);
-                    });
-                this.setNet(zilPay.wallet.net);
-                const unsub2 = zilPay.wallet
-                    .observableNetwork()
-                    .subscribe((net: string) => this.setNet(net));
-                this.connected = true;
-                console.debug({ connected: true });
-                return () => {
-                    unsub1();
-                    unsub2();
-                };
-            } else {
-                this.connected = false;
-            }
-        } else {
-            //open extension window
-            window.open("https://zilpay.io/");
-        }
-        return () => {};
-    }
-
-    async tryToGetContract(address: string | string[]) {
-        const add = formatAddress(address);
-        if (validation.isAddress(add)) {
-            this.loading = true;
-            const state = await this.getContractState(add);
-            const curBlockNumber = await this.getCurrentBlockNumber();
-            const rate = await this.getCurrentTxBlockRate();
-            this.contractState = state;
-            this.contractInfo = getContractStateMessages(
-                state,
-                rate,
-                curBlockNumber,
-                this.currentAddress
-            );
-            this.loading = false;
-            this.registerContractAddress(add);
-        }
-    }
-
     private registerContractAddress(address: string) {
         const toMakeFirst = formatAddress(address);
         const cur = this.cookies.getCookie().arr;
@@ -282,13 +227,6 @@ class ZilliqaApi {
         this.jobs.setCookie({ arr: next });
     }
 
-    get someJobsInProgress() {
-        return this.jobs.value.arr.reduce(
-            (prev, cur) => (cur.status == "inProgress" ? true : prev),
-            false
-        );
-    }
-
     private async runJob(job: Job) {
         try {
             this.pushJob(job);
@@ -329,7 +267,84 @@ class ZilliqaApi {
         }
     }
 
-    contractLink(address: string) {
+    private txWaitNotify() {
+        longNotification.showNotification(
+            "Waiting for transaction confirmation...",
+            "loading"
+        );
+    }
+
+    private getContract(address: string) {
+        return this.getZilPay().contracts.at(address);
+    }
+
+    async connect(): Promise<() => void> {
+        if (this.zilPayExists()) {
+            const zilPay = this.getZilPay();
+            const isConnected = await zilPay.wallet.connect();
+            if (isConnected) {
+                this.currentAddress = formatAddress(
+                    zilPay.wallet.defaultAccount.base16
+                );
+                const unsub1 = zilPay.wallet
+                    .observableAccount()
+                    .subscribe((account) => {
+                        this.currentAddress = formatAddress(account.base16);
+                    });
+                this.setNet(zilPay.wallet.net);
+                const unsub2 = zilPay.wallet
+                    .observableNetwork()
+                    .subscribe((net: string) => this.setNet(net));
+                this.connected = true;
+                console.debug({ connected: true });
+                return () => {
+                    unsub1();
+                    unsub2();
+                };
+            } else {
+                this.connected = false;
+            }
+        } else {
+            //open extension window
+            window.open("https://zilpay.io/");
+        }
+        return () => {};
+    }
+
+    async tryToGetContract(address: string | string[]): Promise<void> {
+        const add = formatAddress(address);
+        if (validation.isAddress(add)) {
+            this.loading = true;
+            const state = await this.getContractState(add);
+            const curBlockNumber = await this.getCurrentBlockNumber();
+            const rate = await this.getCurrentTxBlockRate();
+            this.contractState = state;
+            this.contractInfo = getContractStateMessages(
+                state,
+                rate,
+                curBlockNumber,
+                this.currentAddress
+            );
+            this.loading = false;
+            this.registerContractAddress(add);
+        }
+    }
+
+    get isOwnerOfCurrentContract(): boolean {
+        return (
+            this.contractState &&
+            this.contractState.owner == this.currentAddress
+        );
+    }
+
+    get someJobsInProgress(): boolean {
+        return this.jobs.value.arr.reduce(
+            (prev, cur) => (cur.status == "inProgress" ? true : prev),
+            false
+        );
+    }
+
+    contractLink(address: string): void {
         //Try to open a viewblock
         if (
             this.blockchainInfo.name == "testnet" ||
@@ -343,7 +358,7 @@ class ZilliqaApi {
         }
     }
 
-    txLink(id: string) {
+    txLink(id: string): void {
         //Try to open a viewblock
         if (
             this.blockchainInfo.name == "testnet" ||
@@ -357,7 +372,7 @@ class ZilliqaApi {
         }
     }
 
-    async deploy(decision: QVote.Decision) {
+    async deploy(decision: QVote.Decision): Promise<void> {
         const zilPayContractApi = this.getZilPay().contracts;
         const curBlockNumber = await this.getCurrentBlockNumber();
         const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
@@ -401,17 +416,12 @@ class ZilliqaApi {
             type: "Deploy",
         });
         this.txWaitNotify();
-        return [tx, contractInstance];
-    }
-
-    private getContract(address: string) {
-        return this.getZilPay().contracts.at(address);
     }
 
     async ownerRegister(payload: {
         addresses: string[];
         creditsForAddresses: number[];
-    }) {
+    }): Promise<void> {
         const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
             QVoteZilliqa
         );
@@ -430,10 +440,9 @@ class ZilliqaApi {
             type: "Register",
         });
         this.txWaitNotify();
-        return tx;
     }
 
-    async vote(payload: { creditsToOption: string[] }) {
+    async vote(payload: { creditsToOption: string[] }): Promise<void> {
         const [qv, gasPrice] = await this.getSDKInitialized<QVoteZilliqa>(
             QVoteZilliqa
         );
@@ -452,17 +461,9 @@ class ZilliqaApi {
             type: "Vote",
         });
         this.txWaitNotify();
-        return tx;
     }
 
-    private txWaitNotify() {
-        longNotification.showNotification(
-            "Waiting for transaction confirmation...",
-            "loading"
-        );
-    }
-
-    regenerateJobs() {
+    regenerateJobs(): void {
         this.jobs.value.arr.map((j) => {
             if (j.status == "waiting" || j.status == "inProgress") {
                 this.runJob(j);
@@ -470,7 +471,7 @@ class ZilliqaApi {
         });
     }
 
-    async tryToGetQueueState(address: string | string[]) {
+    async tryToGetQueueState(address: string | string[]): Promise<void> {
         const add = formatAddress(address);
         if (validation.isAddress(add)) {
             this.loading = true;
@@ -489,7 +490,7 @@ class ZilliqaApi {
         }
     }
 
-    async onlyOwnerPushQueue(queueAddress: string) {
+    async onlyOwnerPushQueue(queueAddress: string): Promise<void> {
         const [queue, gasPrice] = await this.getSDKInitialized<QueueZilliqa>(
             QueueZilliqa
         );
@@ -516,11 +517,10 @@ class ZilliqaApi {
                 type: "Push",
             });
             this.txWaitNotify();
-            return tx;
         }
     }
 
-    async deployQueue(maxQueueSize: string) {
+    async deployQueue(maxQueueSize: string): Promise<void> {
         const zilPayContractApi = this.getZilPay().contracts;
         const [queue, gasPrice] = await this.getSDKInitialized<QueueZilliqa>(
             QueueZilliqa
@@ -550,7 +550,6 @@ class ZilliqaApi {
             type: "DeployQueue",
         });
         this.txWaitNotify();
-        return [tx, contractInstance];
     }
 }
 

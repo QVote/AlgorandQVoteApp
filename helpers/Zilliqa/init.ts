@@ -1,28 +1,6 @@
 import { QVote } from "../../types";
 
-type UserVoterStates =
-    | "REGISTERED_NOT_VOTED"
-    | "REGISTERED_VOTED"
-    | "NOT_REGISTERED";
-
-type ContractTimeStates =
-    | "REGISTRATION_IN_PROGRESS"
-    | "VOTING_IN_PROGRESS"
-    | "VOTING_ENDED";
-
-type ContractTimeInfo = {
-    registrationEnds: { blocks: number; minutes: number };
-    voteEnds: { blocks: number; minutes: number };
-};
-
-export type ContractInfo = {
-    time: ContractTimeInfo;
-    timeState: ContractTimeStates;
-    userIsOwner: boolean;
-    userVoter: UserVoterStates;
-};
-
-export const infoInit: ContractInfo = {
+export const infoInit: QVote.ContractInfo = {
     time: {
         registrationEnds: {
             blocks: 0,

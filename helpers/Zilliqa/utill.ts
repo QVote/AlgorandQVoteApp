@@ -1,5 +1,4 @@
 import { QVote } from "../../types";
-import { ContractInfo } from "./init";
 
 /**
  * So this will update all of the messages
@@ -10,7 +9,7 @@ export function getContractStateMessages(
     rate: number,
     block: number,
     uAddress: string
-): ContractInfo {
+): QVote.ContractInfo {
     const registrationEndBlocks = c.registration_end_time - block;
     const voteEndsInBlocks = c.expiration_block - block;
     return {

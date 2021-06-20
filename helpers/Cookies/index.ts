@@ -1,10 +1,13 @@
 import Cookie from "js-cookie";
 import { makeAutoObservable } from "mobx";
+import { CookieOInterface } from "../../types";
 
-export class CookieObjectInterface<T extends { arr: (string | object)[] }> {
+export class CookieObjectInterface<T extends { arr: (string | object)[] }>
+    implements CookieOInterface<T>
+{
     baseName: string;
     extensionName: string;
-    value = { arr: [] };
+    value: T = { arr: [] } as T;
 
     constructor(baseName: string, extension: string) {
         this.baseName = baseName;
