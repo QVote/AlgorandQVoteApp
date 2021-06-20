@@ -8,7 +8,7 @@ import { ScrollBox } from "../../components/ScrollBox";
 import { onGoToAs, onCopyText } from "../../components/utill";
 import { useRouter } from "next/router";
 import { ShareOption } from "grommet-icons";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { Loader } from "../../components/Loader";
 import { observer } from "mobx-react";
 
@@ -21,7 +21,7 @@ export default observer(() => {
     function onClickAddress(a: string) {
         onGoToAs(PATHS.preview.path, PATHS.preview.as, router, a);
     }
-    return zilliqaApi.loading || !zilliqaApi.queueState ? (
+    return blockchain.loading || !blockchain.queueState ? (
         <Loader />
     ) : (
         <TwoCards
@@ -29,7 +29,7 @@ export default observer(() => {
                 <Box fill>
                     <QHeading>{"Queue"}</QHeading>
                     <QParagraph>{`Here are the contents of the queue with the address:`}</QParagraph>
-                    <Address txt={zilliqaApi.queueState._this_address} />
+                    <Address txt={blockchain.queueState._this_address} />
                     <Box justify="center" align="start">
                         <Button
                             label="Share"
@@ -43,13 +43,13 @@ export default observer(() => {
             }
             Card2={
                 <ScrollBox props={{ gap: "medium" }}>
-                    {zilliqaApi.queueState.queue.length == 0 && (
+                    {blockchain.queueState.queue.length == 0 && (
                         <QParagraph>
                             There are no decisions in this queue.
                         </QParagraph>
                     )}
-                    {zilliqaApi.queueState.queue.length > 0 &&
-                        zilliqaApi.queueState.queue.map((a) => (
+                    {blockchain.queueState.queue.length > 0 &&
+                        blockchain.queueState.queue.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractqueueDecision${a}`}

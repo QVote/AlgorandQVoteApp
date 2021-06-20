@@ -14,7 +14,7 @@ import { QHeading } from "../QHeading";
 import { TwoCards } from "../TwoCards";
 import { TransactionSubmitted } from "../TransactionSubmitted";
 import { useRouter } from "next/router";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 
 const sliderInit = {
     max: 0,
@@ -102,7 +102,7 @@ export function Vote({
         if (canSubmit()) {
             setLoading(true);
             try {
-                await zilliqaApi.vote({
+                await blockchain.vote({
                     creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
                 });
                 setSubmitted(true);
@@ -134,21 +134,21 @@ export function Vote({
                     <QParagraph
                         size="small"
                         color={
-                            zilliqaApi.contractInfo.timeState ==
+                            blockchain.contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
                                 ? "status-critical"
-                                : zilliqaApi.contractInfo.timeState ==
+                                : blockchain.contractInfo.timeState ==
                                   "VOTING_IN_PROGRESS"
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {zilliqaApi.contractInfo.timeState ==
+                        {blockchain.contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration period for this hasn't ended yet, ends in: ${zilliqaApi.contractInfo.time.registrationEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.registrationEnds.minutes} minutes.`
-                            : zilliqaApi.contractInfo.timeState ==
+                            ? `Registration period for this hasn't ended yet, ends in: ${blockchain.contractInfo.time.registrationEnds.blocks} blocks, ~${blockchain.contractInfo.time.registrationEnds.minutes} minutes.`
+                            : blockchain.contractInfo.timeState ==
                               "VOTING_IN_PROGRESS"
-                            ? `Voting ends in ${zilliqaApi.contractInfo.time.voteEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.voteEnds.minutes} minutes.`
+                            ? `Voting ends in ${blockchain.contractInfo.time.voteEnds.blocks} blocks, ~${blockchain.contractInfo.time.voteEnds.minutes} minutes.`
                             : "The voting period of this decision has ended."}
                     </QParagraph>
                 </Box>

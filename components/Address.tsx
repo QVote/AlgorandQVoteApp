@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Text, Button } from "grommet";
 import { Cubes, Copy } from "grommet-icons";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
 
 export function Address({
     txt,
@@ -47,7 +47,7 @@ export function Address({
                         onClick={
                             onViewBlock
                                 ? onViewBlock
-                                : () => zilliqaApi.contractLink(txt)
+                                : () => blockchain.contractLink(txt)
                         }
                     />
                 </Box>

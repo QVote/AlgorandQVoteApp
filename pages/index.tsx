@@ -9,7 +9,8 @@ import { Box, Button, Text } from "grommet";
 import { QHeading } from "../components/QHeading";
 import { QParagraph } from "../components/QParagraph";
 import { Add } from "grommet-icons";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
+import {} from "../helpers/Blockchain";
 
 const PATHS = {
     preview: { path: "/[address]/preview", as: "/preview" },
@@ -52,11 +53,11 @@ export default function Index() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {zilliqaApi.cookies.value.arr.length == 0 && (
+                    {blockchain.cookies.value.arr.length == 0 && (
                         <QParagraph>You have no recent decisions.</QParagraph>
                     )}
-                    {zilliqaApi.cookies.value.arr.length > 0 &&
-                        zilliqaApi.cookies.value.arr.map((a) => (
+                    {blockchain.cookies.value.arr.length > 0 &&
+                        blockchain.cookies.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractdecision${a}`}

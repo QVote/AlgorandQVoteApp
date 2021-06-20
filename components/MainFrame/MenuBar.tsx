@@ -24,7 +24,7 @@ import { onCopyText } from "../utill";
 import { Address } from "../Address";
 import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { observer } from "mobx-react";
 
 const _COMPANY_SITE = "https://github.com/QVote";
@@ -131,12 +131,12 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                 />
             </Box>
             <Box width="50%" direction="row" align="center" justify="end">
-                {zilliqaApi.connected && (
+                {blockchain.connected && (
                     <Box height="7vh" width={"10vw"}>
                         <MenuButton
                             txt={"Transactions"}
                             IconToDisp={
-                                zilliqaApi.someJobsInProgress
+                                blockchain.someJobsInProgress
                                     ? Update
                                     : Transaction
                             }
@@ -148,7 +148,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                 )
                             }
                             isCurrent={false}
-                            spin={zilliqaApi.someJobsInProgress}
+                            spin={blockchain.someJobsInProgress}
                         />
                         {open == "transactions" && (
                             <MenuModal
@@ -158,7 +158,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                 modalMinHeight="38vh"
                                 modalWidth="71vw"
                             >
-                                {zilliqaApi.jobs.value.arr.length == 0 ? (
+                                {blockchain.jobs.value.arr.length == 0 ? (
                                     <ScrollBox
                                         props={{
                                             pad: {
@@ -189,7 +189,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                         <Notice
                                             txt={"Your recent transactions:"}
                                         />
-                                        {zilliqaApi.jobs.value.arr.map((a) => (
+                                        {blockchain.jobs.value.arr.map((a) => (
                                             <Address
                                                 txt={a.name}
                                                 bg={
@@ -207,7 +207,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                                     )
                                                 }
                                                 onViewBlock={() =>
-                                                    zilliqaApi.txLink(a.id)
+                                                    blockchain.txLink(a.id)
                                                 }
                                             />
                                         ))}
@@ -230,24 +230,24 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                             svgPath={"/zilpay.svg"}
                             onClick={() => {
                                 setOpen("none");
-                                zilliqaApi.connect();
+                                blockchain.connect();
                             }}
                         />
                     </MenuModal>
                 )}
                 <MenuButton
-                    IconToDisp={zilliqaApi.connected ? Integration : Connect}
-                    iconColor={zilliqaApi.connected ? "status-ok" : undefined}
-                    txtColor={zilliqaApi.connected ? "status-ok" : undefined}
+                    IconToDisp={blockchain.connected ? Integration : Connect}
+                    iconColor={blockchain.connected ? "status-ok" : undefined}
+                    txtColor={blockchain.connected ? "status-ok" : undefined}
                     txt={
-                        zilliqaApi.loading
+                        blockchain.loading
                             ? ""
-                            : zilliqaApi.connected
+                            : blockchain.connected
                             ? "Connected"
                             : "Connect"
                     }
                     onClick={() => {
-                        if (!zilliqaApi.connected) {
+                        if (!blockchain.connected) {
                             setOpen(open == "connect" ? "none" : "connect");
                         }
                     }}

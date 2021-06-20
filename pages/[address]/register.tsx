@@ -10,7 +10,7 @@ import { QParagraph } from "../../components/QParagraph";
 import { TransactionSubmitted } from "../../components/TransactionSubmitted";
 import { useRouter } from "next/router";
 import { observer } from "mobx-react";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { Loader } from "../../components/Loader";
 
 type VoterToAdd = { address: string; credits: number };
@@ -33,7 +33,7 @@ function Register() {
         if (!loading) {
             try {
                 setLoading(true);
-                await zilliqaApi.ownerRegister({
+                await blockchain.ownerRegister({
                     addresses: votersToAdd.map((v) => formatAddress(v.address)),
                     creditsForAddresses: votersToAdd.map((v) => v.credits),
                 });
@@ -83,7 +83,7 @@ function Register() {
         setTempVoterValid(isTempVoterValid(next));
     }
 
-    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+    return blockchain.loading || !blockchain.contractState ? (
         <Loader />
     ) : submitted ? (
         <TransactionSubmitted
@@ -109,23 +109,23 @@ function Register() {
             Card2={
                 <Box fill justify="start">
                     <Heading style={{ wordBreak: "break-word" }} level={"3"}>
-                        {zilliqaApi.contractState.name}
+                        {blockchain.contractState.name}
                     </Heading>
                     <QParagraph size="small">
-                        {zilliqaApi.contractState.description}
+                        {blockchain.contractState.description}
                     </QParagraph>
                     <QParagraph
                         size="small"
                         color={
-                            zilliqaApi.contractInfo.timeState ==
+                            blockchain.contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {zilliqaApi.contractInfo.timeState ==
+                        {blockchain.contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration ends in ${zilliqaApi.contractInfo.time.registrationEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.registrationEnds.minutes} minutes.`
+                            ? `Registration ends in ${blockchain.contractInfo.time.registrationEnds.blocks} blocks, ~${blockchain.contractInfo.time.registrationEnds.minutes} minutes.`
                             : `Registration period ended.`}
                     </QParagraph>
                 </Box>
@@ -141,7 +141,7 @@ function Register() {
                     <Box align="center" justify="center" fill pad="small">
                         <Button
                             disabled={
-                                zilliqaApi.contractInfo.timeState !=
+                                blockchain.contractInfo.timeState !=
                                 "REGISTRATION_IN_PROGRESS"
                             }
                             label={"Next"}
@@ -156,11 +156,11 @@ function Register() {
             Card1={
                 <Box fill>
                     <QHeading>{"Already Registered:"}</QHeading>
-                    {Object.entries(zilliqaApi.contractState.voter_balances)
+                    {Object.entries(blockchain.contractState.voter_balances)
                         .length != 0 ? (
                         <ScrollBox props={{ gap: "small" }}>
                             {Object.entries(
-                                zilliqaApi.contractState.voter_balances
+                                blockchain.contractState.voter_balances
                             ).map(([k, v], i) => {
                                 return (
                                     <Box

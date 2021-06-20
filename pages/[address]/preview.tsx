@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { onGoToAs } from "../../components/utill";
 import { MenuModal } from "../../components/MainFrame/MenuModal";
 import { ScrollBox } from "../../components/ScrollBox";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { Loader } from "../../components/Loader";
 import { observer } from "mobx-react";
 
@@ -32,7 +32,7 @@ function Preview() {
         if (!loading) {
             try {
                 setLoading(true);
-                await zilliqaApi.onlyOwnerPushQueue(queueAddress);
+                await blockchain.onlyOwnerPushQueue(queueAddress);
             } catch (e) {
                 console.error(e);
             }
@@ -41,7 +41,7 @@ function Preview() {
         }
     }
 
-    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+    return blockchain.loading || !blockchain.contractState ? (
         <Loader />
     ) : (
         <TwoCards
@@ -50,10 +50,10 @@ function Preview() {
                     <QHeading>{"Decision"}</QHeading>
                     <QParagraph>{`Here is the preview of the decision with the address:`}</QParagraph>
                     <Address
-                        txt={zilliqaApi.contractState._this_address}
+                        txt={blockchain.contractState._this_address}
                         onCopyTxt={() =>
                             onCopyText(
-                                zilliqaApi.contractState._this_address,
+                                blockchain.contractState._this_address,
                                 "Address Copied!"
                             )
                         }
@@ -70,49 +70,49 @@ function Preview() {
                     <QParagraph
                         size="small"
                         color={
-                            zilliqaApi.isOwnerOfCurrentContract
+                            blockchain.isOwnerOfCurrentContract
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {zilliqaApi.isOwnerOfCurrentContract
+                        {blockchain.isOwnerOfCurrentContract
                             ? "You are the owner of this decision."
                             : `You are not the owner of this decision.`}
                     </QParagraph>
-                    {zilliqaApi.contractInfo.timeState ==
+                    {blockchain.contractInfo.timeState ==
                     "REGISTRATION_IN_PROGRESS" ? (
                         <QParagraph
                             size="small"
                             color={
-                                zilliqaApi.contractInfo.timeState ==
+                                blockchain.contractInfo.timeState ==
                                 "REGISTRATION_IN_PROGRESS"
                                     ? "status-ok"
                                     : "status-critical"
                             }
                         >
-                            {zilliqaApi.contractInfo.timeState ==
+                            {blockchain.contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
-                                ? `Registration ends in ${zilliqaApi.contractInfo.time.registrationEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.registrationEnds.minutes} minutes.`
+                                ? `Registration ends in ${blockchain.contractInfo.time.registrationEnds.blocks} blocks, ~${blockchain.contractInfo.time.registrationEnds.minutes} minutes.`
                                 : `Registration period ended.`}
                         </QParagraph>
                     ) : (
                         <QParagraph
                             size="small"
                             color={
-                                zilliqaApi.contractInfo.timeState ==
+                                blockchain.contractInfo.timeState ==
                                 "VOTING_IN_PROGRESS"
                                     ? "status-ok"
                                     : "status-critical"
                             }
                         >
-                            {zilliqaApi.contractInfo.timeState ==
+                            {blockchain.contractInfo.timeState ==
                             "VOTING_IN_PROGRESS"
-                                ? `Voting ends in ${zilliqaApi.contractInfo.time.voteEnds.blocks} blocks, ~${zilliqaApi.contractInfo.time.voteEnds.minutes} minutes.`
+                                ? `Voting ends in ${blockchain.contractInfo.time.voteEnds.blocks} blocks, ~${blockchain.contractInfo.time.voteEnds.minutes} minutes.`
                                 : "Voting period ended."}
                         </QParagraph>
                     )}
-                    {zilliqaApi.contractInfo.userVoter == "NOT_REGISTERED" &&
-                        zilliqaApi.contractInfo.timeState ==
+                    {blockchain.contractInfo.userVoter == "NOT_REGISTERED" &&
+                        blockchain.contractInfo.timeState ==
                             "VOTING_IN_PROGRESS" && (
                             <QParagraph size="small" color={"status-critical"}>
                                 {"You were not registered to vote."}
@@ -126,19 +126,19 @@ function Preview() {
                         style={{ wordBreak: "break-word" }}
                         level={responsiveContext == "small" ? "3" : "2"}
                     >
-                        {zilliqaApi.contractState.name}
+                        {blockchain.contractState.name}
                     </Heading>
                     <QParagraph>
-                        {zilliqaApi.contractState.description}
+                        {blockchain.contractState.description}
                     </QParagraph>
-                    <QParagraph>{`Token: ${zilliqaApi.contractState.token_id}, Credit to token ratio: ${zilliqaApi.contractState.credit_to_token_ratio}`}</QParagraph>
+                    <QParagraph>{`Token: ${blockchain.contractState.token_id}, Credit to token ratio: ${blockchain.contractState.credit_to_token_ratio}`}</QParagraph>
                     <Box
                         fill="horizontal"
                         align="start"
                         justify="start"
                         gap="small"
                     >
-                        {zilliqaApi.queues.value.arr.length > 0 && (
+                        {blockchain.queues.value.arr.length > 0 && (
                             <Box align="center">
                                 <Button
                                     label={"Add to Queue"}
@@ -151,7 +151,7 @@ function Preview() {
                                         gap="small"
                                     >
                                         <ScrollBox props={{ gap: "medium" }}>
-                                            {zilliqaApi.queues.value.arr.map(
+                                            {blockchain.queues.value.arr.map(
                                                 (a) => (
                                                     <Address
                                                         txt={a}
@@ -171,8 +171,8 @@ function Preview() {
                                 )}
                             </Box>
                         )}
-                        {zilliqaApi.isOwnerOfCurrentContract &&
-                            zilliqaApi.contractInfo.timeState ==
+                        {blockchain.isOwnerOfCurrentContract &&
+                            blockchain.contractInfo.timeState ==
                                 "REGISTRATION_IN_PROGRESS" && (
                                 <Box align="center">
                                     <Button
@@ -188,9 +188,9 @@ function Preview() {
                                     />
                                 </Box>
                             )}
-                        {zilliqaApi.contractInfo.timeState ==
+                        {blockchain.contractInfo.timeState ==
                             "VOTING_IN_PROGRESS" &&
-                            zilliqaApi.contractInfo.userVoter ==
+                            blockchain.contractInfo.userVoter ==
                                 "REGISTERED_NOT_VOTED" && (
                                 <Box align="center">
                                     <Button
@@ -206,7 +206,7 @@ function Preview() {
                                     />
                                 </Box>
                             )}
-                        {zilliqaApi.contractInfo.timeState ==
+                        {blockchain.contractInfo.timeState ==
                             "VOTING_ENDED" && (
                             <Box align="center">
                                 <Button

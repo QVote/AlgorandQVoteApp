@@ -1,12 +1,10 @@
 import { FunctionComponent } from "react";
 import { Loader } from "./Loader";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
 
-export function AddressGet(
-    Comp: FunctionComponent,
-) {
+export function AddressGet(Comp: FunctionComponent) {
     const AddressGetComp = () => {
-        return !zilliqaApi.loading && zilliqaApi.contractState ? (
+        return !blockchain.loading && blockchain.contractState ? (
             <Comp />
         ) : (
             <Loader />

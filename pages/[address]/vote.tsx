@@ -1,19 +1,19 @@
 import React from "react";
 import { Vote } from "../../components/Vote";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { observer } from "mobx-react";
 import { Loader } from "../../components/Loader";
 
 function VotePage() {
-    return zilliqaApi.loading || !zilliqaApi.contractState ? (
+    return blockchain.loading || !blockchain.contractState ? (
         <Loader />
     ) : (
         <Vote
-            decision={zilliqaApi.contractState}
+            decision={blockchain.contractState}
             userAllowedCredits={
-                zilliqaApi.contractInfo.userVoter != "NOT_REGISTERED"
-                    ? zilliqaApi.contractState.voter_balances[
-                          zilliqaApi.currentAddress
+                blockchain.contractInfo.userVoter != "NOT_REGISTERED"
+                    ? blockchain.contractState.voter_balances[
+                          blockchain.currentAddress
                       ]
                     : 0
             }

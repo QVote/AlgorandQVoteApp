@@ -3,32 +3,32 @@ import { Box } from "grommet";
 import { useRouter } from "next/router";
 import { MenuBar } from "./MenuBar";
 import { Notification, LongNotification } from "../Notifications";
-import { zilliqaApi } from "../../helpers/Zilliqa";
+import { blockchain } from "../../helpers/Blockchain";
 import { observer } from "mobx-react";
 
 export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
     const router = useRouter();
     useEffect(() => {
-        zilliqaApi.connect();
+        blockchain.connect();
     }, []);
 
     useEffect(() => {
-        if (zilliqaApi.connected) {
+        if (blockchain.connected) {
             const { address, queueAddress } = router.query;
-            zilliqaApi.tryToGetContract(address);
-            zilliqaApi.tryToGetQueueState(queueAddress);
+            blockchain.tryToGetContract(address);
+            blockchain.tryToGetQueueState(queueAddress);
         }
-    }, [router.query, zilliqaApi.currentAddress, zilliqaApi.connected]);
+    }, [router.query, blockchain.currentAddress, blockchain.connected]);
 
     /**
      * Essentially regenerate the jobs that were in progress but the site was
      * refreshed
      */
     useEffect(() => {
-        if (zilliqaApi.connected) {
-            zilliqaApi.regenerateJobs();
+        if (blockchain.connected) {
+            blockchain.regenerateJobs();
         }
-    }, [zilliqaApi.connected]);
+    }, [blockchain.connected]);
 
     return (
         <Box

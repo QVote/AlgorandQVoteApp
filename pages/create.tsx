@@ -12,7 +12,7 @@ import { QParagraph } from "../components/QParagraph";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react";
 import { longNotification } from "../components/Notifications/LongNotification";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
 
 class Creator {
     target = getInitDecision();
@@ -136,7 +136,7 @@ const DecisionCreator = observer(() => {
     }
 
     async function onDeploy() {
-        await zilliqaApi.deploy(creator.target);
+        await blockchain.deploy(creator.target);
         creator.setSubmitted(true);
     }
 

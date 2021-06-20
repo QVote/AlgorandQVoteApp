@@ -4,7 +4,7 @@ import { TwoCards } from "../components/TwoCards";
 import { QHeading } from "../components/QHeading";
 import { TransactionSubmitted } from "../components/TransactionSubmitted";
 import { QParagraph } from "../components/QParagraph";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
 
 export default function DecisionCreator() {
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function DecisionCreator() {
         if (!loading) {
             try {
                 setLoading(true);
-                await zilliqaApi.deployQueue("20");
+                await blockchain.deployQueue("20");
                 setSubmitted(true);
             } catch (e) {
                 console.error(e);

@@ -9,7 +9,7 @@ import { Address } from "../components/Address";
 import { useRouter } from "next/router";
 import { onCopyText } from "../components/utill";
 import { notArrPlz } from "../scripts";
-import { zilliqaApi } from "../helpers/Zilliqa";
+import { blockchain } from "../helpers/Blockchain";
 
 const PATHS = {
     queue: { path: "/q/[queueAddress]", as: "/q" },
@@ -54,11 +54,11 @@ export default function Queues() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {zilliqaApi.queues.value.arr.length == 0 && (
+                    {blockchain.queues.value.arr.length == 0 && (
                         <QParagraph>You have no recent queues.</QParagraph>
                     )}
-                    {zilliqaApi.queues.value.arr.length > 0 &&
-                        zilliqaApi.queues.value.arr.map((a) => (
+                    {blockchain.queues.value.arr.length > 0 &&
+                        blockchain.queues.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractqueue${a}`}
