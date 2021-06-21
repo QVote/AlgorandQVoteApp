@@ -2,7 +2,11 @@ import React, { useEffect } from "react";
 import { Box } from "grommet";
 import { useRouter } from "next/router";
 import { MenuBar } from "./MenuBar";
-import { Notification, LongNotification } from "../Notifications";
+import {
+    Notification,
+    LongNotification,
+    longNotification,
+} from "../Notifications";
 import { blockchain } from "../../helpers/Blockchain";
 import { observer } from "mobx-react";
 
@@ -26,6 +30,22 @@ export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
             blockchain().regenerateJobs();
         }
     }, [blockchain().connected]);
+
+    useEffect(() => {
+        connect();
+    }, []);
+
+    async function connect() {
+        try {
+            await blockchain().connect();
+        } catch (e) {
+            console.error(e);
+            longNotification.showNotification(
+                e.message ? e.message : "Error",
+                "error"
+            );
+        }
+    }
 
     return (
         <Box

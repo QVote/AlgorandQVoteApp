@@ -15,6 +15,7 @@ import { TwoCards } from "../TwoCards";
 import { TransactionSubmitted } from "../TransactionSubmitted";
 import { useRouter } from "next/router";
 import { blockchain } from "../../helpers/Blockchain";
+import { longNotification } from "../Notifications";
 
 const sliderInit = {
     max: 0,
@@ -107,6 +108,10 @@ export function Vote({
                 });
                 setSubmitted(true);
             } catch (e) {
+                longNotification.showNotification(
+                    e.message ? e.message : "Error",
+                    "error"
+                );
                 console.error(e);
             }
             setLoading(false);

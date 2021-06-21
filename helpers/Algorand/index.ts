@@ -166,7 +166,7 @@ class AlgorandApi implements BlockchainInterface {
             votingEndTime:
                 Math.round(Date.now() / 1000) + endSeconds + registerSeconds,
             assetID: 17133265,
-            assetCoefficient: 200, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
+            assetCoefficient: 1, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
             options: decision.options.map((o) => o.optName),
             creatorAddress: this.currentAddress,
         });
@@ -196,7 +196,17 @@ class AlgorandApi implements BlockchainInterface {
         longNotification.showNotification("Opted in!", "success");
     }
 
-    async vote(payload: { creditsToOption: string[] }): Promise<void> {}
+    async vote(payload: { creditsToOption: string[] }): Promise<void> {
+        const qv = new QVoting(config, this.wallet);
+        await qv.initState(parseInt(this.contractState._this_address));
+        const options = this.contractState.options.map((o, i) => ({
+            optionTitle: o,
+            creditNumber: parseInt(payload.creditsToOption[i]),
+        }));
+        this.txWaitNotify();
+        await qv.vote(this.currentAddress, options);
+        longNotification.showNotification("Voted!", "success");
+    }
 
     regenerateJobs(): void {
         this.jobs.value.arr.map((j) => {
