@@ -23,6 +23,12 @@ class Creator {
     constructor() {
         makeAutoObservable(this);
     }
+    setCreditToTokenRatio(s: string) {
+        this.target.creditToTokenRatio = s;
+    }
+    setTokenId(s: string) {
+        this.target.tokenId = s;
+    }
     setNextCard(b: boolean) {
         this.nextCard = b;
     }
@@ -308,9 +314,29 @@ const DecisionCreator = observer(() => {
             Card2={
                 <Box fill gap="small">
                     <QHeading>{"Tokens"}</QHeading>
-                    <QParagraph>
-                        Token ownership snapshot (coming soon)
-                    </QParagraph>
+
+                    <Box fill gap="small">
+                        <Text>Asset id</Text>
+                        <TextInput
+                            placeholder="Asset id"
+                            size="small"
+                            value={creator.target.tokenId}
+                            onChange={(e) => {
+                                creator.setTokenId(e.target.value);
+                            }}
+                            maxLength={26}
+                        />
+                        <Text>Asset coefficient</Text>
+                        <TextInput
+                            placeholder="Asset coefficient"
+                            size="small"
+                            value={creator.target.creditToTokenRatio}
+                            onChange={(e) => {
+                                creator.setCreditToTokenRatio(e.target.value);
+                            }}
+                            maxLength={26}
+                        />
+                    </Box>
                 </Box>
             }
             NextButton={

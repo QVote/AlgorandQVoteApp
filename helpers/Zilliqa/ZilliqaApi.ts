@@ -39,6 +39,7 @@ const _JOB_SUCCESS_EVENT: Partial<Record<JobTypes, string>> = {
 };
 
 class ZilliqaApi implements BlockchainInterface {
+    tokenSupport = false;
     hasDescription = true;
     private blockchainInfo = blockchains.testnet;
     connected = false;

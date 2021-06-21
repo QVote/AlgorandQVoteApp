@@ -9,8 +9,9 @@ import { Job } from "./Job";
  * we have declared in the interface
  */
 export interface BlockchainInterface {
+    tokenSupport: boolean;
     connected: boolean;
-    hasDescription:boolean;
+    hasDescription: boolean;
     currentAddress: string;
     contractState?: QVote.ContractDecisionProcessed;
     queueState?: QVote.Queue;

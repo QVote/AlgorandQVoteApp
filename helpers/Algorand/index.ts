@@ -45,6 +45,7 @@ function getAlgorandStateMessages(
 }
 
 class AlgorandApi implements BlockchainInterface {
+    tokenSupport = true;
     connected = false;
     hasDescription = false;
     private wallet: MyAlgoConnect;
@@ -165,8 +166,8 @@ class AlgorandApi implements BlockchainInterface {
             votingStartTime: Math.round(Date.now() / 1000) + registerSeconds,
             votingEndTime:
                 Math.round(Date.now() / 1000) + endSeconds + registerSeconds,
-            assetID: 17133265,
-            assetCoefficient: 1, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
+            assetID: parseInt(decision.tokenId),
+            assetCoefficient: parseInt(decision.creditToTokenRatio), // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
             options: decision.options.map((o) => o.optName),
             creatorAddress: this.currentAddress,
         });
