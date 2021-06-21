@@ -77,9 +77,6 @@ export namespace QVote {
         registration_end_time: number;
         token_id: string;
         voter_balances: { [key: string]: number };
-        _balance: string;
-        _creation_block: string;
-        _scilla_version: string;
         _this_address: string;
     };
 

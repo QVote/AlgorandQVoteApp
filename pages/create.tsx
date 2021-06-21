@@ -34,7 +34,7 @@ class Creator {
         this.submitted = false;
     }
     get targetValid() {
-        return decisionValidate(this.target);
+        return decisionValidate(this.target, blockchain().hasDescription);
     }
     setLoading(b: boolean) {
         this.loading = b;
@@ -126,10 +126,15 @@ const DecisionCreator = observer(() => {
             try {
                 await onDeploy();
             } catch (e) {
-                longNotification.showNotification(
-                    "Something went wrong!",
-                    "error"
-                );
+                console.error(e);
+                if (e.message) {
+                    longNotification.showNotification(e.message, "error");
+                } else {
+                    longNotification.showNotification(
+                        "Something went wrong!",
+                        "error"
+                    );
+                }
             }
             creator.setLoading(false);
         }
@@ -159,17 +164,19 @@ const DecisionCreator = observer(() => {
                             maxLength={100}
                             onChange={(e) => creator.setName(e.target.value)}
                         />
-                        <TextArea
-                            resize={false}
-                            fill
-                            placeholder="Details"
-                            size="small"
-                            value={creator.target.description}
-                            maxLength={100}
-                            onChange={(e) =>
-                                creator.setDescription(e.target.value)
-                            }
-                        />
+                        {blockchain().hasDescription && (
+                            <TextArea
+                                resize={false}
+                                fill
+                                placeholder="Details"
+                                size="small"
+                                value={creator.target.description}
+                                maxLength={100}
+                                onChange={(e) =>
+                                    creator.setDescription(e.target.value)
+                                }
+                            />
+                        )}
                     </Box>
                 </Box>
             }
@@ -329,7 +336,7 @@ const DecisionCreator = observer(() => {
                             label={
                                 creator.loading
                                     ? "Waiting for confirmation"
-                                    : "Deploy to zilliqa"
+                                    : "Deploy"
                             }
                             onClick={() => onTryToDeploy()}
                         />

@@ -29,8 +29,5 @@ export const contractInit: QVote.ContractDecisionProcessed = {
     registration_end_time: -1,
     token_id: "",
     voter_balances: {},
-    _balance: "",
-    _creation_block: "",
-    _scilla_version: "",
     _this_address: "",
 };

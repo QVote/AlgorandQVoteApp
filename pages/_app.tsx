@@ -5,8 +5,8 @@ import { deepMerge } from "grommet/utils";
 import { MainFrame } from "../components/MainFrame";
 // import { WithMetamask } from "../components/WithMetamask";
 
-const desc = "QVote x Zilliqa";
-const title = "QVoteZilliqa";
+const desc = "QVote";
+const title = "QVote";
 const twitterUrl = "https://qvote.co.uk"; // TODO why is this twitter?
 
 const customTheme = deepMerge(grommetTheme, {

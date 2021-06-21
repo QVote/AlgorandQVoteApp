@@ -26,6 +26,7 @@ import { Notice } from "../Notice";
 import { MenuModal } from "./MenuModal";
 import { blockchain } from "../../helpers/Blockchain";
 import { observer } from "mobx-react";
+import { longNotification } from "../Notifications";
 
 const _COMPANY_SITE = "https://github.com/QVote";
 
@@ -62,6 +63,17 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
 
     async function onGoTo(path: string) {
         await router.push(path);
+    }
+
+    async function connect() {
+        try {
+            if (!blockchain().connected) {
+                await blockchain().connect();
+            }
+        } catch (e) {
+            console.error(e);
+            longNotification.showNotification("Error connecting", "error");
+        }
     }
 
     return (
@@ -233,11 +245,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                             ? "Connected"
                             : "Connect"
                     }
-                    onClick={() => {
-                        if (!blockchain().connected) {
-                            blockchain().connect();
-                        }
-                    }}
+                    onClick={() => connect()}
                     isCurrent={false}
                 />
             </Box>

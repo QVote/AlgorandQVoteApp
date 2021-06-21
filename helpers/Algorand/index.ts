@@ -176,6 +176,7 @@ const config = { token, baseServer, port };
 
 class AlgorandApi implements BlockchainInterface {
     connected = false;
+    hasDescription = false;
     private wallet: MyAlgoConnect;
     private accounts: Accounts[];
     /**
@@ -218,7 +219,38 @@ class AlgorandApi implements BlockchainInterface {
         return () => {};
     }
 
-    async tryToGetContract(address: string | string[]): Promise<void> {}
+    async tryToGetContract(address: string | string[]): Promise<void> {
+        const add = parseInt(notArrPlz(address));
+        if (add >= 10000000) {
+            this.loading = true;
+            const qv = new QVoting(config, this.wallet);
+            await qv.initState(add);
+            console.log("STATE", qv.state);
+            this.contractState = {
+                _this_address: add + "",
+                credit_to_token_ratio: qv.state.assetCoefficient + "",
+                description: "",
+                expiration_block: qv.state.votingEndTime,
+                name: qv.state.decisionName,
+                options: qv.state.options.map((o) => o.title),
+                options_to_votes_map: qv.state.options.reduce((prev, cur) => {
+                    prev[cur.title] = cur.value;
+                    return prev;
+                }, {}),
+                option_to_votes: qv.state.options.map((o) => ({
+                    name: o.title,
+                    vote: o.value,
+                })),
+                owner: "none",
+                token_id: qv.state.assetID + "",
+                registered_voters: [],
+                registration_end_time: qv.state.votingStartTime,
+                voter_balances: {},
+            };
+            this.loading = false;
+            this.registerAppId(add, "cookies");
+        }
+    }
 
     get isOwnerOfCurrentContract(): boolean {
         return (
@@ -242,7 +274,31 @@ class AlgorandApi implements BlockchainInterface {
         window.open(`https://testnet.algoexplorer.io/tx/${id}`);
     }
 
-    async deploy(decision: QVote.Decision): Promise<void> {}
+    async deploy(decision: QVote.Decision): Promise<void> {
+        const registerSeconds = decision.registerEndTime * 60;
+        const endSeconds = decision.endTime * 60;
+        const qv = new QVoting(config, this.wallet, {
+            decisionName: decision.name,
+            votingStartTime: Math.round(Date.now() / 1000) + registerSeconds,
+            votingEndTime:
+                Math.round(Date.now() / 1000) + endSeconds + registerSeconds,
+            assetID: 13164495,
+            assetCoefficient: 200, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
+            options: decision.options.map((o) => o.optName),
+            creatorAddress: this.currentAddress,
+        });
+        this.txWaitNotify();
+        await qv.deployNew();
+        //@ts-ignore
+        const txId = qv.deployTxID;
+        this.runJob({
+            id: txId,
+            name: `Deploy Transaction: ${txId}`,
+            status: "waiting",
+            contractAddress: "", //dont have it untill we have the appid
+            type: "Deploy",
+        });
+    }
 
     async ownerRegister(payload: {
         addresses: string[];
@@ -344,7 +400,7 @@ class AlgorandApi implements BlockchainInterface {
             if (job.type == "Deploy") {
                 const appID = await this.getAppId(job.id);
                 updatedJob.contractAddress = appID;
-                this.registerAppId(4, "cookies");
+                this.registerAppId(appID, "cookies");
             } else if (job.type == "DeployQueue") {
                 const appID = await this.getAppId(job.id);
                 updatedJob.contractAddress = appID;
