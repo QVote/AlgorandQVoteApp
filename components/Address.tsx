@@ -47,7 +47,7 @@ export function Address({
                         onClick={
                             onViewBlock
                                 ? onViewBlock
-                                : () => blockchain.contractLink(txt)
+                                : () => blockchain().contractLink(txt)
                         }
                     />
                 </Box>

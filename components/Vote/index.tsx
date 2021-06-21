@@ -102,7 +102,7 @@ export function Vote({
         if (canSubmit()) {
             setLoading(true);
             try {
-                await blockchain.vote({
+                await blockchain().vote({
                     creditsToOption: curCredDist.options.map((o) => `${o.cur}`),
                 });
                 setSubmitted(true);
@@ -134,21 +134,32 @@ export function Vote({
                     <QParagraph
                         size="small"
                         color={
-                            blockchain.contractInfo.timeState ==
+                            blockchain().contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
                                 ? "status-critical"
-                                : blockchain.contractInfo.timeState ==
+                                : blockchain().contractInfo.timeState ==
                                   "VOTING_IN_PROGRESS"
                                 ? "status-ok"
                                 : "status-critical"
                         }
                     >
-                        {blockchain.contractInfo.timeState ==
+                        {blockchain().contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration period for this hasn't ended yet, ends in: ${blockchain.contractInfo.time.registrationEnds.blocks} blocks, ~${blockchain.contractInfo.time.registrationEnds.minutes} minutes.`
-                            : blockchain.contractInfo.timeState ==
+                            ? `Registration period for this hasn't ended yet, ends in: ${
+                                  blockchain().contractInfo.time
+                                      .registrationEnds.blocks
+                              } blocks, ~${
+                                  blockchain().contractInfo.time
+                                      .registrationEnds.minutes
+                              } minutes.`
+                            : blockchain().contractInfo.timeState ==
                               "VOTING_IN_PROGRESS"
-                            ? `Voting ends in ${blockchain.contractInfo.time.voteEnds.blocks} blocks, ~${blockchain.contractInfo.time.voteEnds.minutes} minutes.`
+                            ? `Voting ends in ${
+                                  blockchain().contractInfo.time.voteEnds.blocks
+                              } blocks, ~${
+                                  blockchain().contractInfo.time.voteEnds
+                                      .minutes
+                              } minutes.`
                             : "The voting period of this decision has ended."}
                     </QParagraph>
                 </Box>

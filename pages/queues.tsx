@@ -54,11 +54,11 @@ export default function Queues() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {blockchain.queues.value.arr.length == 0 && (
+                    {blockchain().queues.value.arr.length == 0 && (
                         <QParagraph>You have no recent queues.</QParagraph>
                     )}
-                    {blockchain.queues.value.arr.length > 0 &&
-                        blockchain.queues.value.arr.map((a) => (
+                    {blockchain().queues.value.arr.length > 0 &&
+                        blockchain().queues.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractqueue${a}`}

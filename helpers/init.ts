@@ -1,4 +1,4 @@
-import { QVote } from "../../types";
+import { QVote } from "../types";
 
 export const infoInit: QVote.ContractInfo = {
     time: {

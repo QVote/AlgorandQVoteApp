@@ -8,27 +8,24 @@ import { observer } from "mobx-react";
 
 export const MainFrame = observer(({ children }: { children: JSX.Element }) => {
     const router = useRouter();
-    useEffect(() => {
-        blockchain.connect();
-    }, []);
 
     useEffect(() => {
-        if (blockchain.connected) {
+        if (blockchain().connected) {
             const { address, queueAddress } = router.query;
-            blockchain.tryToGetContract(address);
-            blockchain.tryToGetQueueState(queueAddress);
+            blockchain().tryToGetContract(address);
+            blockchain().tryToGetQueueState(queueAddress);
         }
-    }, [router.query, blockchain.currentAddress, blockchain.connected]);
+    }, [router.query, blockchain().currentAddress, blockchain().connected]);
 
     /**
      * Essentially regenerate the jobs that were in progress but the site was
      * refreshed
      */
     useEffect(() => {
-        if (blockchain.connected) {
-            blockchain.regenerateJobs();
+        if (blockchain().connected) {
+            blockchain().regenerateJobs();
         }
-    }, [blockchain.connected]);
+    }, [blockchain().connected]);
 
     return (
         <Box

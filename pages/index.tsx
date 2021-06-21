@@ -53,11 +53,11 @@ export default function Index() {
                             <Text>{"Create"}</Text>
                         </Box>
                     </Button>
-                    {blockchain.cookies.value.arr.length == 0 && (
+                    {blockchain().cookies.value.arr.length == 0 && (
                         <QParagraph>You have no recent decisions.</QParagraph>
                     )}
-                    {blockchain.cookies.value.arr.length > 0 &&
-                        blockchain.cookies.value.arr.map((a) => (
+                    {blockchain().cookies.value.arr.length > 0 &&
+                        blockchain().cookies.value.arr.map((a) => (
                             <Address
                                 txt={a}
                                 key={`contractdecision${a}`}

@@ -9,7 +9,9 @@
         "lint": "eslint ./ --fix"
     },
     "dependencies": {
+        "@qvote/algorand-sdk": "^1.0.0",
         "@qvote/zilliqa-sdk": "^1.1.6",
+        "@randlabs/myalgo-connect": "^1.0.1",
         "@zilliqa-js/zilliqa": "^2.2.1",
         "d3": "^6.6.2",
         "grommet": "^2.16.3",

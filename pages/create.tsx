@@ -136,7 +136,7 @@ const DecisionCreator = observer(() => {
     }
 
     async function onDeploy() {
-        await blockchain.deploy(creator.target);
+        await blockchain().deploy(creator.target);
         creator.setSubmitted(true);
     }
 

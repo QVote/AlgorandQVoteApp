@@ -19,7 +19,7 @@ export default function DecisionCreator() {
         if (!loading) {
             try {
                 setLoading(true);
-                await blockchain.deployQueue("20");
+                await blockchain().deployQueue("20");
                 setSubmitted(true);
             } catch (e) {
                 console.error(e);

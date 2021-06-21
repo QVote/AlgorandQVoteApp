@@ -4,5 +4,5 @@ export type Job = {
     name: string;
     status: "waiting" | "inProgress" | "done" | "error";
     type: JobTypes;
-    contractAddress: string;
+    contractAddress: string | number;
 };

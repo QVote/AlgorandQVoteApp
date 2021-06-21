@@ -10,9 +10,6 @@ import { Job } from "./Job";
  */
 export interface BlockchainInterface {
     connected: boolean;
-    /**
-     * canonical 20-byte Ethereum-style address
-     */
     currentAddress: string;
     contractState?: QVote.ContractDecisionProcessed;
     queueState?: QVote.Queue;

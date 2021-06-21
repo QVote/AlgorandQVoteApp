@@ -5,7 +5,7 @@ import { BN, Zilliqa, Long } from "@zilliqa-js/zilliqa";
 import { retryLoop, formatAddress } from "../../scripts";
 import { blockchains } from "./config";
 import { QVoteZilliqa, QueueZilliqa } from "@qvote/zilliqa-sdk";
-import { infoInit } from "./init";
+import { infoInit } from "../init";
 import { getContractStateMessages } from "./utill";
 import { CookieObjectInterface } from "../Cookies";
 import { networkNotSupported } from "../../components/utill";
@@ -250,9 +250,9 @@ class ZilliqaApi implements BlockchainInterface {
                 );
                 this.updateJob(job.id, { ...job, status: "done" });
                 if (job.type == "Deploy") {
-                    this.registerContractAddress(job.contractAddress);
+                    this.registerContractAddress(job.contractAddress + "");
                 } else if (job.type == "DeployQueue") {
-                    this.registerQueueAddress(job.contractAddress);
+                    this.registerQueueAddress(job.contractAddress + "");
                 }
             } else {
                 throw new Error("Failed to confirm transaction");

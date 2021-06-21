@@ -131,12 +131,12 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                 />
             </Box>
             <Box width="50%" direction="row" align="center" justify="end">
-                {blockchain.connected && (
+                {blockchain().connected && (
                     <Box height="7vh" width={"10vw"}>
                         <MenuButton
                             txt={"Transactions"}
                             IconToDisp={
-                                blockchain.someJobsInProgress
+                                blockchain().someJobsInProgress
                                     ? Update
                                     : Transaction
                             }
@@ -148,7 +148,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                 )
                             }
                             isCurrent={false}
-                            spin={blockchain.someJobsInProgress}
+                            spin={blockchain().someJobsInProgress}
                         />
                         {open == "transactions" && (
                             <MenuModal
@@ -158,7 +158,7 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                 modalMinHeight="38vh"
                                 modalWidth="71vw"
                             >
-                                {blockchain.jobs.value.arr.length == 0 ? (
+                                {blockchain().jobs.value.arr.length == 0 ? (
                                     <ScrollBox
                                         props={{
                                             pad: {
@@ -189,28 +189,33 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                                         <Notice
                                             txt={"Your recent transactions:"}
                                         />
-                                        {blockchain.jobs.value.arr.map((a) => (
-                                            <Address
-                                                txt={a.name}
-                                                bg={
-                                                    a.status == "done"
-                                                        ? "status-ok"
-                                                        : a.status == "error"
-                                                        ? "status-error"
-                                                        : "status-unknown"
-                                                }
-                                                key={`transaction${a.id}`}
-                                                onCopyTxt={() =>
-                                                    onCopyText(
-                                                        `0x${a.id}`,
-                                                        "Transaction hash copied!"
-                                                    )
-                                                }
-                                                onViewBlock={() =>
-                                                    blockchain.txLink(a.id)
-                                                }
-                                            />
-                                        ))}
+                                        {blockchain().jobs.value.arr.map(
+                                            (a) => (
+                                                <Address
+                                                    txt={a.name}
+                                                    bg={
+                                                        a.status == "done"
+                                                            ? "status-ok"
+                                                            : a.status ==
+                                                              "error"
+                                                            ? "status-error"
+                                                            : "status-unknown"
+                                                    }
+                                                    key={`transaction${a.id}`}
+                                                    onCopyTxt={() =>
+                                                        onCopyText(
+                                                            a.id,
+                                                            "Transaction hash copied!"
+                                                        )
+                                                    }
+                                                    onViewBlock={() =>
+                                                        blockchain().txLink(
+                                                            a.id
+                                                        )
+                                                    }
+                                                />
+                                            )
+                                        )}
                                     </ScrollBox>
                                 )}
                             </MenuModal>
@@ -218,19 +223,19 @@ function MenuBarComponent(props: {}, ref: MutableRefObject<MenuHandle>) {
                     </Box>
                 )}
                 <MenuButton
-                    IconToDisp={blockchain.connected ? Integration : Connect}
-                    iconColor={blockchain.connected ? "status-ok" : undefined}
-                    txtColor={blockchain.connected ? "status-ok" : undefined}
+                    IconToDisp={blockchain().connected ? Integration : Connect}
+                    iconColor={blockchain().connected ? "status-ok" : undefined}
+                    txtColor={blockchain().connected ? "status-ok" : undefined}
                     txt={
-                        blockchain.loading
+                        blockchain().loading
                             ? ""
-                            : blockchain.connected
+                            : blockchain().connected
                             ? "Connected"
                             : "Connect"
                     }
                     onClick={() => {
-                        if (!blockchain.connected) {
-                            blockchain.connect();
+                        if (!blockchain().connected) {
+                            blockchain().connect();
                         }
                     }}
                     isCurrent={false}

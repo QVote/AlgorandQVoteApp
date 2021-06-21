@@ -12,7 +12,7 @@ import { Loader } from "../../components/Loader";
 function Results() {
     const responsiveContext = useResponsiveContext();
 
-    return blockchain.loading || !blockchain.contractState ? (
+    return blockchain().loading || !blockchain().contractState ? (
         <Loader />
     ) : (
         <TwoCards
@@ -27,14 +27,14 @@ function Results() {
                         style={{ wordBreak: "break-word" }}
                         level={responsiveContext == "small" ? "3" : "2"}
                     >
-                        {blockchain.contractState.name}
+                        {blockchain().contractState.name}
                     </Heading>
                     <QParagraph>
-                        {blockchain.contractState.description}
+                        {blockchain().contractState.description}
                     </QParagraph>
                 </Box>
             }
-            Card2={<BarChart decision={blockchain.contractState} />}
+            Card2={<BarChart decision={blockchain().contractState} />}
             NextButton={<Box fill></Box>}
         />
     );
