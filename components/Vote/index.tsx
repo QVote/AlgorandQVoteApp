@@ -145,18 +145,13 @@ export function Vote({
                     >
                         {blockchain().contractInfo.timeState ==
                         "REGISTRATION_IN_PROGRESS"
-                            ? `Registration period for this hasn't ended yet, ends in: ${
-                                  blockchain().contractInfo.time
-                                      .registrationEnds.blocks
-                              } blocks, ~${
+                            ? `Registration period for this hasn't ended yet, ends in ~${
                                   blockchain().contractInfo.time
                                       .registrationEnds.minutes
                               } minutes.`
                             : blockchain().contractInfo.timeState ==
                               "VOTING_IN_PROGRESS"
-                            ? `Voting ends in ${
-                                  blockchain().contractInfo.time.voteEnds.blocks
-                              } blocks, ~${
+                            ? `Voting ends in ~${
                                   blockchain().contractInfo.time.voteEnds
                                       .minutes
                               } minutes.`

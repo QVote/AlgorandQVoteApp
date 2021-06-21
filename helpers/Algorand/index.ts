@@ -15,164 +15,34 @@ const port = "";
 const token = { "X-API-Key": "rPomKPFluE2MO7D0IdLyu3udnyOgWg846F3Gq9bZ" };
 const config = { token, baseServer, port };
 
-// async function myAlgoDeploy() {
-//     try {
-//         const conf = { token: token, baseServer: baseServer, port: port };
-//         const registrationTime = 10 * 60; // in seconds
-//         const votingTime = 10 * 24 * 60 * 60; // 10 days to vote
-
-//         const { wallet, accounts } = await connectMyAlgo();
-//         const creatorAddress = accounts[0].address;
-
-//         const params = {
-//             decisionName: "muchdecision",
-//             votingStartTime: Math.round(Date.now() / 1000) + registrationTime,
-//             votingEndTime:
-//                 Math.round(Date.now() / 1000) + registrationTime + votingTime,
-//             assetID: 13164495,
-//             assetCoefficient: 200, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
-//             options: [
-//                 "first",
-//                 "second",
-//                 "third",
-//                 "4",
-//                 "5",
-//                 "6",
-//                 "7",
-//                 "8",
-//                 "9",
-//                 "10",
-//                 "11",
-//                 "12",
-//             ],
-//             creatorAddress: creatorAddress,
-//         };
-
-//         const qv = new QVoting(conf, wallet, params);
-//         await qv.deployNew();
-//         console.log("DEPLOYED");
-//         const appID = qv.getAppID();
-//         console.log(appID);
-
-//         const state = await qv.readGlobalState();
-//         console.log("STATE", state);
-
-//         await qv.optIn(creatorAddress);
-//         console.log("opted in");
-
-//         // did opt-in work?
-//         const localStorage = await qv.getUserBalance(creatorAddress);
-//         console.log("STORAGE");
-//         console.log(localStorage);
-//     } catch (e) {
-//         console.log(e);
-//     }
-// }
-
-// async function myAlgoOptin() {
-//     try {
-//         const { wallet, accounts } = await connectMyAlgo();
-//         if (accounts.length > 1) {
-//             console.log(
-//                 "more than one account selected, choosing the first one"
-//             );
-//         }
-
-//         const appID = 15856700; // previously deployed appID
-
-//         const conf = { token: token, baseServer: baseServer, port: port };
-//         const voterAddress = accounts[0].address;
-
-//         const qv = new QVoting(conf, wallet);
-//         console.log("created new instance");
-//         await qv.initState(appID);
-
-//         const state = await qv.readGlobalState();
-//         console.log("STATE", state);
-
-//         await qv.optIn(voterAddress);
-//         console.log("opted in");
-
-//         // did opt-in work?
-//         const localStorage = await qv.getUserBalance(voterAddress);
-//         console.log("STORAGE");
-//         console.log(localStorage);
-//     } catch (e) {
-//         console.log(e);
-//     }
-// }
-
-// async function myAlgoVote() {
-//     try {
-//         const { wallet, accounts } = await connectMyAlgo();
-//         if (accounts.length > 1) {
-//             console.log(
-//                 "more than one account selected, choosing the first one"
-//             );
-//         }
-//         const appID = 16061819; // previously deployed appID
-
-//         const conf = { token: token, baseServer: baseServer, port: port };
-//         const voterAddress = accounts[0].address;
-
-//         const qv = new QVoting(conf, wallet);
-//         console.log("created new instance");
-//         await qv.initState(appID);
-
-//         var state = await qv.readGlobalState();
-//         console.log("STATE", state);
-
-//         const balance = await qv.getUserBalance(voterAddress);
-//         console.log("BALANCE", balance);
-
-//         const options = [
-//             { optionTitle: "second", creditNumber: 9 },
-//             { optionTitle: "first", creditNumber: 4 },
-//         ];
-
-//         await qv.vote(voterAddress, options);
-
-//         state = await qv.readGlobalState();
-//         console.log("STATE", state);
-//     } catch (e) {
-//         console.log(e);
-//     }
-// }
-
-// async function myAlgoDeployQueue() {
-//     const qSize = 10;
-//     const conf = { token: token, baseServer: baseServer, port: port };
-//     const { wallet, accounts } = await connectMyAlgo();
-
-//     console.log(accounts);
-//     const creatorAddress = accounts[0].address;
-
-//     console.log("address", creatorAddress);
-//     const q = QQueue.newQueue(conf, qSize, creatorAddress, wallet);
-//     const appID = await q.deployNew();
-//     console.log("deployed, appid: ", appID);
-// }
-
-// async function myAlgoOptinQueue() {
-//     const conf = { token: token, baseServer: baseServer, port: port };
-//     const { wallet, accounts } = await connectMyAlgo();
-//     const userAddress = accounts[0].address;
-
-//     const appID = 16061894;
-//     const q = QQueue.existingQueue(conf, appID, wallet);
-//     console.log(userAddress);
-//     await q.optIn(userAddress);
-// }
-
-// async function myAlgoPushQueue() {
-//     const conf = { token: token, baseServer: baseServer, port: port };
-//     const { wallet, accounts } = await connectMyAlgo();
-//     const userAddress = accounts[0].address;
-
-//     const appID = 16061894;
-//     const q = QQueue.existingQueue(conf, appID, wallet);
-//     await q.push(userAddress, 145);
-// }
+function getAlgorandStateMessages(
+    c: QVote.ContractDecisionProcessed
+): QVote.ContractInfo {
+    const nowSec = Math.round(Date.now() / 1000);
+    const registerEndIn = c.registration_end_time - nowSec;
+    const expireIn = c.expiration_block - nowSec;
+    console.debug({ registerEndIn, expireIn });
+    return {
+        time: {
+            registrationEnds: {
+                blocks: 0,
+                minutes: Math.round(registerEndIn / 60),
+            },
+            voteEnds: {
+                blocks: 0,
+                minutes: Math.round(expireIn / 60),
+            },
+        },
+        timeState:
+            registerEndIn > 0
+                ? "REGISTRATION_IN_PROGRESS"
+                : expireIn > 0
+                ? "VOTING_IN_PROGRESS"
+                : "VOTING_ENDED",
+        userIsOwner: false,
+        userVoter: "REGISTERED_NOT_VOTED",
+    };
+}
 
 class AlgorandApi implements BlockchainInterface {
     connected = false;
@@ -225,7 +95,17 @@ class AlgorandApi implements BlockchainInterface {
             this.loading = true;
             const qv = new QVoting(config, this.wallet);
             await qv.initState(add);
+            const balance = await qv.getUserBalance(this.currentAddress);
+            const usrBalance: number = balance
+                ? //@ts-ignore
+                  balance.QVoteDecisionCredits
+                : 0;
+            console.debug({ balance });
             console.log("STATE", qv.state);
+            qv.state.options = qv.state.options.map((o) => ({
+                ...o,
+                title: o.title.slice(7, o.title.length),
+            }));
             this.contractState = {
                 _this_address: add + "",
                 credit_to_token_ratio: qv.state.assetCoefficient + "",
@@ -245,8 +125,11 @@ class AlgorandApi implements BlockchainInterface {
                 token_id: qv.state.assetID + "",
                 registered_voters: [],
                 registration_end_time: qv.state.votingStartTime,
-                voter_balances: {},
+                voter_balances: {
+                    [this.currentAddress]: usrBalance,
+                },
             };
+            this.contractInfo = getAlgorandStateMessages(this.contractState);
             this.loading = false;
             this.registerAppId(add, "cookies");
         }
@@ -282,7 +165,7 @@ class AlgorandApi implements BlockchainInterface {
             votingStartTime: Math.round(Date.now() / 1000) + registerSeconds,
             votingEndTime:
                 Math.round(Date.now() / 1000) + endSeconds + registerSeconds,
-            assetID: 13164495,
+            assetID: 17133265,
             assetCoefficient: 200, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
             options: decision.options.map((o) => o.optName),
             creatorAddress: this.currentAddress,
@@ -303,7 +186,15 @@ class AlgorandApi implements BlockchainInterface {
     async ownerRegister(payload: {
         addresses: string[];
         creditsForAddresses: number[];
-    }): Promise<void> {}
+    }): Promise<void> {
+        const qv = new QVoting(config, this.wallet);
+        await qv.initState(parseInt(this.contractState._this_address));
+        const state = await qv.readGlobalState();
+        console.debug("STATE", state);
+        this.txWaitNotify();
+        await qv.optIn(this.currentAddress);
+        longNotification.showNotification("Opted in!", "success");
+    }
 
     async vote(payload: { creditsToOption: string[] }): Promise<void> {}
 

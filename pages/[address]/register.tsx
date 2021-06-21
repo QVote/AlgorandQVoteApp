@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { observer } from "mobx-react";
 import { blockchain } from "../../helpers/Blockchain";
 import { Loader } from "../../components/Loader";
+import { longNotification } from "../../components/Notifications";
 
 type VoterToAdd = { address: string; credits: number };
 const initVoterToAdd = {
@@ -40,6 +41,10 @@ function Register() {
                 setSubmitted(true);
             } catch (e) {
                 console.error(e);
+                longNotification.showNotification(
+                    e.message ? e.message : "Error",
+                    "error"
+                );
             }
             setLoading(false);
         }
@@ -82,7 +87,7 @@ function Register() {
         setTempVoter(next);
         setTempVoterValid(isTempVoterValid(next));
     }
-
+    //i hate this algorand zilliqa interface does not work semantically
     return blockchain().loading || !blockchain().contractState ? (
         <Loader />
     ) : submitted ? (
@@ -91,221 +96,63 @@ function Register() {
             txt=""
             buttonLabel="Go to preview"
         />
-    ) : !nextCard ? (
-        <TwoCards
-            Card1={
-                <Box fill>
-                    <QHeading>{"Register voters"}</QHeading>
-                    <QParagraph>
-                        As an owner of a decision contract you can register
-                        voters and the number of credits they can vote with.
-                    </QParagraph>
-                    <QParagraph>
-                        If you call register multiple times only the last
-                        registration will be valid!
-                    </QParagraph>
-                </Box>
-            }
-            Card2={
-                <Box fill justify="start">
-                    <Heading style={{ wordBreak: "break-word" }} level={"3"}>
-                        {blockchain().contractState.name}
-                    </Heading>
-                    <QParagraph size="small">
-                        {blockchain().contractState.description}
-                    </QParagraph>
-                    <QParagraph
-                        size="small"
-                        color={
-                            blockchain().contractInfo.timeState ==
-                            "REGISTRATION_IN_PROGRESS"
-                                ? "status-ok"
-                                : "status-critical"
-                        }
-                    >
-                        {blockchain().contractInfo.timeState ==
-                        "REGISTRATION_IN_PROGRESS"
-                            ? `Registration ends in ${
-                                  blockchain().contractInfo.time
-                                      .registrationEnds.blocks
-                              } blocks, ~${
-                                  blockchain().contractInfo.time
-                                      .registrationEnds.minutes
-                              } minutes.`
-                            : `Registration period ended.`}
-                    </QParagraph>
-                </Box>
-            }
-            NextButton={
-                <Box fill direction="row">
-                    <Box
-                        justify="center"
-                        align="center"
-                        pad={{ left: "small" }}
-                        fill
-                    ></Box>
-                    <Box align="center" justify="center" fill pad="small">
-                        <Button
-                            disabled={
-                                blockchain().contractInfo.timeState !=
-                                "REGISTRATION_IN_PROGRESS"
-                            }
-                            label={"Next"}
-                            onClick={() => setNextCard(true)}
-                        />
-                    </Box>
-                </Box>
-            }
-        />
     ) : (
-        <TwoCards
-            Card1={
-                <Box fill>
-                    <QHeading>{"Already Registered:"}</QHeading>
-                    {Object.entries(blockchain().contractState.voter_balances)
-                        .length != 0 ? (
-                        <ScrollBox props={{ gap: "small" }}>
-                            {Object.entries(
-                                blockchain().contractState.voter_balances
-                            ).map(([k, v], i) => {
-                                return (
-                                    <Box
-                                        height={{ min: "50px" }}
-                                        justify="center"
-                                        key={`option${k}`}
-                                        margin={{ bottom: "small" }}
-                                        pad={{ left: "small" }}
-                                        background="white"
-                                        round="xsmall"
-                                        direction="row"
-                                    >
-                                        <Box fill justify="center">
-                                            <Text truncate size="small">
-                                                {`${i + 1}. ${k}`}
-                                            </Text>
-                                            <Text truncate size="small">
-                                                {`Credits: ${v}`}
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                );
-                            })}
-                        </ScrollBox>
-                    ) : (
+        !nextCard && (
+            <TwoCards
+                Card1={
+                    <Box fill>
+                        <QHeading>{"Register"}</QHeading>
+                    </Box>
+                }
+                Card2={
+                    <Box fill justify="start">
+                        <Heading
+                            style={{ wordBreak: "break-word" }}
+                            level={"3"}
+                        >
+                            {blockchain().contractState.name}
+                        </Heading>
                         <QParagraph size="small">
-                            {"There are no registered voters on this decision."}
+                            {blockchain().contractState.description}
                         </QParagraph>
-                    )}
-                </Box>
-            }
-            Card2={
-                <Box fill>
-                    <QHeading>{"Voters"}</QHeading>
-                    <Box
-                        direction="row"
-                        margin={{ bottom: "small" }}
-                        height={{ min: "xxsmall" }}
-                    >
-                        <Keyboard onEnter={onAddTempVoter}>
-                            <Box fill direction="row" gap="small">
-                                <Box fill>
-                                    <TextInput
-                                        placeholder="Voter Address"
-                                        size="small"
-                                        value={tempVoter.address}
-                                        onChange={(e) =>
-                                            onAddressChange(e.target.value)
-                                        }
-                                        maxLength={42}
-                                    />
-                                </Box>
-                                <Box width="70%">
-                                    <TextInput
-                                        placeholder="Credit to token ratio"
-                                        size="small"
-                                        type="number"
-                                        value={tempVoter.credits}
-                                        maxLength={3}
-                                        onChange={(e) =>
-                                            onChangeCredits(e.target.value)
-                                        }
-                                    />
-                                </Box>
-                                <Box
-                                    align="center"
-                                    justify="center"
-                                    height="xxsmall"
-                                >
-                                    <Button
-                                        icon={<Add />}
-                                        disabled={!tempVoterValid}
-                                        onClick={onAddTempVoter}
-                                    />
-                                </Box>
-                            </Box>
-                        </Keyboard>
+                        <QParagraph
+                            size="small"
+                            color={
+                                blockchain().contractInfo.timeState ==
+                                "REGISTRATION_IN_PROGRESS"
+                                    ? "status-ok"
+                                    : "status-critical"
+                            }
+                        >
+                            {blockchain().contractInfo.timeState ==
+                            "REGISTRATION_IN_PROGRESS"
+                                ? `Registration ends in ~${
+                                      blockchain().contractInfo.time
+                                          .registrationEnds.minutes
+                                  } minutes.`
+                                : `Registration period ended.`}
+                        </QParagraph>
                     </Box>
-                    <ScrollBox props={{ gap: "small" }}>
-                        {votersToAdd.map((v, i) => {
-                            return (
-                                <Box
-                                    height={{ min: "50px" }}
-                                    justify="center"
-                                    key={`voter${v.address}`}
-                                    ref={lastVoterToAdd}
-                                    margin={{ bottom: "small" }}
-                                    pad={{ left: "small" }}
-                                    background="white"
-                                    round="xsmall"
-                                    direction="row"
-                                >
-                                    <Box fill justify="center">
-                                        <Text truncate size="small">
-                                            {`${i + 1}. ${v.address}`}
-                                        </Text>
-                                        <Text truncate size="small">
-                                            {`Credits: ${v.credits}`}
-                                        </Text>
-                                    </Box>
-                                    <Box align="center" justify="center">
-                                        <Button
-                                            onClick={() =>
-                                                onDeleteVoter(v.address)
-                                            }
-                                            icon={<Trash />}
-                                        />
-                                    </Box>
-                                </Box>
-                            );
-                        })}
-                    </ScrollBox>
-                </Box>
-            }
-            NextButton={
-                <Box fill direction="row">
-                    <Box
-                        justify="center"
-                        align="center"
-                        pad={{ left: "small" }}
-                        fill
-                    >
-                        <Button
-                            disabled={false}
-                            secondary
-                            label={"Go Back"}
-                            onClick={() => setNextCard(false)}
-                        />
+                }
+                NextButton={
+                    <Box fill direction="row">
+                        <Box
+                            justify="center"
+                            align="center"
+                            pad={{ left: "small" }}
+                            fill
+                        ></Box>
+                        <Box align="center" justify="center" fill pad="small">
+                            <Button
+                                disabled={loading}
+                                label={"Register me"}
+                                onClick={() => onOwnerRegister()}
+                            />
+                        </Box>
                     </Box>
-                    <Box align="center" justify="center" fill pad="small">
-                        <Button
-                            disabled={loading || votersToAdd.length == 0}
-                            label={"Register Voters"}
-                            onClick={() => onOwnerRegister()}
-                        />
-                    </Box>
-                </Box>
-            }
-        />
+                }
+            />
+        )
     );
 }
 

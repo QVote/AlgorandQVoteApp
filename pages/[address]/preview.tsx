@@ -92,10 +92,7 @@ function Preview() {
                         >
                             {blockchain().contractInfo.timeState ==
                             "REGISTRATION_IN_PROGRESS"
-                                ? `Registration ends in ${
-                                      blockchain().contractInfo.time
-                                          .registrationEnds.blocks
-                                  } blocks, ~${
+                                ? `Registration ends in ~${
                                       blockchain().contractInfo.time
                                           .registrationEnds.minutes
                                   } minutes.`
@@ -113,10 +110,7 @@ function Preview() {
                         >
                             {blockchain().contractInfo.timeState ==
                             "VOTING_IN_PROGRESS"
-                                ? `Voting ends in ${
-                                      blockchain().contractInfo.time.voteEnds
-                                          .blocks
-                                  } blocks, ~${
+                                ? `Voting ends in ~${
                                       blockchain().contractInfo.time.voteEnds
                                           .minutes
                                   } minutes.`
@@ -187,23 +181,22 @@ function Preview() {
                                 )}
                             </Box>
                         )}
-                        {blockchain().isOwnerOfCurrentContract &&
-                            blockchain().contractInfo.timeState ==
-                                "REGISTRATION_IN_PROGRESS" && (
-                                <Box align="center">
-                                    <Button
-                                        label={"Go to Register"}
-                                        onClick={() =>
-                                            onGoToAs(
-                                                PATHS.register.path,
-                                                PATHS.register.as,
-                                                router,
-                                                address
-                                            )
-                                        }
-                                    />
-                                </Box>
-                            )}
+                        {blockchain().contractInfo.timeState ==
+                            "REGISTRATION_IN_PROGRESS" && (
+                            <Box align="center">
+                                <Button
+                                    label={"Go to Register"}
+                                    onClick={() =>
+                                        onGoToAs(
+                                            PATHS.register.path,
+                                            PATHS.register.as,
+                                            router,
+                                            address
+                                        )
+                                    }
+                                />
+                            </Box>
+                        )}
                         {blockchain().contractInfo.timeState ==
                             "VOTING_IN_PROGRESS" &&
                             blockchain().contractInfo.userVoter ==
