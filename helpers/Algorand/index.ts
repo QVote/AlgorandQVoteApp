@@ -97,10 +97,12 @@ class AlgorandApi implements BlockchainInterface {
             const qv = new QVoting(config, this.wallet);
             await qv.initState(add);
             const balance = await qv.getUserBalance(this.currentAddress);
-            const usrBalance: number = balance
-                ? //@ts-ignore
-                  balance.QVoteDecisionCredits
-                : 0;
+            const usrBalance: number = Math.round(
+                balance
+                    ? //@ts-ignore
+                      balance.QVoteDecisionCredits / 100
+                    : 0
+            );
             console.debug({ balance });
             console.log("STATE", qv.state);
             qv.state.options = qv.state.options.map((o) => ({
@@ -167,7 +169,7 @@ class AlgorandApi implements BlockchainInterface {
             votingEndTime:
                 Math.round(Date.now() / 1000) + endSeconds + registerSeconds,
             assetID: parseInt(decision.tokenId),
-            assetCoefficient: parseInt(decision.creditToTokenRatio), // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
+            assetCoefficient: parseInt(decision.creditToTokenRatio) * 100, // expressed in hundredths of a credit for 1 decimal place (not flexible at the moment)
             options: decision.options.map((o) => o.optName),
             creatorAddress: this.currentAddress,
         });
