@@ -241,7 +241,22 @@ class AlgorandApi implements BlockchainInterface {
         }
     }
 
-    async onlyOwnerPushQueue(queueAddress: string): Promise<void> {}
+    async onlyOwnerPushQueue(queueAddress: string): Promise<void> {
+        const q = QQueue.existingQueue(
+            config,
+            parseInt(queueAddress),
+            this.wallet
+        );
+        this.txWaitNotify();
+        await q.optIn(this.currentAddress);
+        longNotification.showNotification("Opted In!", "success");
+        this.txWaitNotify();
+        await q.push(
+            this.currentAddress,
+            parseInt(this.contractState._this_address)
+        );
+        longNotification.showNotification("Added to queue!", "success");
+    }
 
     private pushJob(add: Job) {
         const cookie = this.jobs.getCookie();

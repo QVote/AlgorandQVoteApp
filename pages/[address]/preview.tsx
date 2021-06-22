@@ -14,6 +14,7 @@ import { ScrollBox } from "../../components/ScrollBox";
 import { blockchain } from "../../helpers/Blockchain";
 import { Loader } from "../../components/Loader";
 import { observer } from "mobx-react";
+import { longNotification } from "../../components/Notifications";
 
 const PATHS = {
     vote: { path: "/[address]/vote", as: "/vote" },
@@ -34,6 +35,10 @@ function Preview() {
                 setLoading(true);
                 await blockchain().onlyOwnerPushQueue(queueAddress);
             } catch (e) {
+                longNotification.showNotification(
+                    e.message ? e.message : e,
+                    "error"
+                );
                 console.error(e);
             }
             setLoading(false);
